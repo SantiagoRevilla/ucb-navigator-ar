@@ -601,6 +601,7 @@
             <span id="inspectCoordsBadge" class="text-[11px] font-mono text-slate-400">
               -16.52280, -68.11230
             </span>
+
           </div>
 
           <h3 id="inspectTitle" class="font-display font-bold text-lg text-white">
@@ -907,6 +908,7 @@
               <span id="calibSavedBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 4 Vértices Activos
               </span>
+
             </div>
 
             <!-- Interactive SVG Preview of the 4-Corner Polygon -->
@@ -1457,21 +1459,17 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     // =========================================================================
     // 2. GRAFO PEATONAL DEL CAMPUS UCB CON DISTANCIAS (m) Y ACCESIBILIDAD
     // =========================================================================
-    // hasStairs: true indica que el tramo directo tiene gradas y se penaliza si el usuario activa "Modo Accesible"
     const UCB_EDGES = [
-      // Conexiones desde Ingreso Principal
       { from: "INGRESO_PRINCIPAL", to: "ATRIO", dist: 45, hasStairs: false, note: "Rampa peatonal de ingreso al Atrio" },
       { from: "INGRESO_PRINCIPAL", to: "BLOQUE_D", dist: 50, hasStairs: false, note: "Pasillo lateral izquierdo hacia Bloque D" },
       { from: "INGRESO_PRINCIPAL", to: "BLOQUE_K", dist: 40, hasStairs: false, note: "Acera interna derecha hacia Informaciones (Bloque K)" },
       
-      // Conexiones desde el Atrio Central
       { from: "ATRIO", to: "BLOQUE_A", dist: 40, hasStairs: false, note: "Explanada directa hacia la entrada del Coliseo (Bloque A)" },
       { from: "ATRIO", to: "BLOQUE_D", dist: 35, hasStairs: false, note: "Ingreso principal al Bloque D (Ascensores al Paraninfo)" },
       { from: "ATRIO", to: "BLOQUE_B", dist: 38, hasStairs: true, note: "Escalinata central del Atrio hacia Bloque B" },
       { from: "ATRIO", to: "BLOQUE_K", dist: 32, hasStairs: false, note: "Paso plano entre Atrio y Bloque K" },
       { from: "ATRIO", to: "AGORA", dist: 55, hasStairs: false, note: "Rampa peatonal central conectando Atrio con Ágora" },
 
-      // Conexiones alrededor del Bloque A, B, D y F
       { from: "BLOQUE_A", to: "BLOQUE_D", dist: 35, hasStairs: false, note: "Pasillo lateral entre Coliseo y Bloque D" },
       { from: "BLOQUE_A", to: "BLOQUE_B", dist: 42, hasStairs: false, note: "Pasillo nivel medio entre Coliseo y Cultura (Bloque B)" },
       { from: "BLOQUE_B", to: "AGORA", dist: 30, hasStairs: false, note: "Paso directo de Bloque B a la plaza del Ágora" },
@@ -1479,7 +1477,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       { from: "BLOQUE_B", to: "BLOQUE_F", dist: 48, hasStairs: false, note: "Rampa lateral hacia Registro Académico / Kardex (Bloque F)" },
       { from: "BLOQUE_F", to: "BLOQUE_C", dist: 35, hasStairs: false, note: "Pasillo superior entre Kardex (Bloque F) y Bloque C" },
 
-      // Conexiones alrededor del Ágora, C, G, J e Ingreso Hernando Siles
       { from: "AGORA", to: "BLOQUE_C", dist: 32, hasStairs: false, note: "Acceso desde el Ágora al Edificio de Ingeniería (Bloque C)" },
       { from: "AGORA", to: "BLOQUE_G", dist: 38, hasStairs: false, note: "Rampa suave hacia Bloque G (Decanatura Ingeniería y Auditorio)" },
       { from: "AGORA", to: "BLOQUE_K", dist: 48, hasStairs: false, note: "Camino peatonal entre Ágora y Bloque K" },
@@ -1489,14 +1486,12 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       { from: "BLOQUE_J", to: "INGRESO_SILES", dist: 35, hasStairs: false, note: "Salida peatonal hacia Av. Hernando Siles" },
       { from: "BLOQUE_F", to: "INGRESO_SILES", dist: 65, hasStairs: false, note: "Vereda superior hacia Av. Hernando Siles" },
 
-      // Sector Este: Cafetería (H), Biblioteca (I), Rectorado (L) y Bloque K
       { from: "BLOQUE_G", to: "BLOQUE_H", dist: 50, hasStairs: true, note: "Gradas de jardín entre Bloque G y Cafetería (Bloque H)" },
       { from: "BLOQUE_H", to: "BLOQUE_I", dist: 45, hasStairs: false, note: "Paseo jardín plano hacia la Biblioteca Central (Bloque I)" },
       { from: "BLOQUE_H", to: "BLOQUE_L", dist: 42, hasStairs: false, note: "Camino peatonal entre Cafetería y Rectorado (Bloque L)" },
       { from: "BLOQUE_K", to: "BLOQUE_L", dist: 60, hasStairs: false, note: "Sendero accesible por jardines bajos hacia Bloque L y H" },
       { from: "BLOQUE_L", to: "BLOQUE_I", dist: 52, hasStairs: false, note: "Acceso lateral accesible a la Biblioteca Central" },
 
-      // Cruce Av. 14 de Septiembre hacia Bloques M, P, N, S/T, U y V
       { from: "INGRESO_PRINCIPAL", to: "BLOQUE_M", dist: 55, hasStairs: false, note: "Cruza el paso de cebra de Av. 14 de Septiembre hacia Arquitectura (Bloque M)" },
       { from: "INGRESO_PRINCIPAL", to: "BLOQUE_P", dist: 45, hasStairs: false, note: "Cruza Av. 14 de Septiembre hacia Comunicación y SECRAD (Bloque P)" },
       { from: "BLOQUE_P", to: "BLOQUE_N", dist: 40, hasStairs: false, note: "Acera de Av. 14 de Septiembre hacia Centro de Idiomas (Bloque N)" },
@@ -1507,7 +1502,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     ];
 
     // =========================================================================
-    // 3. EVENTOS INICIALES GUARDADOS (INCLUYE EJEMPLOS OFICIALES DEL RETO PDF)
+    // 3. EVENTOS INICIALES GUARDADOS
     // =========================================================================
     let UCB_EVENTS = [
       {
@@ -1581,31 +1576,27 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       destinationId: 'BLOQUE_A',
       selectedEventId: 'EV_TECH_MECH',
       inspectedNodeId: 'BLOQUE_A',
-      accessibleMode: false, // Si es true, evita escaleras pronunciadas en Dijkstra
-      mapClickMode: 'dest',  // 'dest' | 'origin'
-      activeRoute: null,     // { path: [], totalDistance: 0, steps: [] }
-      currentStepIndex: 0,   // Nodo actual dentro de la ruta durante la caminata AR
+      accessibleMode: false,
+      mapClickMode: 'dest',
+      activeRoute: null,
+      currentStepIndex: 0,
       
-      // Cámara AR & Orientación (Brújula)
       cameraActive: false,
       mediaStream: null,
-      compassHeading: 35,    // Grados 0 - 359 (0 = Norte)
+      compassHeading: 35,
       usingDeviceCompass: false,
-      showAllBlockLines: true, // Muestra líneas trazadoras hacia todos los bloques visibles o solo al destino
-      arPolygonTargetMode: 'centroid', // 'centroid' | 'nearest_corner'
+      showAllBlockLines: true,
+      arPolygonTargetMode: 'centroid',
       arAnimFrame: null,
 
-      // GPS Real
       gpsActive: false,
       gpsWatchId: null,
       userLat: -16.52335,
       userLng: -68.11215,
 
-      // Filtro de eventos
       eventCategoryFilter: 'ALL'
     };
 
-    // Alternar modo de visualización de líneas guía en la vista de Cámara AR
     function toggleARBlockLinesMode() {
       state.showAllBlockLines = !state.showAllBlockLines;
       const btnText = document.getElementById('btnARLinesText');
@@ -1621,7 +1612,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       }
     }
 
-    // Helper para obtener un nodo por ID
     function getNodeById(id) {
       return UCB_NODES.find(n => n.id === id) || UCB_NODES[0];
     }
@@ -1631,17 +1621,207 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     // =========================================================================
     const STORAGE_KEY_CORNERS = 'ucb_navigator_calibrated_corners_v1';
 
-    // Genera un rectángulo predeterminado de 4 esquinas (NW, NE, SE, SW) alrededor del centro de cada bloque (~14m de semilado)
+    const EXACT_USER_COORDS = {
+      "INGRESO_PRINCIPAL": {
+        "centroid": { "lat": -16.52335, "lng": -68.11215 },
+        "corners": [
+          { "lat": -16.52323, "lng": -68.11229 },
+          { "lat": -16.52323, "lng": -68.11201 },
+          { "lat": -16.52347, "lng": -68.11201 },
+          { "lat": -16.52347, "lng": -68.11229 }
+        ]
+      },
+      "INGRESO_SILES": {
+        "centroid": { "lat": -16.52215, "lng": -68.11145 },
+        "corners": [
+          { "lat": -16.52203, "lng": -68.11159 },
+          { "lat": -16.52203, "lng": -68.11131 },
+          { "lat": -16.52227, "lng": -68.11131 },
+          { "lat": -16.52227, "lng": -68.11159 }
+        ]
+      },
+      "ATRIO": {
+        "centroid": { "lat": -16.52295, "lng": -68.11205 },
+        "corners": [
+          { "lat": -16.52283, "lng": -68.11219 },
+          { "lat": -16.52283, "lng": -68.11191 },
+          { "lat": -16.52307, "lng": -68.11191 },
+          { "lat": -16.52307, "lng": -68.11219 }
+        ]
+      },
+      "AGORA": {
+        "centroid": { "lat": -16.5227, "lng": -68.11175 },
+        "corners": [
+          { "lat": -16.52258, "lng": -68.11189 },
+          { "lat": -16.52258, "lng": -68.11161 },
+          { "lat": -16.52282, "lng": -68.11161 },
+          { "lat": -16.52282, "lng": -68.11189 }
+        ]
+      },
+      "BLOQUE_A": {
+        "centroid": { "lat": -16.522352, "lng": -68.111889 },
+        "corners": [
+          { "lat": -16.522279, "lng": -68.112114 },
+          { "lat": -16.522235, "lng": -68.111682 },
+          { "lat": -16.522433, "lng": -68.111666 },
+          { "lat": -16.522461, "lng": -68.112095 }
+        ]
+      },
+      "BLOQUE_B": {
+        "centroid": { "lat": -16.52265, "lng": -68.112 },
+        "corners": [
+          { "lat": -16.52253, "lng": -68.11214 },
+          { "lat": -16.52253, "lng": -68.11186 },
+          { "lat": -16.52277, "lng": -68.11186 },
+          { "lat": -16.52277, "lng": -68.11214 }
+        ]
+      },
+      "BLOQUE_C": {
+        "centroid": { "lat": -16.5225, "lng": -68.1118 },
+        "corners": [
+          { "lat": -16.52238, "lng": -68.11194 },
+          { "lat": -16.52238, "lng": -68.11166 },
+          { "lat": -16.52262, "lng": -68.11166 },
+          { "lat": -16.52262, "lng": -68.11194 }
+        ]
+      },
+      "BLOQUE_D": {
+        "centroid": { "lat": -16.52305, "lng": -68.11235 },
+        "corners": [
+          { "lat": -16.52293, "lng": -68.11249 },
+          { "lat": -16.52293, "lng": -68.11221 },
+          { "lat": -16.52317, "lng": -68.11221 },
+          { "lat": -16.52317, "lng": -68.11249 }
+        ]
+      },
+      "BLOQUE_F": {
+        "centroid": { "lat": -16.5224, "lng": -68.11195 },
+        "corners": [
+          { "lat": -16.52228, "lng": -68.11209 },
+          { "lat": -16.52228, "lng": -68.11181 },
+          { "lat": -16.52252, "lng": -68.11181 },
+          { "lat": -16.52252, "lng": -68.11209 }
+        ]
+      },
+      "BLOQUE_G": {
+        "centroid": { "lat": -16.52255, "lng": -68.11155 },
+        "corners": [
+          { "lat": -16.52243, "lng": -68.11169 },
+          { "lat": -16.52243, "lng": -68.11141 },
+          { "lat": -16.52267, "lng": -68.11141 },
+          { "lat": -16.52267, "lng": -68.11169 }
+        ]
+      },
+      "BLOQUE_H": {
+        "centroid": { "lat": -16.52285, "lng": -68.1113 },
+        "corners": [
+          { "lat": -16.52273, "lng": -68.11144 },
+          { "lat": -16.52273, "lng": -68.11116 },
+          { "lat": -16.52297, "lng": -68.11116 },
+          { "lat": -16.52297, "lng": -68.11144 }
+        ]
+      },
+      "BLOQUE_I": {
+        "centroid": { "lat": -16.52305, "lng": -68.1111 },
+        "corners": [
+          { "lat": -16.52293, "lng": -68.11124 },
+          { "lat": -16.52293, "lng": -68.11096 },
+          { "lat": -16.52317, "lng": -68.11096 },
+          { "lat": -16.52317, "lng": -68.11124 }
+        ]
+      },
+      "BLOQUE_J": {
+        "centroid": { "lat": -16.5227, "lng": -68.11145 },
+        "corners": [
+          { "lat": -16.52258, "lng": -68.11159 },
+          { "lat": -16.52258, "lng": -68.11131 },
+          { "lat": -16.52282, "lng": -68.11131 },
+          { "lat": -16.52282, "lng": -68.11159 }
+        ]
+      },
+      "BLOQUE_K": {
+        "centroid": { "lat": -16.52315, "lng": -68.1119 },
+        "corners": [
+          { "lat": -16.52303, "lng": -68.11204 },
+          { "lat": -16.52303, "lng": -68.11176 },
+          { "lat": -16.52327, "lng": -68.11176 },
+          { "lat": -16.52327, "lng": -68.11204 }
+        ]
+      },
+      "BLOQUE_L": {
+        "centroid": { "lat": -16.5232, "lng": -68.1114 },
+        "corners": [
+          { "lat": -16.52308, "lng": -68.11154 },
+          { "lat": -16.52308, "lng": -68.11126 },
+          { "lat": -16.52332, "lng": -68.11126 },
+          { "lat": -16.52332, "lng": -68.11154 }
+        ]
+      },
+      "BLOQUE_M": {
+        "centroid": { "lat": -16.52355, "lng": -68.11225 },
+        "corners": [
+          { "lat": -16.52343, "lng": -68.11239 },
+          { "lat": -16.52343, "lng": -68.11211 },
+          { "lat": -16.52367, "lng": -68.11211 },
+          { "lat": -16.52367, "lng": -68.11239 }
+        ]
+      },
+      "BLOQUE_P": {
+        "centroid": { "lat": -16.52335, "lng": -68.11185 },
+        "corners": [
+          { "lat": -16.52323, "lng": -68.11199 },
+          { "lat": -16.52323, "lng": -68.11171 },
+          { "lat": -16.52347, "lng": -68.11171 },
+          { "lat": -16.52347, "lng": -68.11199 }
+        ]
+      },
+      "BLOQUE_N": {
+        "centroid": { "lat": -16.52345, "lng": -68.1116 },
+        "corners": [
+          { "lat": -16.52333, "lng": -68.11174 },
+          { "lat": -16.52333, "lng": -68.11146 },
+          { "lat": -16.52357, "lng": -68.11146 },
+          { "lat": -16.52357, "lng": -68.11174 }
+        ]
+      },
+      "BLOQUE_ST": {
+        "centroid": { "lat": -16.5235, "lng": -68.11195 },
+        "corners": [
+          { "lat": -16.52338, "lng": -68.11209 },
+          { "lat": -16.52338, "lng": -68.11181 },
+          { "lat": -16.52362, "lng": -68.11181 },
+          { "lat": -16.52362, "lng": -68.11209 }
+        ]
+      },
+      "BLOQUE_U": {
+        "centroid": { "lat": -16.5241, "lng": -68.1126 },
+        "corners": [
+          { "lat": -16.52398, "lng": -68.11274 },
+          { "lat": -16.52398, "lng": -68.11246 },
+          { "lat": -16.52422, "lng": -68.11246 },
+          { "lat": -16.52422, "lng": -68.11274 }
+        ]
+      },
+      "BLOQUE_V": {
+        "centroid": { "lat": -16.5252, "lng": -68.1095 },
+        "corners": [
+          { "lat": -16.52508, "lng": -68.10964 },
+          { "lat": -16.52508, "lng": -68.10936 },
+          { "lat": -16.52532, "lng": -68.10936 },
+          { "lat": -16.52532, "lng": -68.10964 }
+        ]
+      }
+    };
+
     function createDefaultCornersForCoord(lat, lng, deltaLat = 0.00012, deltaLng = 0.00014) {
       return [
-        { lat: Number((lat + deltaLat).toFixed(6)), lng: Number((lng - deltaLng).toFixed(6)) }, // E1: Noroeste (NW)
-        { lat: Number((lat + deltaLat).toFixed(6)), lng: Number((lng + deltaLng).toFixed(6)) }, // E2: Noreste (NE)
-        { lat: Number((lat - deltaLat).toFixed(6)), lng: Number((lng + deltaLng).toFixed(6)) }, // E3: Sureste (SE)
-        { lat: Number((lat - deltaLat).toFixed(6)), lng: Number((lng - deltaLng).toFixed(6)) }  // E4: Suroeste (SW)
+        { lat: Number((lat + deltaLat).toFixed(6)), lng: Number((lng - deltaLng).toFixed(6)) },
+        { lat: Number((lat + deltaLat).toFixed(6)), lng: Number((lng + deltaLng).toFixed(6)) },
+        { lat: Number((lat - deltaLat).toFixed(6)), lng: Number((lng + deltaLng).toFixed(6)) },
+        { lat: Number((lat - deltaLat).toFixed(6)), lng: Number((lng - deltaLng).toFixed(6)) }
       ];
     }
 
-    // Calcula el centroide geométrico exacto a partir del arreglo de 4 esquinas
     function computeCentroidFromCorners(corners) {
       if (!corners || corners.length === 0) return { lat: -16.5230, lng: -68.1120 };
       const sum = corners.reduce((acc, c) => ({ lat: acc.lat + Number(c.lat), lng: acc.lng + Number(c.lng) }), { lat: 0, lng: 0 });
@@ -1651,7 +1831,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       };
     }
 
-    // Inicializa las 4 esquinas en todos los bloques y carga calibraciones guardadas en localStorage
     function initBlockCornersData() {
       let savedMap = {};
       try {
@@ -1672,6 +1851,12 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           const c = computeCentroidFromCorners(node.corners);
           node.lat = c.lat;
           node.lng = c.lng;
+        } else if (EXACT_USER_COORDS[node.id]) {
+          const uData = EXACT_USER_COORDS[node.id];
+          node.corners = uData.corners;
+          node.lat = uData.centroid.lat;
+          node.lng = uData.centroid.lng;
+          node.isCustomCalibrated = true;
         } else {
           node.corners = createDefaultCornersForCoord(node.defaultLat, node.defaultLng);
           node.isCustomCalibrated = false;
@@ -1679,7 +1864,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       });
     }
 
-    // Algoritmo Ray-Casting para saber si una coordenada GPS (lat, lng) está DENTRO del polígono de 4 esquinas
     function isPointInPolygon(lat, lng, corners) {
       if (!corners || corners.length < 3) return false;
       let inside = false;
@@ -1693,7 +1877,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       return inside;
     }
 
-    // Devuelve la esquina o punto del perímetro más cercano del bloque al usuario y su distancia en metros
     function getNearestBoundaryPointOfNode(lat, lng, node) {
       if (!node.corners || node.corners.length === 0) {
         return {
@@ -1710,12 +1893,10 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       let minDist = Infinity;
       let nearestCornerIdx = 0;
 
-      // Evaluar las 4 esquinas y puntos intermedios de los 4 muros del bloque
       for (let i = 0; i < node.corners.length; i++) {
         const c1 = node.corners[i];
         const c2 = node.corners[(i + 1) % node.corners.length];
 
-        // Muestreo en el segmento entre la esquina i y la esquina i+1
         for (let step = 0; step <= 4; step++) {
           const t = step / 4;
           const pLat = c1.lat + (c2.lat - c1.lat) * t;
@@ -1738,7 +1919,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       };
     }
 
-    // Calcula el área aproximada en m² y el perímetro en m del polígono de 4 esquinas
     function computePolygonAreaAndPerimeter(corners) {
       if (!corners || corners.length < 4) return { areaSqM: 0, perimeterM: 0, sideLengths: [0, 0, 0, 0] };
       const sideLengths = [];
@@ -1751,7 +1931,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         perimeterM += d;
       }
 
-      // Proyección plana local en metros usando como referencia la esquina 0
       const refLat = corners[0].lat;
       const refLng = corners[0].lng;
       const metersPerDegLat = 111320;
@@ -1762,7 +1941,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         y: (c.lat - refLat) * metersPerDegLat
       }));
 
-      // Fórmula de Shoelace (Gauss) para área de polígono
       let area2 = 0;
       for (let i = 0; i < pts.length; i++) {
         const j = (i + 1) % pts.length;
@@ -1894,7 +2072,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       return dirs[Math.round(deg / 45) % 8];
     }
 
-    // Devuelve la coordenada objetivo de un bloque según el modo seleccionado (Centroide vs Esquina más cercana)
     function getTargetCoordForNode(node) {
       if (state.arPolygonTargetMode === 'nearest_corner' && node.corners && node.corners.length === 4) {
         const nearest = getNearestBoundaryPointOfNode(state.userLat, state.userLng, node);
@@ -2179,7 +2356,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           targetNode = route.steps[stepIdx].toNode;
         }
 
-        // Coordenada precisa del bloque objetivo usando el polígono de 4 esquinas (Centroide o Esquina más cercana)
         const targetAim = getTargetCoordForNode(targetNode);
         const targetBearing = Math.round(
           calculateBearing(state.userLat, state.userLng, targetAim.lat, targetAim.lng)
@@ -2188,20 +2364,17 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         let relAngleDeg = ((targetBearing - state.compassHeading + 540) % 360) - 180;
         const relAngleRad = (relAngleDeg * Math.PI) / 180;
 
-        // Actualizar etiquetas de rumbo en el HUD
         document.getElementById('hudHeadingText').textContent =
           `${String(state.compassHeading).padStart(3, '0')}° ${getCardinalLabel(state.compassHeading)}`;
         document.getElementById('hudBearingText').textContent =
           `${String(targetBearing).padStart(3, '0')}°`;
 
-        // Coordenadas de origen de la guía AR (base de la flecha 3D del usuario)
         const arrowCenterX = w / 2;
         const arrowCenterY = h * 0.68;
         const pulseOffset = Math.sin(timestamp / 220) * 6;
         const originAnchorX = arrowCenterX;
         const originAnchorY = arrowCenterY + pulseOffset - 10;
 
-        // Función auxiliar para dibujar una línea con punta de flecha y chevrons animados hacia un punto (tx, ty)
         function drawDirectionalLineToBlock(fromX, fromY, toX, toY, isPrimary, colorHex, distM, bearingDeg) {
           ctx.save();
           const dx = toX - fromX;
@@ -2210,7 +2383,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           const length = Math.hypot(dx, dy);
 
           if (isPrimary) {
-            // 1. Halo luminoso exterior de la línea guía principal
             ctx.beginPath();
             ctx.moveTo(fromX, fromY);
             ctx.lineTo(toX, toY);
@@ -2219,7 +2391,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
             ctx.lineCap = 'round';
             ctx.stroke();
 
-            // 2. Línea láser central con gradiente animado
             const lineGrad = ctx.createLinearGradient(fromX, fromY, toX, toY);
             lineGrad.addColorStop(0, '#00E5FF');
             lineGrad.addColorStop(0.6, '#38BDF8');
@@ -2235,7 +2406,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // 3. Chevrons / pulsos direccionales viajando por la línea hacia el bloque
             const numChevrons = Math.max(2, Math.floor(length / 55));
             const animProgress = (timestamp / 650) % 1;
             for (let i = 0; i < numChevrons; i++) {
@@ -2257,7 +2427,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
               }
             }
           } else {
-            // Línea trazadora secundaria hacia otros bloques visibles
             ctx.beginPath();
             ctx.moveTo(fromX, fromY);
             ctx.lineTo(toX, toY);
@@ -2268,7 +2437,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Etiqueta de rumbo/distancia en el punto medio de la línea secundaria
             if (length > 90) {
               const midX = fromX + dx * 0.55;
               const midY = fromY + dy * 0.55;
@@ -2284,7 +2452,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
             }
           }
 
-          // Punta de flecha en el extremo que apunta al bloque
           ctx.save();
           ctx.translate(toX, toY);
           ctx.rotate(angle);
@@ -2301,10 +2468,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           ctx.restore();
         }
 
-        // -------------------------------------------------------------------
-        // A. DIBUJAR LÍNEAS DIRECCIONALES Y PINES AR FLOTANTES DE LOS BLOQUES
-        // -------------------------------------------------------------------
-        const fovDeg = 75; // Campo de visión horizontal simulado de la cámara
+        const fovDeg = 75;
         let targetPinDrawnOnScreen = false;
 
         UCB_NODES.forEach(node => {
@@ -2323,7 +2487,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
               targetPinDrawnOnScreen = true;
             }
 
-            // Dibujar línea direccional desde el usuario hacia el bloque
             if (isTarget) {
               drawDirectionalLineToBlock(
                 originAnchorX,
@@ -2349,13 +2512,11 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
             }
 
             ctx.save();
-            // Punto de impacto / diana sobre el bloque
             ctx.beginPath();
             ctx.arc(screenX, screenY + 18, isTarget ? 5 : 3, 0, Math.PI * 2);
             ctx.fillStyle = isTarget ? '#F2A900' : '#00E5FF';
             ctx.fill();
 
-            // Línea vertical de anclaje al suelo
             ctx.beginPath();
             ctx.moveTo(screenX, screenY + 16);
             ctx.lineTo(screenX, screenY + 46);
@@ -2363,7 +2524,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
             ctx.lineWidth = isTarget ? 2.5 : 1.2;
             ctx.stroke();
 
-            // Caja del marcador flotante
             const label = `${node.shortName} (${distM}m)`;
             ctx.font = isTarget ? 'bold 13px Inter, sans-serif' : '500 11px Inter, sans-serif';
             const textWidth = ctx.measureText(label).width;
@@ -2388,7 +2548,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           }
         });
 
-        // Si el bloque objetivo está fuera del ángulo de visión de la cámara, trazamos la línea guía hacia el borde lateral
         if (!targetPinDrawnOnScreen) {
           const targetDist = calculateHaversineMeters(state.userLat, state.userLng, targetNode.lat, targetNode.lng);
           const edgeX = relAngleDeg > 0 ? w - 28 : 28;
@@ -2405,7 +2564,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
             targetBearing
           );
 
-          // Indicador luminoso en el borde apuntando hacia la dirección del bloque fuera de pantalla
           ctx.save();
           const edgeLabel = `${relAngleDeg > 0 ? 'Gira a la Derecha ➔' : '⬅ Gira a la Izquierda'} ${targetNode.shortName} (${targetDist}m)`;
           ctx.font = 'bold 12px Inter, sans-serif';
@@ -2427,15 +2585,11 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           ctx.restore();
         }
 
-        // -------------------------------------------------------------------
-        // B. DIBUJAR GRAN FLECHA DIRECCIONAL 3D ANIMADA EN EL CENTRO INFERIOR
-        // -------------------------------------------------------------------
         ctx.save();
         ctx.translate(arrowCenterX, arrowCenterY + pulseOffset);
 
-        // Anillo de piso en perspectiva 3D
         ctx.save();
-        ctx.scale(1, 0.42); // Aplana el círculo para efecto 3D sobre el piso
+        ctx.scale(1, 0.42);
         ctx.beginPath();
         ctx.arc(0, 0, 95, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(7, 19, 36, 0.65)';
@@ -2444,7 +2598,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         ctx.strokeStyle = Math.abs(relAngleDeg) < 20 ? '#10B981' : '#00E5FF';
         ctx.stroke();
 
-        // Marcas de graduación del anillo
         for (let a = 0; a < 360; a += 30) {
           const rad = (a * Math.PI) / 180;
           ctx.beginPath();
@@ -2455,10 +2608,8 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           ctx.stroke();
         }
 
-        // Rotar la flecha dentro del plano 3D según el ángulo hacia el siguiente nodo
         ctx.rotate(relAngleRad);
 
-        // Sombra de la flecha 3D
         ctx.beginPath();
         ctx.moveTo(0, -76);
         ctx.lineTo(44, 42);
@@ -2473,7 +2624,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         ctx.fill();
         ctx.translate(0, -12);
 
-        // Cuerpo principal de la flecha 3D
         const aligned = Math.abs(relAngleDeg) < 20;
         const grad = ctx.createLinearGradient(0, -76, 0, 68);
         if (aligned) {
@@ -2501,7 +2651,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         ctx.stroke();
         ctx.restore();
 
-        // Etiqueta flotante debajo de la flecha indicando si debe girar o avanzar recto
         let turnInstruction = "¡RECTO ADELANTE!";
         if (relAngleDeg > 20) turnInstruction = `GIRA ${Math.round(relAngleDeg)}° A LA DERECHA ↻`;
         else if (relAngleDeg < -20) turnInstruction = `↺ GIRA ${Math.abs(Math.round(relAngleDeg))}° A LA IZQUIERDA`;
@@ -2512,9 +2661,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         ctx.fillText(turnInstruction, 0, 62);
         ctx.restore();
 
-        // -------------------------------------------------------------------
-        // C. MINI-RADAR CIRCULAR EN LA ESQUINA INFERIOR DERECHA DEL HUD
-        // -------------------------------------------------------------------
         const radarRadius = 52;
         const radarX = w - radarRadius - 18;
         const radarY = h - radarRadius - 74;
@@ -2522,7 +2668,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         ctx.save();
         ctx.translate(radarX, radarY);
 
-        // Fondo del radar
         ctx.beginPath();
         ctx.arc(0, 0, radarRadius, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(7, 19, 36, 0.85)';
@@ -2531,14 +2676,12 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         ctx.strokeStyle = 'rgba(0, 229, 255, 0.5)';
         ctx.stroke();
 
-        // Círculos concéntricos
         ctx.beginPath();
         ctx.arc(0, 0, radarRadius * 0.5, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Cono de visión de la cámara (siempre hacia arriba en el radar)
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.arc(0, 0, radarRadius, (-125 * Math.PI) / 180, (-55 * Math.PI) / 180);
@@ -2546,7 +2689,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         ctx.fillStyle = 'rgba(0, 229, 255, 0.18)';
         ctx.fill();
 
-        // Dibujar bloques cercanos en el radar y línea radial directa hacia el bloque destino
         UCB_NODES.forEach(node => {
           const dist = calculateHaversineMeters(state.userLat, state.userLng, node.lat, node.lng);
           const brng = calculateBearing(state.userLat, state.userLng, node.lat, node.lng);
@@ -2559,7 +2701,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           const isDest = node.id === state.destinationId;
           const isNextTarget = node.id === targetNode.id;
 
-          // Línea direccional interna en el radar apuntando al bloque objetivo
           if (isDest || isNextTarget) {
             ctx.beginPath();
             ctx.moveTo(0, 0);
@@ -2575,7 +2716,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           ctx.fill();
         });
 
-        // Punto central (Usuario)
         ctx.beginPath();
         ctx.arc(0, 0, 4, 0, Math.PI * 2);
         ctx.fillStyle = '#10B981';
@@ -2599,7 +2739,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       const nodesLayer = document.getElementById('svgNodesLayer');
       const userMarker = document.getElementById('svgUserMarker');
 
-      // 1. Dibujar todos los caminos peatonales del grafo UCB
       edgesLayer.innerHTML = UCB_EDGES.map(edge => {
         const n1 = getNodeById(edge.from);
         const n2 = getNodeById(edge.to);
@@ -2617,7 +2756,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         `;
       }).join('');
 
-      // Determinar el nodo donde se encuentra el usuario actualmente y el nodo de destino
       const route = state.activeRoute;
       let currentUserNode = getNodeById(state.originId);
       if (route && route.steps.length > 0 && state.currentStepIndex > 0) {
@@ -2626,18 +2764,15 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       }
       const destNode = getNodeById(state.destinationId);
 
-      // 2. Dibujar la Ruta Más Corta calculada por Dijkstra + Flechas por tramo + Línea de Dirección Directa (Azimut) hacia el Bloque
       if (route && route.pathNodes.length > 1) {
         const pointsStr = route.pathNodes.map(n => `${n.svgX},${n.svgY}`).join(' ');
 
-        // Flechas direccionales sobre cada segmento de la ruta Dijkstra
         const segmentArrowsHtml = route.steps.map(st => `
           <line x1="${st.fromNode.svgX}" y1="${st.fromNode.svgY}"
                 x2="${(st.fromNode.svgX + st.toNode.svgX) / 2}" y2="${(st.fromNode.svgY + st.toNode.svgY) / 2}"
                 stroke="#00E5FF" stroke-width="3" marker-end="url(#arrowCyan)" opacity="0.95" />
         `).join('');
 
-        // Línea de vector directo (brújula) que apunta desde tu ubicación actual directo hacia el bloque destino
         const directBearing = Math.round(calculateBearing(currentUserNode.lat, currentUserNode.lng, destNode.lat, destNode.lng));
         const directCardinal = getCardinalLabel(directBearing);
         const vecMidX = (currentUserNode.svgX + destNode.svgX) / 2;
@@ -2662,13 +2797,12 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         routeLayer.innerHTML = '';
       }
 
-      // 3. Dibujar todos los Bloques, Plazas e Ingresos de la UCB
       nodesLayer.innerHTML = UCB_NODES.map(node => {
         const isOrigin = node.id === state.originId;
         const isDest = node.id === state.destinationId;
         const isInPath = route && route.pathIds.includes(node.id);
 
-        let fillColor = '#E06D53'; // Color terracota oficial del plano UCB para bloques
+        let fillColor = '#E06D53';
         if (node.type === 'plaza') fillColor = '#2563EB';
         if (node.type === 'entry') fillColor = '#059669';
         if (isOrigin) fillColor = '#10B981';
@@ -2693,7 +2827,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         `;
       }).join('');
 
-      // 4. Posicionar el marcador del usuario en el nodo actual del paso
       userMarker.setAttribute('transform', `translate(${currentUserNode.svgX}, ${currentUserNode.svgY})`);
     }
 
@@ -2755,7 +2888,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       showToast(`Ruta calculada hacia ${getNodeById(state.destinationId).shortName}`);
     }
 
-    // Buscador inteligente de bloques, aulas o dependencias (ej. "Kardex", "Paraninfo", "SECRAD")
     function handleMapDependencySearch(query) {
       const dropdown = document.getElementById('mapSearchResults');
       const q = query.trim().toLowerCase();
@@ -2841,12 +2973,10 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           state.userLng = pos.coords.longitude;
           const accuracy = pos.coords.accuracy || 10;
 
-          // Actualizar telemetría visual
           document.getElementById('teleLat').textContent = state.userLat.toFixed(6);
           document.getElementById('teleLng').textContent = state.userLng.toFixed(6);
           document.getElementById('teleAcc').textContent = `±${accuracy.toFixed(1)} m`;
 
-          // 1. Primero verificamos si las coordenadas GPS caen DENTRO del polígono de 4 esquinas de algún bloque
           let insideNode = null;
           let nearestNode = UCB_NODES[0];
           let minBoundaryMeters = Infinity;
@@ -2953,7 +3083,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       return corners;
     }
 
-    // Dibuja en vivo el polígono de 4 esquinas en el SVG de previsualización junto con sus lados en metros y el centroide
     function previewPolygonFromInputs() {
       const svg = document.getElementById('calibPolygonSvg');
       if (!svg) return;
@@ -2967,7 +3096,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       document.getElementById('calibCentroidText').textContent = `${centroid.lat.toFixed(6)}, ${centroid.lng.toFixed(6)}`;
       document.getElementById('calibAreaText').textContent = `~${metrics.areaSqM} m² · Perímetro ${metrics.perimeterM} m`;
 
-      // Estado de proximidad del usuario respecto a este polígono
       const tempNode = { corners, lat: centroid.lat, lng: centroid.lng };
       const prox = getNearestBoundaryPointOfNode(state.userLat, state.userLng, tempNode);
       const proxEl = document.getElementById('calibProximityStatus');
@@ -2980,7 +3108,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         proxEl.textContent = `📏 Estás a ${prox.distanceMeters} m del borde más cercano (${cornerLabels[prox.cornerIndex] || 'Muro'}).`;
       }
 
-      // Escalar las 4 coordenadas para encajarlas en el SVG (320 x 240)
       const lats = corners.map(c => c.lat);
       const lngs = corners.map(c => c.lng);
       const minLat = Math.min(...lats), maxLat = Math.max(...lats);
@@ -3004,7 +3131,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       const cornerColors = ['#00E5FF', '#F2A900', '#10B981', '#C084FC'];
       const cornerNames = ['E1 NW', 'E2 NE', 'E3 SE', 'E4 SW'];
 
-      // Etiquetas de longitud de cada pared en metros
       const sideLabelsHtml = svgPts.map((p1, i) => {
         const p2 = svgPts[(i + 1) % 4];
         const mx = (p1.x + p2.x) / 2;
@@ -3015,12 +3141,10 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         `;
       }).join('');
 
-      // Líneas desde las 4 esquinas al centroide
       const raysToCentroidHtml = svgPts.map(p => `
         <line x1="${p.x}" y1="${p.y}" x2="${cPt.x}" y2="${cPt.y}" stroke="rgba(242, 169, 0, 0.35)" stroke-width="1.2" stroke-dasharray="3,3" />
       `).join('');
 
-      // Vértices E1, E2, E3, E4
       const verticesHtml = svgPts.map((p, i) => `
         <g>
           <circle cx="${p.x}" cy="${p.y}" r="6.5" fill="${cornerColors[i]}" stroke="#071324" stroke-width="2" />
@@ -3048,7 +3172,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       `;
     }
 
-    // Captura la coordenada GPS actual del teléfono directamente en la esquina seleccionada (0=E1, 1=E2, 2=E3, 3=E4)
     function captureGPSToCornerInput(cornerIdx) {
       const cornerLabels = ["Esquina 1 (NW)", "Esquina 2 (NE)", "Esquina 3 (SE)", "Esquina 4 (SW)"];
       if ('geolocation' in navigator) {
@@ -3065,7 +3188,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
             showToast(`✅ ${cornerLabels[cornerIdx]} capturada con GPS (±${Math.round(pos.coords.accuracy)}m)`);
           },
           () => {
-            // Si el navegador bloquea el GPS (ej. vista previa sin HTTPS), usa la coordenada activa en state
             document.getElementById(`cornerLat_${cornerIdx}`).value = state.userLat.toFixed(6);
             document.getElementById(`cornerLng_${cornerIdx}`).value = state.userLng.toFixed(6);
             previewPolygonFromInputs();
@@ -3081,7 +3203,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       }
     }
 
-    // Autogenera un rectángulo de 4 esquinas alrededor del centro actual del bloque
     function generateBoxAroundBlockCenter() {
       const nodeId = document.getElementById('calibBlockSelect').value;
       const node = getNodeById(nodeId);
@@ -3094,7 +3215,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       showToast(`Rectángulo base generado para ${node.shortName}. Pulsa Guardar para aplicar.`);
     }
 
-    // Guarda las 4 esquinas del bloque actual, recalcula su centroide, guarda en localStorage y actualiza toda la app
     function saveCurrentBlockCorners() {
       const nodeId = document.getElementById('calibBlockSelect').value;
       const node = getNodeById(nodeId);
@@ -3360,7 +3480,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       showToast(`Guiando hacia "${ev.title}" en ${getNodeById(ev.nodeId).shortName}`);
     }
 
-    // Mapea cualquier texto de ubicación proveniente de Google Calendar a un nodo oficial del campus UCB
     function matchLocationStringToUCBNode(locText) {
       const clean = (locText || '').toLowerCase();
       for (const node of UCB_NODES) {
@@ -3523,7 +3642,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       });
     }
 
-    // Modal handlers
     function openGoogleSyncModal() {
       document.getElementById('modalGoogleSync').classList.remove('hidden');
     }
