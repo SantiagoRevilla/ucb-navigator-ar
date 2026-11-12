@@ -1,19 +1,18 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>UCB Navigator AR | ¿Dónde es el evento? - TECH MECH 2026</title>
+  <title>UCB Navigator AR | Guía de Bloques y Calibración GPS - UCB</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <!-- Google Fonts: Inter & Space Grotesk -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
 
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
@@ -23,10 +22,11 @@
           colors: {
             ucb: {
               blue: '#003B71',
-              dark: '#071324',
+              lightBlue: '#1D4ED8',
+              sky: '#EFF6FF',
               gold: '#F2A900',
-              cyan: '#00E5FF',
-              emerald: '#10B981'
+              yellow: '#FACC15',
+              cream: '#FFFDF5'
             }
           }
         }
@@ -40,106 +40,76 @@
       -webkit-tap-highlight-color: transparent;
     }
     body {
-      background-color: #071324;
-      color: #F8FAFC;
+      background-color: #FFFFFF;
+      color: #003B71;
       overflow-x: hidden;
     }
-    /* Custom Scrollbars */
+    /* Custom Scrollbars in Light / Yellow / Blue Theme */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #0B192C;
+      background: #FEFCE8;
     }
     ::-webkit-scrollbar-thumb {
-      background: #1E3E62;
+      background: #F2A900;
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #F2A900;
+      background: #003B71;
     }
 
-    /* Animated Route Dash on SVG Map */
-    @keyframes dashFlow {
-      to {
-        stroke-dashoffset: -40;
-      }
-    }
-    .route-animated {
-      stroke-dasharray: 10, 6;
-      animation: dashFlow 1.1s linear infinite;
-    }
-
-    /* Pulse ring for user location on map */
-    @keyframes pulseRing {
-      0% { transform: scale(0.8); opacity: 0.9; }
-      100% { transform: scale(2.4); opacity: 0; }
-    }
-    .gps-pulse {
-      transform-origin: center;
-      transform-box: fill-box;
-      animation: pulseRing 1.8s ease-out infinite;
-    }
-
-    /* Glassmorphism HUD panels */
+    /* Light Glassmorphism HUD panels */
     .hud-glass {
-      background: rgba(7, 19, 36, 0.78);
+      background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.14);
+      border: 1.5px solid #FDE047;
+      box-shadow: 0 10px 25px -5px rgba(0, 59, 113, 0.12);
     }
 
-    /* Simulated AR background when camera is off/unavailable */
+    /* Simulated Bright Daytime AR Background when Camera is Off */
     .ar-sim-bg {
       background:
-        radial-gradient(circle at 50% 35%, rgba(0, 229, 255, 0.16), transparent 60%),
-        linear-gradient(180deg, #0b1d36 0%, #102a4c 48%, #162436 50%, #091321 100%);
+        radial-gradient(circle at 50% 25%, rgba(250, 204, 21, 0.28), transparent 60%),
+        linear-gradient(180deg, #E0F2FE 0%, #FEF9C3 52%, #FFFBEB 54%, #F8FAFC 100%);
     }
 
-    /* Perspective grid for AR floor */
+    /* Perspective Grid for AR Floor in UCB Blue & Gold */
     .ar-floor-grid {
       background-size: 40px 40px;
       background-image:
-        linear-gradient(to right, rgba(0, 229, 255, 0.12) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 229, 255, 0.12) 1px, transparent 1px);
+        linear-gradient(to right, rgba(0, 59, 113, 0.16) 1.5px, transparent 1.5px),
+        linear-gradient(to bottom, rgba(242, 169, 0, 0.28) 1.5px, transparent 1.5px);
       transform: perspective(350px) rotateX(65deg);
       transform-origin: center bottom;
     }
-
-    /* Map building hover effect */
-    .map-node-group {
-      cursor: pointer;
-      transition: transform 0.2s ease, filter 0.2s ease;
-    }
-    .map-node-group:hover {
-      filter: drop-shadow(0px 0px 8px rgba(242, 169, 0, 0.85));
-    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans selection:bg-ucb-gold selection:text-slate-950">
+<body class="min-h-screen flex flex-col font-sans bg-white text-ucb-blue selection:bg-amber-300 selection:text-ucb-blue">
 
   <!-- TOP HEADER BAR -->
-  <header class="sticky top-0 z-40 hud-glass border-b border-slate-800/80 px-3 sm:px-6 py-2.5">
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-amber-300 px-3 sm:px-6 py-3 shadow-sm">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
       <!-- Brand Title -->
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-ucb-blue via-blue-700 to-ucb-gold p-0.5 shadow-lg shadow-blue-950/60 flex items-center justify-center">
-          <div class="w-full h-full bg-slate-950/90 rounded-[10px] flex items-center justify-center text-ucb-gold font-display font-bold text-lg">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-ucb-gold via-amber-400 to-ucb-blue p-0.5 shadow-md flex items-center justify-center">
+          <div class="w-full h-full bg-white rounded-[10px] flex items-center justify-center text-ucb-blue font-display font-extrabold text-lg">
             UCB
           </div>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="font-display font-bold text-base sm:text-lg tracking-tight text-white">
-              UCB Navigator <span class="text-ucb-cyan">AR</span>
+            <h1 class="font-display font-bold text-base sm:text-xl tracking-tight text-ucb-blue">
+              UCB Navigator <span class="text-amber-500">AR</span>
             </h1>
-            <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-ucb-gold/20 text-ucb-gold border border-ucb-gold/40">
-              TECH MECH 2026 · Reto FDI
+            <span class="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-ucb-blue border border-amber-400">
+              TECH MECH 2026 · Guía GPS & AR
             </span>
           </div>
-          <p class="text-[11px] sm:text-xs text-slate-400">
-            Campus La Paz (Obrajes) · Guía de Eventos, Ruta Dijkstra y Cámara AR
+          <p class="text-[11px] sm:text-xs text-blue-800/80 font-medium">
+            Campus La Paz (Obrajes) · Flechas Direccionales AR y Calibración de 4 Esquinas
           </p>
         </div>
       </div>
@@ -147,55 +117,47 @@
       <!-- Right Status & Quick Controls -->
       <div class="flex items-center gap-2 flex-wrap">
         <!-- GPS Toggle Button -->
-        <button id="btnToggleGPS" onclick="toggleRealGPS()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition shadow-sm">
-          <span id="gpsDot" class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-          <i class="fa-solid fa-location-crosshairs text-ucb-cyan"></i>
+        <button id="btnToggleGPS" onclick="toggleRealGPS()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-ucb-blue border border-amber-300 transition shadow-sm">
+          <span id="gpsDot" class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+          <i class="fa-solid fa-location-crosshairs text-blue-700"></i>
           <span id="gpsStatusText">GPS: Simulado</span>
         </button>
 
         <!-- Accessibility Mode Toggle (No Stairs) -->
-        <button id="btnAccessible" onclick="toggleAccessibilityMode()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-800/90 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Evitar escaleras pronunciadas y priorizar rampas/ascensores">
-          <i class="fa-solid fa-wheelchair text-sky-400"></i>
+        <button id="btnAccessible" onclick="toggleAccessibilityMode()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-blue-50 hover:bg-blue-100 text-ucb-blue border border-blue-200 transition" title="Evitar escaleras pronunciadas y priorizar rampas/ascensores">
+          <i class="fa-solid fa-wheelchair text-blue-700"></i>
           <span class="hidden sm:inline">Accesible:</span>
-          <span id="accessibleBadge" class="font-semibold text-slate-400">OFF</span>
+          <span id="accessibleBadge" class="font-extrabold text-slate-500">OFF</span>
         </button>
 
         <!-- QR Check-in Trigger -->
-        <button onclick="openQRModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-ucb-gold/15 hover:bg-ucb-gold/25 text-ucb-gold border border-ucb-gold/40 transition">
+        <button onclick="openQRModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-ucb-gold hover:bg-amber-400 text-ucb-blue border border-amber-500 transition shadow-sm">
           <i class="fa-solid fa-qrcode"></i>
           <span class="hidden sm:inline">Punto QR</span>
         </button>
       </div>
     </div>
 
-    <!-- Desktop & Mobile Navigation Tabs -->
-    <div class="max-w-7xl mx-auto mt-2.5 pt-2 border-t border-slate-800/70 flex items-center justify-between gap-1 overflow-x-auto no-scrollbar">
-      <div class="flex items-center gap-1.5 w-full sm:w-auto">
-        <button onclick="switchTab('ar')" id="tabBtn-ar" class="tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-ucb-cyan text-slate-950 shadow-md shadow-cyan-500/20">
+    <!-- Navigation Tabs (Only 2 Tabs: Cámara AR & Calibrar 4 Esquinas GPS) -->
+    <div class="max-w-7xl mx-auto mt-2.5 pt-2.5 border-t border-amber-200 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <button onclick="switchTab('ar')" id="tabBtn-ar" class="tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-ucb-gold text-ucb-blue border-2 border-ucb-blue shadow-sm">
           <i class="fa-solid fa-camera-viewfinder"></i>
           <span>1. Cámara AR</span>
         </button>
-        <button onclick="switchTab('map')" id="tabBtn-map" class="tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800/80 text-slate-300 hover:bg-slate-800">
-          <i class="fa-solid fa-map-location-dot"></i>
-          <span>2. Mapa UCB + Ruta</span>
-        </button>
-        <button onclick="switchTab('events')" id="tabBtn-events" class="tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800/80 text-slate-300 hover:bg-slate-800">
-          <i class="fa-solid fa-calendar-check"></i>
-          <span>3. Eventos (<span id="eventsCountBadge">6</span>)</span>
-        </button>
-        <button onclick="switchTab('calibration')" id="tabBtn-calibration" class="tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800/80 text-slate-300 hover:bg-slate-800">
-          <i class="fa-solid fa-draw-polygon text-ucb-gold"></i>
-          <span>4. Calibrar 4 Esquinas GPS</span>
+        <button onclick="switchTab('calibration')" id="tabBtn-calibration" class="tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-amber-50 text-ucb-blue border border-amber-300 hover:bg-amber-100">
+          <i class="fa-solid fa-draw-polygon text-blue-700"></i>
+          <span>2. Calibrar 4 Esquinas GPS</span>
         </button>
       </div>
 
       <!-- Current Route Quick Pill -->
-      <div class="hidden lg:flex items-center gap-2 text-xs bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800">
-        <span class="text-slate-400">Ruta activa:</span>
-        <span id="headerOriginLabel" class="font-semibold text-emerald-400">Ingreso Principal</span>
-        <i class="fa-solid fa-arrow-right text-slate-500 text-[10px]"></i>
-        <span id="headerDestLabel" class="font-semibold text-ucb-gold">Bloque A - Coliseo</span>
-        <span id="headerDistBadge" class="ml-1 px-2 py-0.5 rounded-md bg-ucb-cyan/15 text-ucb-cyan font-mono font-semibold">85 m</span>
+      <div class="hidden lg:flex items-center gap-2 text-xs bg-amber-50/90 px-3.5 py-1.5 rounded-xl border border-amber-300">
+        <span class="text-blue-900 font-medium">Ruta activa:</span>
+        <span id="headerOriginLabel" class="font-bold text-blue-700">Ingreso Principal</span>
+        <i class="fa-solid fa-arrow-right text-amber-600 text-[10px]"></i>
+        <span id="headerDestLabel" class="font-bold text-ucb-blue">Bloque A (Coliseo)</span>
+        <span id="headerDistBadge" class="ml-1 px-2 py-0.5 rounded-md bg-ucb-blue text-amber-300 font-mono font-bold">85 m</span>
       </div>
     </div>
   </header>
@@ -210,74 +172,73 @@
       
       <!-- Left/Main Column: Live AR Camera Viewport + HUD Overlay -->
       <div class="lg:col-span-8 flex flex-col">
-        <div class="relative w-full h-[540px] sm:h-[600px] rounded-2xl overflow-hidden border border-slate-700/80 shadow-2xl bg-slate-950 select-none">
+        <div class="relative w-full h-[540px] sm:h-[610px] rounded-2xl overflow-hidden border-2 border-amber-400 shadow-xl bg-amber-50 select-none">
           
           <!-- Live Video Feed Element (Rear Camera) -->
           <video id="arVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover hidden"></video>
 
-          <!-- Fallback / Simulated Interactive 3D Campus Background when Camera is Off -->
+          <!-- Fallback / Simulated Bright Campus Background when Camera is Off -->
           <div id="arSimulatedScene" class="absolute inset-0 ar-sim-bg flex flex-col justify-between overflow-hidden">
-            <!-- Simulated Sky & La Paz Mountains Silhouette -->
-            <svg class="w-full h-48 opacity-35" viewBox="0 0 800 200" preserveAspectRatio="none">
-              <polygon points="0,200 0,110 90,65 180,120 290,40 410,115 530,50 660,105 740,60 800,95 800,200" fill="#1e3a5f"/>
-              <polygon points="0,200 120,130 240,85 370,140 500,75 630,135 800,80 800,200" fill="#0f2544"/>
+            <!-- Simulated Daytime La Paz Mountains Silhouette in Soft Blue & Yellow -->
+            <svg class="w-full h-48 opacity-45" viewBox="0 0 800 200" preserveAspectRatio="none">
+              <polygon points="0,200 0,110 90,65 180,120 290,40 410,115 530,50 660,105 740,60 800,95 800,200" fill="#93C5FD"/>
+              <polygon points="0,200 120,130 240,85 370,140 500,75 630,135 800,80 800,200" fill="#FDE047"/>
             </svg>
             <!-- Perspective Floor Grid -->
-            <div class="w-full h-72 ar-floor-grid opacity-70"></div>
+            <div class="w-full h-72 ar-floor-grid opacity-80"></div>
           </div>
 
           <!-- HTML5 Canvas for 3D Directional Arrow, Floating AR Pins & Compass HUD -->
           <canvas id="arHudCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-10"></canvas>
 
-          <!-- TOP HUD OVERLAY: Active Event & Next Step Navigation Card -->
+          <!-- TOP HUD OVERLAY: Next Step Navigation Card -->
           <div class="absolute top-3 left-3 right-3 z-20 flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-2.5 pointer-events-none">
             
             <!-- Primary Navigation Instruction HUD Card -->
-            <div class="hud-glass rounded-2xl p-3 sm:p-3.5 shadow-xl max-w-md w-full pointer-events-auto border-l-4 border-l-ucb-cyan">
-              <!-- Active Event Banner (if selected) -->
-              <div id="arEventBanner" class="flex items-center justify-between gap-2 mb-1.5 pb-1.5 border-b border-slate-700/70">
-                <div class="flex items-center gap-1.5 text-xs font-semibold text-ucb-gold truncate">
-                  <i class="fa-solid fa-bolt"></i>
-                  <span id="arEventTitle" class="truncate">Evento: TECH MECH 2026 - Hackathon Reto FDI</span>
+            <div class="hud-glass rounded-2xl p-3 sm:p-3.5 max-w-md w-full pointer-events-auto border-l-4 border-l-ucb-blue">
+              <div class="flex items-center justify-between gap-2 mb-1.5 pb-1.5 border-b border-amber-200">
+                <div class="flex items-center gap-1.5 text-xs font-extrabold text-ucb-blue truncate">
+                  <i class="fa-solid fa-compass text-amber-500"></i>
+                  <span id="arTargetHeaderTitle" class="truncate">Destino UCB: Bloque A - Coliseo UCB</span>
                 </div>
-                <span id="arFloorBadge" class="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
-                  Planta Baja
+                <span id="arFloorBadge" class="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-200 text-ucb-blue border border-amber-400">
+                  BLOQUE A
                 </span>
               </div>
 
               <!-- Next Step Direction -->
               <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-xl bg-ucb-cyan/15 border border-ucb-cyan/40 flex items-center justify-center shrink-0 text-ucb-cyan text-xl font-bold">
+                <div class="w-11 h-11 rounded-xl bg-amber-100 border-2 border-ucb-blue flex items-center justify-center shrink-0 text-ucb-blue text-xl font-bold shadow-sm">
                   <i id="arTurnIcon" class="fa-solid fa-location-arrow"></i>
                 </div>
                 <div class="min-w-0 flex-1">
-                  <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
-                    Siguiente punto en ruta (<span id="arStepCounter">Paso 1/2</span>)
+                  <div class="text-[11px] uppercase tracking-wider text-blue-700 font-bold">
+                    Siguiente punto (<span id="arStepCounter">Paso 1/2</span>)
                   </div>
-                  <div id="arNextStepTitle" class="text-sm sm:text-base font-bold text-white truncate">
+                  <div id="arNextStepTitle" class="text-sm sm:text-base font-extrabold text-ucb-blue truncate">
                     Avanza hacia Atrio UCB
                   </div>
-                  <div id="arNextStepDesc" class="text-xs text-slate-300 truncate">
-                    Destino final: Bloque A - Coliseo UCB
+                  <div id="arNextStepDesc" class="text-xs text-slate-700 font-medium truncate">
+                    Rampa peatonal de ingreso al Atrio
                   </div>
                 </div>
               </div>
 
               <!-- Distance, ETA & Step Advance Action -->
-              <div class="mt-2.5 pt-2 border-t border-slate-800/90 flex items-center justify-between gap-2 text-xs">
+              <div class="mt-2.5 pt-2 border-t border-amber-200 flex items-center justify-between gap-2 text-xs">
                 <div class="flex items-center gap-3">
                   <div>
-                    <span class="text-slate-400">Distancia:</span>
-                    <span id="arRemainingDist" class="ml-1 font-mono font-bold text-ucb-cyan text-sm">85 m</span>
+                    <span class="text-slate-600 font-medium">Distancia:</span>
+                    <span id="arRemainingDist" class="ml-1 font-mono font-extrabold text-ucb-blue text-sm">85 m</span>
                   </div>
                   <div>
-                    <span class="text-slate-400">Tiempo:</span>
-                    <span id="arRemainingTime" class="ml-1 font-mono font-bold text-emerald-400 text-sm">~1 min 10 s</span>
+                    <span class="text-slate-600 font-medium">Tiempo:</span>
+                    <span id="arRemainingTime" class="ml-1 font-mono font-extrabold text-amber-600 text-sm">~1 min 10 s</span>
                   </div>
                 </div>
 
                 <!-- Simulate Walking to Next Node Button -->
-                <button onclick="advanceOneStepOnRoute()" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-semibold transition flex items-center gap-1" title="Simular que caminaste al siguiente nodo de la ruta">
+                <button onclick="advanceOneStepOnRoute()" class="px-2.5 py-1 rounded-lg bg-ucb-blue hover:bg-blue-800 text-amber-300 font-bold transition flex items-center gap-1 shadow-sm" title="Simular que caminaste al siguiente nodo de la ruta">
                   <i class="fa-solid fa-person-walking"></i>
                   <span>Avanzar paso</span>
                 </button>
@@ -287,42 +248,41 @@
             <!-- Right Top Camera Toggle & Mini Status -->
             <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 pointer-events-auto">
               <div class="flex items-center gap-2">
-                <button id="btnToggleARLines" onclick="toggleARBlockLinesMode()" class="px-3 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-1.5 shadow-lg transition hud-glass hover:bg-slate-800/90 text-ucb-cyan border border-ucb-cyan/40" title="Alternar visualización de líneas guía hacia todos los bloques o solo al destino">
-                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <button id="btnToggleARLines" onclick="toggleARBlockLinesMode()" class="px-3 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-md transition hud-glass hover:bg-amber-100 text-ucb-blue" title="Alternar visualización de líneas guía hacia todos los bloques o solo al destino">
+                  <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
                   <span id="btnARLinesText">Líneas: Todas</span>
                 </button>
-                <button id="btnCameraToggle" onclick="toggleCameraFeed()" class="px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition bg-emerald-500 hover:bg-emerald-400 text-slate-950">
+                <button id="btnCameraToggle" onclick="toggleCameraFeed()" class="px-3.5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-md transition bg-ucb-gold hover:bg-amber-400 text-ucb-blue border-2 border-ucb-blue">
                   <i class="fa-solid fa-video"></i>
                   <span id="btnCameraText">Encender Cámara AR</span>
                 </button>
               </div>
 
-              <div class="hud-glass px-2.5 py-1.5 rounded-xl text-[11px] text-slate-300 flex items-center gap-2">
-                <span>Rumbo: <strong id="hudHeadingText" class="text-ucb-cyan font-mono">045° NE</strong></span>
-                <span class="text-slate-600">|</span>
-                <span>Objetivo: <strong id="hudBearingText" class="text-ucb-gold font-mono">340°</strong></span>
+              <div class="hud-glass px-3 py-1.5 rounded-xl text-[11px] text-ucb-blue font-semibold flex items-center gap-2">
+                <span>Rumbo: <strong id="hudHeadingText" class="text-blue-700 font-mono">035° NE</strong></span>
+                <span class="text-amber-500">|</span>
+                <span>Objetivo: <strong id="hudBearingText" class="text-amber-600 font-mono">340°</strong></span>
               </div>
             </div>
           </div>
 
-          <!-- BOTTOM HUD OVERLAY: Compass Slider & Direct Origin/Destination Selectors -->
+          <!-- BOTTOM HUD OVERLAY: Compass Slider -->
           <div class="absolute bottom-3 left-3 right-3 z-20 flex flex-col gap-2 pointer-events-auto">
-            <!-- Compass / Device Orientation Control Bar -->
             <div class="hud-glass rounded-2xl px-3.5 py-2.5 flex flex-col sm:flex-row items-center gap-3">
               <div class="flex items-center justify-between w-full sm:w-auto gap-2">
-                <span class="text-xs font-semibold text-slate-200 flex items-center gap-1.5 whitespace-nowrap">
-                  <i class="fa-regular fa-compass text-ucb-cyan"></i>
+                <span class="text-xs font-extrabold text-ucb-blue flex items-center gap-1.5 whitespace-nowrap">
+                  <i class="fa-regular fa-compass text-blue-700"></i>
                   <span>Giro / Brújula AR:</span>
                 </span>
-                <button id="btnDeviceCompass" onclick="requestDeviceOrientationPermission()" class="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-800 hover:bg-slate-700 text-ucb-cyan border border-slate-700 transition whitespace-nowrap">
+                <button id="btnDeviceCompass" onclick="requestDeviceOrientationPermission()" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-100 hover:bg-amber-200 text-ucb-blue border border-amber-400 transition whitespace-nowrap">
                   <i class="fa-solid fa-mobile-screen"></i> Usar Giroscopio
                 </button>
               </div>
 
               <div class="flex items-center gap-2.5 w-full">
-                <span class="text-[11px] font-mono text-slate-400">0° N</span>
-                <input id="compassSlider" type="range" min="0" max="359" value="35" oninput="handleManualCompassChange(this.value)" class="w-full accent-cyan-400 cursor-pointer h-2 bg-slate-800 rounded-lg" />
-                <span class="text-[11px] font-mono text-slate-400">360°</span>
+                <span class="text-[11px] font-mono font-bold text-ucb-blue">0° N</span>
+                <input id="compassSlider" type="range" min="0" max="359" value="35" oninput="handleManualCompassChange(this.value)" class="w-full accent-ucb-blue cursor-pointer h-2 bg-amber-200 rounded-lg" />
+                <span class="text-[11px] font-mono font-bold text-ucb-blue">360°</span>
               </div>
             </div>
           </div>
@@ -330,119 +290,109 @@
         </div>
       </div>
 
-      <!-- Right Column (4 cols): Quick Route Controller & Step-by-Step Guide -->
+      <!-- Right Column (4 cols): Telemetry, Block Selector & Step-by-Step Guide -->
       <div class="lg:col-span-4 flex flex-col gap-4">
         
         <!-- GPS Telemetry Real-Time Status Card -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-xl">
+        <div class="bg-white border-2 border-amber-300 rounded-2xl p-3.5 shadow-md">
           <div class="flex items-center justify-between mb-2">
-            <h3 class="font-display font-bold text-xs uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-satellite-dish text-ucb-cyan"></i>
+            <h3 class="font-display font-bold text-xs uppercase tracking-wider text-ucb-blue flex items-center gap-1.5">
+              <i class="fa-solid fa-satellite-dish text-blue-700"></i>
               <span>Telemetría GPS en Tiempo Real</span>
             </h3>
-            <span id="gpsBadgeState" class="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">
+            <span id="gpsBadgeState" class="text-[10px] px-2 py-0.5 rounded-md bg-amber-100 text-ucb-blue border border-amber-400 font-bold">
               Simulador
             </span>
           </div>
           <div class="grid grid-cols-2 gap-2 text-xs font-mono">
-            <div class="bg-slate-950 p-2 rounded-xl border border-slate-800/80">
-              <div class="text-[10px] text-slate-400 font-sans">Latitud</div>
-              <div id="teleLat" class="text-emerald-400 font-bold truncate">-16.52335</div>
+            <div class="bg-amber-50/70 p-2 rounded-xl border border-amber-200">
+              <div class="text-[10px] text-slate-600 font-sans font-semibold">Latitud</div>
+              <div id="teleLat" class="text-ucb-blue font-extrabold truncate">-16.523350</div>
             </div>
-            <div class="bg-slate-950 p-2 rounded-xl border border-slate-800/80">
-              <div class="text-[10px] text-slate-400 font-sans">Longitud</div>
-              <div id="teleLng" class="text-emerald-400 font-bold truncate">-68.11215</div>
+            <div class="bg-amber-50/70 p-2 rounded-xl border border-amber-200">
+              <div class="text-[10px] text-slate-600 font-sans font-semibold">Longitud</div>
+              <div id="teleLng" class="text-ucb-blue font-extrabold truncate">-68.112150</div>
             </div>
-            <div class="bg-slate-950 p-2 rounded-xl border border-slate-800/80">
-              <div class="text-[10px] text-slate-400 font-sans">Precisión GPS</div>
-              <div id="teleAcc" class="text-ucb-cyan font-bold">±5.0 m</div>
+            <div class="bg-blue-50/70 p-2 rounded-xl border border-blue-200">
+              <div class="text-[10px] text-slate-600 font-sans font-semibold">Precisión GPS</div>
+              <div id="teleAcc" class="text-blue-700 font-extrabold">±5.0 m</div>
             </div>
-            <div class="bg-slate-950 p-2 rounded-xl border border-slate-800/80">
-              <div class="text-[10px] text-slate-400 font-sans">Nodo Cercano</div>
-              <div id="teleNearest" class="text-ucb-gold font-bold truncate">Ingreso Principal</div>
+            <div class="bg-blue-50/70 p-2 rounded-xl border border-blue-200">
+              <div class="text-[10px] text-slate-600 font-sans font-semibold">Nodo Cercano</div>
+              <div id="teleNearest" class="text-amber-600 font-extrabold truncate">Ingreso Principal</div>
             </div>
           </div>
-          <div id="teleStatusText" class="mt-2 text-[11px] text-slate-400 italic">
+          <div id="teleStatusText" class="mt-2 text-[11px] text-slate-600 font-medium italic">
             Estado: Modo simulación manual activo.
           </div>
         </div>
 
         <!-- Origin & Destination Selector Card -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col gap-3">
+        <div class="bg-white border-2 border-amber-300 rounded-2xl p-4 shadow-md flex flex-col gap-3">
           <div class="flex items-center justify-between">
-            <h2 class="font-display font-bold text-base text-white flex items-center gap-2">
-              <i class="fa-solid fa-route text-ucb-gold"></i>
-              <span>Control de Navegación UCB</span>
+            <h2 class="font-display font-bold text-base text-ucb-blue flex items-center gap-2">
+              <i class="fa-solid fa-route text-amber-500"></i>
+              <span>Selección de Bloques UCB</span>
             </h2>
-            <button onclick="swapOriginAndDestination()" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Invertir origen y destino">
+            <button onclick="swapOriginAndDestination()" class="text-xs px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-ucb-blue font-bold border border-amber-300 transition" title="Invertir origen y destino">
               <i class="fa-solid fa-right-left"></i> Invertir
             </button>
           </div>
 
           <!-- Where am I (Origin) -->
           <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">
-              <i class="fa-solid fa-circle-dot text-emerald-400 mr-1"></i> ¿Dónde estás ahora? (Origen / GPS / QR)
+            <label class="block text-xs font-bold text-ucb-blue mb-1">
+              <i class="fa-solid fa-circle-dot text-blue-700 mr-1"></i> ¿Dónde estás ahora? (Origen / GPS / QR)
             </label>
-            <select id="selectOrigin" onchange="handleOriginChange(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-ucb-cyan">
+            <select id="selectOrigin" onchange="handleOriginChange(this.value)" class="w-full bg-amber-50/60 border-2 border-amber-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold text-ucb-blue focus:outline-none focus:border-ucb-blue">
               <!-- Populated dynamically -->
             </select>
           </div>
 
           <!-- Where do I want to go (Destination Block) -->
           <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">
-              <i class="fa-solid fa-location-dot text-ucb-gold mr-1"></i> ¿A qué bloque o lugar quieres ir? (Destino)
+            <label class="block text-xs font-bold text-ucb-blue mb-1">
+              <i class="fa-solid fa-location-dot text-amber-500 mr-1"></i> ¿A qué bloque o lugar quieres ir? (Destino)
             </label>
-            <select id="selectDestination" onchange="handleDestinationChange(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-ucb-gold">
-              <!-- Populated dynamically -->
-            </select>
-          </div>
-
-          <!-- Quick Event Selector Preset -->
-          <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">
-              <i class="fa-solid fa-star text-ucb-cyan mr-1"></i> O elige un Evento UCB directo:
-            </label>
-            <select id="selectQuickEvent" onchange="handleQuickEventSelect(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-ucb-cyan font-medium focus:outline-none focus:border-ucb-cyan">
+            <select id="selectDestination" onchange="handleDestinationChange(this.value)" class="w-full bg-blue-50/60 border-2 border-blue-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold text-ucb-blue focus:outline-none focus:border-ucb-blue">
               <!-- Populated dynamically -->
             </select>
           </div>
         </div>
 
         <!-- Active Route Step-by-Step Breakdown Card -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex-1 flex flex-col justify-between">
+        <div class="bg-white border-2 border-amber-300 rounded-2xl p-4 shadow-md flex-1 flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <h3 class="font-display font-bold text-sm text-white flex items-center gap-2">
-                <i class="fa-solid fa-shoe-prints text-ucb-cyan"></i>
-                <span>Ruta Más Corta (Dijkstra)</span>
+              <h3 class="font-display font-bold text-sm text-ucb-blue flex items-center gap-2">
+                <i class="fa-solid fa-shoe-prints text-blue-700"></i>
+                <span>Indicaciones Paso a Paso (Dijkstra)</span>
               </h3>
-              <span id="routeModeTag" class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium">
+              <span id="routeModeTag" class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-100 text-ucb-blue border border-amber-400 font-bold">
                 Ruta Óptima
               </span>
             </div>
 
             <!-- Destination Dependency & Floor Info Box -->
-            <div id="destDetailBox" class="mb-3 p-2.5 rounded-xl bg-slate-950/90 border border-slate-800 text-xs">
-              <div class="font-bold text-ucb-gold" id="destDetailName">Bloque A - Coliseo UCB</div>
-              <div class="text-slate-400 mt-0.5" id="destDetailDeps">Coliseo UCB, Deportes, Club U Católica, Sala de Danza</div>
+            <div id="destDetailBox" class="mb-3 p-2.5 rounded-xl bg-amber-50/80 border border-amber-300 text-xs">
+              <div class="font-extrabold text-ucb-blue" id="destDetailName">Bloque A - Coliseo UCB</div>
+              <div class="text-slate-700 font-medium mt-0.5" id="destDetailDeps">Coliseo UCB, Deportes, Club U Católica, Sala de Danza</div>
               <div class="mt-1.5 flex items-center gap-2 text-[11px]">
-                <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-medium" id="destDetailFloor">Nivel: Planta Baja y Graderías</span>
+                <span class="px-2 py-0.5 rounded bg-blue-100 text-ucb-blue font-bold border border-blue-200" id="destDetailFloor">Planta Baja y Graderías</span>
               </div>
             </div>
 
             <!-- Step List -->
-            <div id="arStepsList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+            <div id="arStepsList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
               <!-- Populated dynamically -->
             </div>
           </div>
 
-          <!-- Switch to Map Button -->
-          <div class="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
-            <button onclick="switchTab('map')" class="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition flex items-center justify-center gap-2">
-              <i class="fa-solid fa-map"></i>
-              <span>Ver trazado completo en el Mapa UCB</span>
+          <!-- Switch to 4-Corner Calibration Button -->
+          <div class="mt-3 pt-3 border-t border-amber-200 flex items-center justify-between gap-2">
+            <button onclick="switchTab('calibration')" class="w-full py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-300 text-xs font-bold text-ucb-blue transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-draw-polygon text-amber-500"></i>
+              <span>Calibrar 4 Esquinas GPS de este Bloque</span>
             </button>
           </div>
         </div>
@@ -451,288 +401,34 @@
     </section>
 
     <!-- ===================================================================== -->
-    <!-- VIEW 2: MAPA OFICIAL DEL CAMPUS UCB OBRAJES + RUTA DIJKSTRA           -->
-    <!-- ===================================================================== -->
-    <section id="view-map" class="hidden flex-col lg:grid lg:grid-cols-12 gap-4">
-      
-      <!-- Left Column (8 cols): Interactive Vector Map of UCB Obrajes -->
-      <div class="lg:col-span-8 flex flex-col gap-3">
-        
-        <!-- Search Bar by Block or Dependency (e.g., Kardex, Paraninfo, SECRAD, Coliseo) -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-          <div class="relative flex-1">
-            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input id="mapSearchInput" type="text" oninput="handleMapDependencySearch(this.value)" placeholder="Buscar bloque, aula o dependencia (ej. Kardex, Paraninfo, Coliseo, Tesorería, SECRAD, Biblioteca)..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-ucb-cyan" />
-            <!-- Search Dropdown Results -->
-            <div id="mapSearchResults" class="hidden absolute left-0 right-0 top-full mt-1 bg-slate-950 border border-slate-700 rounded-xl shadow-2xl z-30 max-h-60 overflow-y-auto divide-y divide-slate-800"></div>
-          </div>
-
-          <!-- Map Click Action Mode Selector -->
-          <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs shrink-0">
-            <span class="px-2 text-slate-400 hidden sm:inline">Al tocar bloque:</span>
-            <button id="clickModeDest" onclick="setMapClickMode('dest')" class="px-2.5 py-1.5 rounded-lg font-semibold bg-ucb-gold text-slate-950 transition">
-              Fijar Destino
-            </button>
-            <button id="clickModeOrigin" onclick="setMapClickMode('origin')" class="px-2.5 py-1.5 rounded-lg font-semibold text-slate-300 hover:bg-slate-800 transition">
-              Fijar Mi Ubicación
-            </button>
-          </div>
-        </div>
-
-        <!-- Interactive SVG Map Canvas Container -->
-        <div class="relative bg-[#0B192C] border border-slate-700/80 rounded-2xl overflow-hidden shadow-2xl">
-          
-          <!-- Map Legend Overlay Top-Left -->
-          <div class="absolute top-3 left-3 z-10 hud-glass px-3 py-2 rounded-xl text-[11px] flex flex-wrap items-center gap-3 pointer-events-none">
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-[#E06D53] inline-block"></span> Bloques Académicos</span>
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-[#3B82F6] inline-block"></span> Plazas (Atrio/Ágora)</span>
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span> Origen (Tú)</span>
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-ucb-gold inline-block"></span> Destino</span>
-            <span class="flex items-center gap-1.5"><span class="w-4 h-1 bg-ucb-cyan inline-block"></span> Ruta Dijkstra</span>
-            <span class="flex items-center gap-1.5"><span class="w-4 h-0.5 border-b-2 border-dashed border-ucb-gold inline-block"></span> Vector Directo al Bloque</span>
-          </div>
-
-          <!-- SVG Map inspired by Official UCB Obrajes Map 2025/2026 -->
-          <svg id="ucbCampusSvg" viewBox="0 0 1000 720" class="w-full h-[460px] sm:h-[550px] select-none">
-            <defs>
-              <!-- Glow filter for shortest path -->
-              <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="4" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-              <!-- Directional Arrowhead Markers for Route & Direct Vector -->
-              <marker id="arrowCyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#00E5FF" />
-              </marker>
-              <marker id="arrowGold" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 1 L 9 5 L 0 9 z" fill="#F2A900" />
-              </marker>
-              <!-- Grid Pattern -->
-              <pattern id="campusGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148, 163, 184, 0.07)" stroke-width="1"/>
-              </pattern>
-            </defs>
-
-            <!-- Background Base -->
-            <rect width="1000" height="720" fill="#091526" />
-            <rect width="1000" height="720" fill="url(#campusGrid)" />
-
-            <!-- GREEN AREAS / GARDENS OF CAMPUS UCB -->
-            <g opacity="0.45">
-              <!-- Central & Upper Gardens -->
-              <path d="M 160,90 Q 450,40 790,95 L 840,420 Q 520,450 170,410 Z" fill="#123524" stroke="#1E5631" stroke-width="2" />
-              <!-- Jardines Cafetería & Biblioteca (East) -->
-              <ellipse cx="750" cy="280" rx="130" ry="110" fill="#16422B" />
-              <!-- Jardines Atrio / Coliseo -->
-              <rect x="210" y="190" width="240" height="170" rx="28" fill="#143D28" />
-            </g>
-
-            <!-- SURROUNDING STREETS & AVENUES (Obrajes - La Paz) -->
-            <!-- Av. Hernando Siles (Top / North) -->
-            <path d="M 40,55 L 960,55" stroke="#1E293B" stroke-width="34" stroke-linecap="round" />
-            <path d="M 40,55 L 960,55" stroke="#475569" stroke-width="1.5" stroke-dasharray="10,10" />
-            <text x="480" y="60" fill="#94A3B8" font-size="12" font-weight="600" text-anchor="middle" letter-spacing="2">AVENIDA HERNANDO SILES</text>
-
-            <!-- Av. 14 de Septiembre (Middle-South Main Avenue dividing Main Campus & Blocks M, N, P, S) -->
-            <path d="M 30,455 L 960,455" stroke="#1E293B" stroke-width="38" stroke-linecap="round" />
-            <path d="M 30,455 L 960,455" stroke="#F2A900" stroke-width="1.5" stroke-dasharray="12,8" opacity="0.6" />
-            <text x="490" y="460" fill="#CBD5E1" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="2">AVENIDA 14 DE SEPTIEMBRE (INGRESO PRINCIPAL UCB)</text>
-
-            <!-- Calle 2 de Obrajes (Vertical connector on West side) -->
-            <path d="M 285,55 L 285,695" stroke="#1E293B" stroke-width="26" />
-            <text x="279" y="565" fill="#94A3B8" font-size="11" font-weight="600" transform="rotate(-90 279,565)">CALLE 2 OBRAJES</text>
-
-            <!-- Av. Héctor Ormachea (Bottom / South towards Diseño & Medicina) -->
-            <path d="M 30,615 L 960,615" stroke="#1E293B" stroke-width="32" stroke-linecap="round" />
-            <text x="510" y="620" fill="#94A3B8" font-size="12" font-weight="600" text-anchor="middle" letter-spacing="1.5">AVENIDA HÉCTOR ORMACHEA (HACIA DISEÑO Y MEDICINA)</text>
-
-            <!-- Pedestrian Walkways Layer (Graph Edges rendered dynamically here) -->
-            <g id="svgEdgesLayer"></g>
-
-            <!-- Highlighted Shortest Route Layer (Dijkstra Path rendered dynamically here) -->
-            <g id="svgRouteLayer"></g>
-
-            <!-- Campus Blocks & Nodes Layer (Rendered dynamically from UCB_NODES) -->
-            <g id="svgNodesLayer"></g>
-
-            <!-- User Live / Simulated Position Marker -->
-            <g id="svgUserMarker" transform="translate(360, 430)">
-              <circle r="20" fill="rgba(16, 185, 129, 0.25)" class="gps-pulse" />
-              <circle r="9" fill="#10B981" stroke="#FFFFFF" stroke-width="2.5" />
-            </g>
-          </svg>
-
-          <!-- Bottom Bar inside Map: Quick Stats & Launch AR Button -->
-          <div class="bg-slate-950/95 border-t border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-4 text-xs sm:text-sm">
-              <div>
-                <span class="text-slate-400">Distancia Total:</span>
-                <strong id="mapTotalDist" class="ml-1 text-ucb-cyan font-mono text-base">85 m</strong>
-              </div>
-              <div class="h-4 w-px bg-slate-800"></div>
-              <div>
-                <span class="text-slate-400">Tiempo a pie:</span>
-                <strong id="mapTotalTime" class="ml-1 text-emerald-400 font-mono text-base">~1 min 10 s</strong>
-              </div>
-              <div class="h-4 w-px bg-slate-800 hidden sm:block"></div>
-              <div class="hidden sm:block">
-                <span class="text-slate-400">Tramos:</span>
-                <strong id="mapTotalNodes" class="ml-1 text-white">3 puntos</strong>
-              </div>
-            </div>
-
-            <button onclick="switchTab('ar')" class="px-4 py-2 rounded-xl bg-ucb-cyan hover:bg-cyan-300 text-slate-950 font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-lg shadow-cyan-500/20">
-              <i class="fa-solid fa-camera-viewfinder"></i>
-              <span>Iniciar Guía con Cámara AR</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column (4 cols): Selected Block Details & Dijkstra Graph Inspector -->
-      <div class="lg:col-span-4 flex flex-col gap-4">
-        
-        <!-- Selected Block / Point of Interest Inspector Card -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
-          <div class="flex items-center justify-between gap-2 mb-2">
-            <span id="inspectCodeBadge" class="px-2.5 py-1 rounded-lg bg-ucb-gold/20 text-ucb-gold font-display font-bold text-xs border border-ucb-gold/40">
-              BLOQUE A
-            </span>
-            <span id="inspectCoordsBadge" class="text-[11px] font-mono text-slate-400">
-              -16.52280, -68.11230
-            </span>
-
-          </div>
-
-          <h3 id="inspectTitle" class="font-display font-bold text-lg text-white">
-            Bloque A - Coliseo UCB
-          </h3>
-          <p id="inspectFloor" class="text-xs text-ucb-cyan font-medium mt-0.5">
-            Planta Baja y Graderías · Acceso por Atrio
-          </p>
-
-          <div class="mt-3">
-            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">
-              Dependencias, Aulas y Laboratorios en este bloque:
-            </div>
-            <div id="inspectDepsList" class="flex flex-wrap gap-1.5">
-              <!-- Tags populated dynamically -->
-            </div>
-          </div>
-
-          <div class="mt-4 pt-3 border-t border-slate-800 grid grid-cols-2 gap-2">
-            <button onclick="setInspectedAsOrigin()" class="py-2 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition flex items-center justify-center gap-1.5">
-              <i class="fa-solid fa-street-view"></i>
-              <span>Estoy Aquí (Origen)</span>
-            </button>
-            <button onclick="setInspectedAsDestination()" class="py-2 px-3 rounded-xl bg-ucb-gold hover:bg-amber-400 text-slate-950 text-xs font-bold transition flex items-center justify-center gap-1.5">
-              <i class="fa-solid fa-diamond-turn-right"></i>
-              <span>Ir Aquí (Destino)</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Step-by-Step Instructions on Map Tab -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex-1 flex flex-col">
-          <h3 class="font-display font-bold text-sm text-white flex items-center gap-2 mb-3">
-            <i class="fa-solid fa-list-ol text-ucb-cyan"></i>
-            <span>Indicaciones Paso a Paso en el Campus</span>
-          </h3>
-          <div id="mapStepsList" class="space-y-2 overflow-y-auto max-h-80 pr-1 flex-1">
-            <!-- Populated dynamically -->
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ===================================================================== -->
-    <!-- VIEW 3: EVENTOS UCB + INTEGRACIÓN CON GOOGLE CALENDAR / SHEETS        -->
-    <!-- ===================================================================== -->
-    <section id="view-events" class="hidden flex-col gap-4">
-      
-      <!-- Top Controls: Search, Category Filters & Import from Google Calendar/Sheets -->
-      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-        <div>
-          <h2 class="font-display font-bold text-lg text-white flex items-center gap-2">
-            <i class="fa-solid fa-calendar-days text-ucb-gold"></i>
-            <span>Cartelera Oficial de Eventos UCB & MECAFEST 2026</span>
-          </h2>
-          <p class="text-xs text-slate-400">
-            Selecciona cualquier evento para calcular la ruta más corta o encender las flechas de realidad aumentada hacia el bloque y piso exacto.
-          </p>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-2">
-          <button onclick="openAddEventModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-plus text-ucb-cyan"></i>
-            <span>Nuevo Evento</span>
-          </button>
-          <button onclick="openGoogleSyncModal()" class="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition flex items-center gap-1.5">
-            <i class="fa-solid fa-table"></i>
-            <span>Importar de Google Calendar / Sheets</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Filter Pills & Search Input -->
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          <button onclick="filterEventsByCategory('ALL')" id="catBtn-ALL" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-ucb-gold text-slate-950 transition whitespace-nowrap">
-            Todos
-          </button>
-          <button onclick="filterEventsByCategory('MECAFEST')" id="catBtn-MECAFEST" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">
-            🤖 Hackathon / MECAFEST
-          </button>
-          <button onclick="filterEventsByCategory('ACADEMICO')" id="catBtn-ACADEMICO" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">
-            🎓 Académico & Conferencias
-          </button>
-          <button onclick="filterEventsByCategory('CULTURAL')" id="catBtn-CULTURAL" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">
-            🎭 Cultural & Gala
-          </button>
-        </div>
-
-        <div class="relative w-full sm:w-72">
-          <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-          <input id="eventSearchInput" type="text" oninput="renderEventsGrid()" placeholder="Buscar evento o bloque..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs sm:text-sm text-white focus:outline-none focus:border-ucb-cyan" />
-        </div>
-      </div>
-
-      <!-- Events Grid -->
-      <div id="eventsGridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Populated dynamically -->
-      </div>
-    </section>
-
-    <!-- ===================================================================== -->
-    <!-- VIEW 4: CALIBRADOR DE PRECISIÓN GPS (4 ESQUINAS POR BLOQUE UCB)       -->
+    <!-- VIEW 2: CALIBRADOR DE PRECISIÓN GPS (4 ESQUINAS POR BLOQUE UCB)       -->
     <!-- ===================================================================== -->
     <section id="view-calibration" class="hidden flex-col gap-4">
       
       <!-- Top Header Banner -->
-      <div class="bg-gradient-to-r from-ucb-blue/80 via-slate-900 to-slate-900 border border-slate-700 rounded-2xl p-4 sm:p-5 shadow-xl">
+      <div class="bg-gradient-to-r from-amber-100 via-amber-50 to-blue-50 border-2 border-amber-300 rounded-2xl p-4 sm:p-5 shadow-md">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-ucb-gold/20 text-ucb-gold border border-ucb-gold/40">
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-ucb-blue text-amber-300">
               GEOMETRÍA DE ALTA PRECISIÓN · POLÍGONOS DE 4 VÉRTICES GPS
             </span>
-            <h2 class="font-display font-bold text-lg sm:text-2xl text-white mt-1.5 flex items-center gap-2">
-              <i class="fa-solid fa-draw-polygon text-ucb-cyan"></i>
+            <h2 class="font-display font-bold text-lg sm:text-2xl text-ucb-blue mt-1.5 flex items-center gap-2">
+              <i class="fa-solid fa-draw-polygon text-amber-500"></i>
               <span>Calibración de las 4 Esquinas de cada Bloque UCB</span>
             </h2>
-            <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl">
+            <p class="text-xs sm:text-sm text-slate-700 font-medium mt-1 max-w-3xl">
               Introduce o captura en campo las coordenadas GPS de las <strong>4 esquinas (NW, NE, SE, SW)</strong> de cada bloque. El sistema recalcula automáticamente el <strong>centroide exacto</strong>, detecta si estás físicamente <strong>dentro del perímetro del edificio</strong> y orienta las flechas AR con máxima precisión.
             </p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2 shrink-0">
-            <button onclick="exportCalibratedCornersJSON()" class="px-3 py-2 rounded-xl bg-ucb-cyan/15 hover:bg-ucb-cyan/25 text-ucb-cyan border border-ucb-cyan/40 text-xs font-semibold transition flex items-center gap-1.5">
-              <i class="fa-solid fa-download"></i>
+            <button onclick="exportCalibratedCornersJSON()" class="px-3.5 py-2 rounded-xl bg-ucb-blue hover:bg-blue-800 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-download text-amber-300"></i>
               <span>Exportar / Copiar JSON</span>
             </button>
-            <button onclick="resetAllCornersToDefault()" class="px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold transition flex items-center gap-1.5">
+            <button onclick="resetAllCornersToDefault()" class="px-3.5 py-2 rounded-xl bg-white hover:bg-amber-100 text-ucb-blue border-2 border-ucb-blue text-xs font-bold transition flex items-center gap-1.5">
               <i class="fa-solid fa-rotate-left"></i>
-              <span>Restaurar Todo</span>
+              <span>Restaurar Coordenadas Base</span>
             </button>
           </div>
         </div>
@@ -742,25 +438,25 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
         
         <!-- Left 7 Cols: Block Selector & 4 Corners Input Cards -->
-        <div class="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col gap-4">
+        <div class="lg:col-span-7 bg-white border-2 border-amber-300 rounded-2xl p-4 shadow-md flex flex-col gap-4">
           
           <!-- Block Selector Row -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-200">
             <div class="flex-1">
-              <label class="block text-xs font-semibold text-ucb-gold uppercase tracking-wider mb-1">
+              <label class="block text-xs font-extrabold text-ucb-blue uppercase tracking-wider mb-1">
                 1. Selecciona el Bloque o Plaza a Calibrar:
               </label>
-              <select id="calibBlockSelect" onchange="loadBlockCornersIntoForm(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-ucb-cyan">
+              <select id="calibBlockSelect" onchange="loadBlockCornersIntoForm(this.value)" class="w-full bg-amber-50/70 border-2 border-amber-300 rounded-xl px-3.5 py-2.5 text-sm font-bold text-ucb-blue focus:outline-none focus:border-ucb-blue">
                 <!-- Populated dynamically -->
               </select>
             </div>
 
             <!-- Target Mode for AR Arrows (Centroid vs Nearest Corner) -->
-            <div class="sm:w-56">
-              <label class="block text-xs font-semibold text-slate-400 mb-1">
+            <div class="sm:w-60">
+              <label class="block text-xs font-bold text-slate-600 mb-1">
                 Apuntado de Flecha AR:
               </label>
-              <select id="selectARTargetMode" onchange="changeARPolygonTargetMode(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-ucb-cyan focus:outline-none focus:border-ucb-cyan">
+              <select id="selectARTargetMode" onchange="changeARPolygonTargetMode(this.value)" class="w-full bg-blue-50 border-2 border-blue-200 rounded-xl px-3 py-2.5 text-xs font-bold text-ucb-blue focus:outline-none focus:border-ucb-blue">
                 <option value="centroid">🎯 Apuntar al Centroide (Centro)</option>
                 <option value="nearest_corner">📐 Apuntar a Esquina/Muro más cercano</option>
               </select>
@@ -771,93 +467,93 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             
             <!-- ESQUINA 1: NOROESTE (NW) -->
-            <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
+            <div class="bg-amber-50/60 border-2 border-amber-200 rounded-xl p-3 flex flex-col gap-2">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-ucb-cyan flex items-center gap-1.5">
-                  <span class="w-5 h-5 rounded-md bg-ucb-cyan text-slate-950 font-mono text-[11px] font-extrabold flex items-center justify-center">E1</span>
+                <span class="text-xs font-extrabold text-ucb-blue flex items-center gap-1.5">
+                  <span class="w-5 h-5 rounded-md bg-ucb-blue text-amber-300 font-mono text-[11px] font-extrabold flex items-center justify-center">E1</span>
                   Esquina 1 · Noroeste (NW)
                 </span>
-                <button type="button" onclick="captureGPSToCornerInput(0)" class="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold transition flex items-center gap-1" title="Capturar mi coordenada GPS actual en la Esquina 1">
+                <button type="button" onclick="captureGPSToCornerInput(0)" class="px-2 py-1 rounded-lg bg-ucb-gold hover:bg-amber-400 text-ucb-blue font-bold text-[11px] transition flex items-center gap-1 shadow-sm" title="Capturar mi coordenada GPS actual en la Esquina 1">
                   <i class="fa-solid fa-location-crosshairs"></i> Capturar GPS
                 </button>
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="block text-[10px] text-slate-400">Latitud (E1)</label>
-                  <input id="cornerLat_0" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                  <label class="block text-[10px] font-bold text-slate-600">Latitud (E1)</label>
+                  <input id="cornerLat_0" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-ucb-blue focus:border-ucb-blue focus:outline-none" />
                 </div>
                 <div>
-                  <label class="block text-[10px] text-slate-400">Longitud (E1)</label>
-                  <input id="cornerLng_0" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                  <label class="block text-[10px] font-bold text-slate-600">Longitud (E1)</label>
+                  <input id="cornerLng_0" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-ucb-blue focus:border-ucb-blue focus:outline-none" />
                 </div>
               </div>
             </div>
 
             <!-- ESQUINA 2: NORESTE (NE) -->
-            <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
+            <div class="bg-blue-50/60 border-2 border-blue-200 rounded-xl p-3 flex flex-col gap-2">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-ucb-gold flex items-center gap-1.5">
-                  <span class="w-5 h-5 rounded-md bg-ucb-gold text-slate-950 font-mono text-[11px] font-extrabold flex items-center justify-center">E2</span>
+                <span class="text-xs font-extrabold text-ucb-blue flex items-center gap-1.5">
+                  <span class="w-5 h-5 rounded-md bg-amber-400 text-ucb-blue font-mono text-[11px] font-extrabold flex items-center justify-center">E2</span>
                   Esquina 2 · Noreste (NE)
                 </span>
-                <button type="button" onclick="captureGPSToCornerInput(1)" class="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold transition flex items-center gap-1" title="Capturar mi coordenada GPS actual en la Esquina 2">
+                <button type="button" onclick="captureGPSToCornerInput(1)" class="px-2 py-1 rounded-lg bg-ucb-gold hover:bg-amber-400 text-ucb-blue font-bold text-[11px] transition flex items-center gap-1 shadow-sm" title="Capturar mi coordenada GPS actual en la Esquina 2">
                   <i class="fa-solid fa-location-crosshairs"></i> Capturar GPS
                 </button>
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="block text-[10px] text-slate-400">Latitud (E2)</label>
-                  <input id="cornerLat_1" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                  <label class="block text-[10px] font-bold text-slate-600">Latitud (E2)</label>
+                  <input id="cornerLat_1" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-white border border-blue-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-ucb-blue focus:border-ucb-blue focus:outline-none" />
                 </div>
                 <div>
-                  <label class="block text-[10px] text-slate-400">Longitud (E2)</label>
-                  <input id="cornerLng_1" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                  <label class="block text-[10px] font-bold text-slate-600">Longitud (E2)</label>
+                  <input id="cornerLng_1" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-white border border-blue-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-ucb-blue focus:border-ucb-blue focus:outline-none" />
                 </div>
               </div>
             </div>
 
             <!-- ESQUINA 3: SURESTE (SE) -->
-            <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
+            <div class="bg-amber-50/60 border-2 border-amber-200 rounded-xl p-3 flex flex-col gap-2">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                  <span class="w-5 h-5 rounded-md bg-emerald-400 text-slate-950 font-mono text-[11px] font-extrabold flex items-center justify-center">E3</span>
+                <span class="text-xs font-extrabold text-ucb-blue flex items-center gap-1.5">
+                  <span class="w-5 h-5 rounded-md bg-blue-700 text-white font-mono text-[11px] font-extrabold flex items-center justify-center">E3</span>
                   Esquina 3 · Sureste (SE)
                 </span>
-                <button type="button" onclick="captureGPSToCornerInput(2)" class="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold transition flex items-center gap-1" title="Capturar mi coordenada GPS actual en la Esquina 3">
+                <button type="button" onclick="captureGPSToCornerInput(2)" class="px-2 py-1 rounded-lg bg-ucb-gold hover:bg-amber-400 text-ucb-blue font-bold text-[11px] transition flex items-center gap-1 shadow-sm" title="Capturar mi coordenada GPS actual en la Esquina 3">
                   <i class="fa-solid fa-location-crosshairs"></i> Capturar GPS
                 </button>
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="block text-[10px] text-slate-400">Latitud (E3)</label>
-                  <input id="cornerLat_2" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                  <label class="block text-[10px] font-bold text-slate-600">Latitud (E3)</label>
+                  <input id="cornerLat_2" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-ucb-blue focus:border-ucb-blue focus:outline-none" />
                 </div>
                 <div>
-                  <label class="block text-[10px] text-slate-400">Longitud (E3)</label>
-                  <input id="cornerLng_2" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                  <label class="block text-[10px] font-bold text-slate-600">Longitud (E3)</label>
+                  <input id="cornerLng_2" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-ucb-blue focus:border-ucb-blue focus:outline-none" />
                 </div>
               </div>
             </div>
 
             <!-- ESQUINA 4: SUROESTE (SW) -->
-            <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
+            <div class="bg-blue-50/60 border-2 border-blue-200 rounded-xl p-3 flex flex-col gap-2">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-purple-400 flex items-center gap-1.5">
-                  <span class="w-5 h-5 rounded-md bg-purple-400 text-slate-950 font-mono text-[11px] font-extrabold flex items-center justify-center">E4</span>
+                <span class="text-xs font-extrabold text-ucb-blue flex items-center gap-1.5">
+                  <span class="w-5 h-5 rounded-md bg-amber-500 text-white font-mono text-[11px] font-extrabold flex items-center justify-center">E4</span>
                   Esquina 4 · Suroeste (SW)
                 </span>
-                <button type="button" onclick="captureGPSToCornerInput(3)" class="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold transition flex items-center gap-1" title="Capturar mi coordenada GPS actual en la Esquina 4">
+                <button type="button" onclick="captureGPSToCornerInput(3)" class="px-2 py-1 rounded-lg bg-ucb-gold hover:bg-amber-400 text-ucb-blue font-bold text-[11px] transition flex items-center gap-1 shadow-sm" title="Capturar mi coordenada GPS actual en la Esquina 4">
                   <i class="fa-solid fa-location-crosshairs"></i> Capturar GPS
                 </button>
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="block text-[10px] text-slate-400">Latitud (E4)</label>
-                  <input id="cornerLat_3" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                  <label class="block text-[10px] font-bold text-slate-600">Latitud (E4)</label>
+                  <input id="cornerLat_3" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-white border border-blue-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-ucb-blue focus:border-ucb-blue focus:outline-none" />
                 </div>
                 <div>
-                  <label class="block text-[10px] text-slate-400">Longitud (E4)</label>
-                  <input id="cornerLng_3" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                  <label class="block text-[10px] font-bold text-slate-600">Longitud (E4)</label>
+                  <input id="cornerLng_3" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-white border border-blue-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-ucb-blue focus:border-ucb-blue focus:outline-none" />
                 </div>
               </div>
             </div>
@@ -865,31 +561,31 @@
           </div>
 
           <!-- Action Buttons: Save 4 Corners & Auto-generate Box from Center -->
-          <div class="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
-            <button type="button" onclick="generateBoxAroundBlockCenter()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition flex items-center gap-1.5">
-              <i class="fa-solid fa-vector-square text-ucb-cyan"></i>
+          <div class="pt-2 border-t border-amber-200 flex flex-wrap items-center justify-between gap-2">
+            <button type="button" onclick="generateBoxAroundBlockCenter()" class="px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-ucb-blue border border-blue-300 text-xs font-bold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-vector-square text-blue-700"></i>
               <span>Autogenerar Rectángulo Base (±15m)</span>
             </button>
 
-            <button type="button" onclick="saveCurrentBlockCorners()" class="px-5 py-2.5 rounded-xl bg-ucb-gold hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-lg shadow-amber-500/20">
+            <button type="button" onclick="saveCurrentBlockCorners()" class="px-5 py-2.5 rounded-xl bg-ucb-gold hover:bg-amber-400 text-ucb-blue border-2 border-ucb-blue font-extrabold text-xs sm:text-sm transition flex items-center gap-2 shadow-md">
               <i class="fa-solid fa-floppy-disk"></i>
               <span>Guardar 4 Esquinas y Recalcular Centroide</span>
             </button>
           </div>
 
           <!-- JSON Export/Import Collapsible Box -->
-          <details id="jsonExportDetails" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs">
-            <summary class="cursor-pointer font-semibold text-slate-300 flex items-center justify-between">
-              <span><i class="fa-solid fa-code text-ucb-cyan mr-1.5"></i> Respaldo JSON de Polígonos Calibrados (Copiar o Importar)</span>
-              <span class="text-[11px] text-slate-500">Click para abrir</span>
+          <details id="jsonExportDetails" class="bg-amber-50/70 border border-amber-300 rounded-xl p-3 text-xs">
+            <summary class="cursor-pointer font-extrabold text-ucb-blue flex items-center justify-between">
+              <span><i class="fa-solid fa-code text-blue-700 mr-1.5"></i> Respaldo JSON de Polígonos Calibrados (Copiar o Importar)</span>
+              <span class="text-[11px] text-blue-700 underline">Abrir / Cerrar</span>
             </summary>
             <div class="mt-2.5 space-y-2">
-              <textarea id="calibJsonTextarea" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 font-mono text-[11px] text-emerald-300 focus:outline-none" placeholder="Aquí aparecerá el JSON con las 4 esquinas de todos los bloques..."></textarea>
+              <textarea id="calibJsonTextarea" rows="4" class="w-full bg-white border border-amber-300 rounded-lg p-2.5 font-mono text-[11px] text-ucb-blue focus:outline-none" placeholder="Aquí aparecerá el JSON con las 4 esquinas de todos los bloques..."></textarea>
               <div class="flex justify-end gap-2">
-                <button type="button" onclick="copyCalibJSONToClipboard()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold">
+                <button type="button" onclick="copyCalibJSONToClipboard()" class="px-3 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-ucb-blue font-bold">
                   <i class="fa-regular fa-copy mr-1"></i> Copiar JSON
                 </button>
-                <button type="button" onclick="importCalibratedCornersJSON()" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
+                <button type="button" onclick="importCalibratedCornersJSON()" class="px-3 py-1.5 rounded-lg bg-ucb-blue hover:bg-blue-800 text-amber-300 font-bold">
                   <i class="fa-solid fa-file-import mr-1"></i> Importar JSON Pegado
                 </button>
               </div>
@@ -898,21 +594,20 @@
         </div>
 
         <!-- Right 5 Cols: 2D Polygon Geometry Visualizer + Calculated Centroid & Area -->
-        <div class="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col justify-between gap-3">
+        <div class="lg:col-span-5 bg-white border-2 border-amber-300 rounded-2xl p-4 shadow-md flex flex-col justify-between gap-3">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <h3 class="font-display font-bold text-sm text-white flex items-center gap-2">
-                <i class="fa-solid fa-compass-drafting text-ucb-gold"></i>
+              <h3 class="font-display font-bold text-sm text-ucb-blue flex items-center gap-2">
+                <i class="fa-solid fa-compass-drafting text-amber-500"></i>
                 <span>Vista Previa Geométrica del Polígono</span>
               </h3>
-              <span id="calibSavedBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span id="calibSavedBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-ucb-blue border border-amber-400">
                 4 Vértices Activos
               </span>
-
             </div>
 
             <!-- Interactive SVG Preview of the 4-Corner Polygon -->
-            <div class="bg-[#07111F] border border-slate-800 rounded-xl p-2 flex items-center justify-center relative overflow-hidden">
+            <div class="bg-amber-50/50 border-2 border-blue-200 rounded-xl p-2 flex items-center justify-center relative overflow-hidden">
               <svg id="calibPolygonSvg" viewBox="0 0 320 240" class="w-full h-56 select-none">
                 <!-- Rendered dynamically by previewPolygonFromInputs() -->
               </svg>
@@ -920,27 +615,27 @@
 
             <!-- Calculated Metrics: Centroid, Area, Perimeter & Inside Status -->
             <div class="mt-3 grid grid-cols-2 gap-2 text-xs font-mono">
-              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <div class="text-[10px] text-slate-400 font-sans">Centroide Calculado (Lat, Lng)</div>
-                <div id="calibCentroidText" class="text-ucb-gold font-bold truncate mt-0.5">-16.522800, -68.112300</div>
+              <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-300">
+                <div class="text-[10px] text-slate-600 font-sans font-bold">Centroide Calculado (Lat, Lng)</div>
+                <div id="calibCentroidText" class="text-ucb-blue font-extrabold truncate mt-0.5">-16.522352, -68.111889</div>
               </div>
-              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <div class="text-[10px] text-slate-400 font-sans">Área y Perímetro Aprox.</div>
-                <div id="calibAreaText" class="text-ucb-cyan font-bold mt-0.5">~650 m² · 102 m</div>
+              <div class="bg-blue-50 p-2.5 rounded-xl border border-blue-200">
+                <div class="text-[10px] text-slate-600 font-sans font-bold">Área y Perímetro Aprox.</div>
+                <div id="calibAreaText" class="text-blue-800 font-extrabold mt-0.5">~1020 m² · 138 m</div>
               </div>
             </div>
           </div>
 
           <!-- Real-Time Point-in-Polygon Check Box -->
-          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-1.5">
-            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+          <div class="p-3 rounded-xl bg-amber-50/90 border border-amber-300 text-xs space-y-1.5">
+            <div class="text-[11px] font-extrabold text-ucb-blue uppercase tracking-wider flex items-center justify-between">
               <span>Prueba de Precisión respecto a tu ubicación actual:</span>
-              <i class="fa-solid fa-satellite text-ucb-cyan"></i>
+              <i class="fa-solid fa-satellite text-blue-700"></i>
             </div>
-            <div id="calibProximityStatus" class="font-semibold text-emerald-400">
+            <div id="calibProximityStatus" class="font-extrabold text-blue-700">
               Calculando distancia al polígono...
             </div>
-            <p class="text-[11px] text-slate-400">
+            <p class="text-[11px] text-slate-700 font-medium">
               Si caminas dentro de las 4 esquinas de un bloque, el sistema detecta automáticamente que estás en su interior (0 m al borde) y actualiza tu origen al instante.
             </p>
           </div>
@@ -949,29 +644,29 @@
       </div>
 
       <!-- Summary Table of All Campus Blocks & Their 4-Corner Calibration Status -->
-      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+      <div class="bg-white border-2 border-amber-300 rounded-2xl p-4 shadow-md">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="font-display font-bold text-sm sm:text-base text-white flex items-center gap-2">
-            <i class="fa-solid fa-table-list text-ucb-cyan"></i>
+          <h3 class="font-display font-bold text-sm sm:text-base text-ucb-blue flex items-center gap-2">
+            <i class="fa-solid fa-table-list text-amber-500"></i>
             <span>Resumen de Coordenadas y Esquinas de Todos los Bloques UCB</span>
           </h3>
-          <span class="text-xs text-slate-400">Toca cualquier fila para editar sus 4 esquinas</span>
+          <span class="text-xs text-blue-700 font-semibold">Toca cualquier fila para editar sus 4 esquinas</span>
         </div>
 
-        <div class="overflow-x-auto max-h-72">
+        <div class="overflow-x-auto max-h-80 border border-amber-200 rounded-xl">
           <table class="w-full text-left text-xs">
-            <thead class="sticky top-0 bg-slate-950 text-slate-400 border-b border-slate-800">
+            <thead class="sticky top-0 bg-amber-100 text-ucb-blue border-b-2 border-amber-300">
               <tr>
-                <th class="py-2 px-2.5">Bloque</th>
-                <th class="py-2 px-2.5">Centroide (Lat, Lng)</th>
-                <th class="py-2 px-2.5">Esquina 1 (NW)</th>
-                <th class="py-2 px-2.5">Esquina 2 (NE)</th>
-                <th class="py-2 px-2.5">Esquina 3 (SE)</th>
-                <th class="py-2 px-2.5">Esquina 4 (SW)</th>
-                <th class="py-2 px-2.5 text-right">Acción</th>
+                <th class="py-2.5 px-3 font-extrabold">Bloque</th>
+                <th class="py-2.5 px-3 font-extrabold">Centroide (Lat, Lng)</th>
+                <th class="py-2.5 px-3 font-extrabold">Esquina 1 (NW)</th>
+                <th class="py-2.5 px-3 font-extrabold">Esquina 2 (NE)</th>
+                <th class="py-2.5 px-3 font-extrabold">Esquina 3 (SE)</th>
+                <th class="py-2.5 px-3 font-extrabold">Esquina 4 (SW)</th>
+                <th class="py-2.5 px-3 text-right font-extrabold">Acción</th>
               </tr>
             </thead>
-            <tbody id="calibBlocksTableBody" class="divide-y divide-slate-800/70 font-mono text-[11px]">
+            <tbody id="calibBlocksTableBody" class="divide-y divide-amber-200 font-mono text-[11px] bg-white">
               <!-- Populated dynamically -->
             </tbody>
           </table>
@@ -983,184 +678,62 @@
   </main>
 
   <!-- ======================================================================= -->
-  <!-- MODAL 1: IMPORTAR DESDE GOOGLE CALENDAR / GOOGLE SHEETS (APPS SCRIPT)   -->
+  <!-- MODAL: PUNTO QR INTELIGENTE DE SEÑALÉTICA UCB                           -->
   <!-- ======================================================================= -->
-  <div id="modalGoogleSync" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-file-csv text-emerald-400 text-lg"></i>
-          <h3 class="font-display font-bold text-base sm:text-lg text-white">
-            Sincronizar con Google Calendar y Google Sheets
-          </h3>
-        </div>
-        <button onclick="closeGoogleSyncModal()" class="text-slate-400 hover:text-white text-lg">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <div class="mt-3 space-y-3 text-xs sm:text-sm">
-        <p class="text-slate-300">
-          Esta ventana conecta directamente con la tabla generada por tu script de <strong>Google Apps Script</strong> (columnas: <code>Nombre del Evento | Ubicación | Fecha y Hora</code>). Pega las filas de tu Google Sheet o prueba los datos de ejemplo:
-        </p>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">
-            Datos exportados por Google Apps Script (Formato: Nombre | Ubicación | Fecha y Hora):
-          </label>
-          <textarea id="sheetsInputData" rows="5" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 font-mono text-xs text-emerald-300 focus:outline-none focus:border-emerald-400">Defensa de Grado Ingeniería Mecatrónica | Bloque D - Paraninfo | 2026-11-13 10:00
-Torneo Intercarreras Futsal UCB | Bloque A - Coliseo | 2026-11-13 14:30
-Taller de Finanzas Cuánticas e IISEC | Bloque S - Ciencias Económicas | 2026-11-14 11:00
-Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
-        </div>
-
-        <!-- Collapsible Apps Script Reference Code -->
-        <details class="bg-slate-950 border border-slate-800 rounded-xl p-3">
-          <summary class="cursor-pointer font-semibold text-ucb-cyan text-xs flex items-center justify-between">
-            <span>Ver código Google Apps Script vinculado (Calendar → Sheets)</span>
-            <i class="fa-solid fa-code"></i>
-          </summary>
-          <pre class="mt-2 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed">function exportarTodosLosEventosASheet() {
-  const fechaInicio = new Date();
-  const fechaFin = new Date();
-  fechaFin.setDate(fechaFin.getDate() + 30);
-  const eventos = CalendarApp.getDefaultCalendar().getEvents(fechaInicio, fechaFin);
-  const zonaHoraria = Session.getScriptTimeZone();
-  const filas = eventos.map(e => [
-    e.getTitle(),
-    e.getLocation().trim() || "Atrio UCB",
-    Utilities.formatDate(e.getStartTime(), zonaHoraria, "yyyy-MM-dd HH:mm")
-  ]);
-  const hoja = SpreadsheetApp.openById("TU_ID_DE_LA_HOJA").getActiveSheet();
-  hoja.clearContents();
-  hoja.getRange(1, 1, 1, 3).setValues([["Nombre del Evento", "Ubicación", "Fecha y Hora"]]);
-  if (filas.length > 0) hoja.getRange(2, 1, filas.length, 3).setValues(filas);
-}</pre>
-        </details>
-
-        <div class="pt-2 flex flex-wrap items-center justify-end gap-2">
-          <button onclick="closeGoogleSyncModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
-            Cancelar
-          </button>
-          <button onclick="importEventsFromGoogleSheetText()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition flex items-center gap-1.5">
-            <i class="fa-solid fa-cloud-arrow-down"></i>
-            <span>Procesar e Importar Eventos al Campus</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================================= -->
-  <!-- MODAL 2: AGREGAR EVENTO MANUALMENTE                                     -->
-  <!-- ======================================================================= -->
-  <div id="modalAddEvent" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="font-display font-bold text-base text-white flex items-center gap-2">
-          <i class="fa-solid fa-calendar-plus text-ucb-gold"></i>
-          <span>Registrar Nuevo Evento en la UCB</span>
-        </h3>
-        <button onclick="closeAddEventModal()" class="text-slate-400 hover:text-white">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <div class="mt-3 space-y-3 text-xs sm:text-sm">
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Nombre del Evento *</label>
-          <input id="newEvTitle" type="text" placeholder="Ej. Exposición de Robots Seguidores de Línea" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Bloque / Ubicación en el Campus UCB *</label>
-          <select id="newEvNodeId" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
-            <!-- Populated dynamically -->
-          </select>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Piso / Aula específica</label>
-            <input id="newEvFloor" type="text" placeholder="Ej. Piso 3 - Lab 4" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white" />
-          </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Fecha y Hora</label>
-            <input id="newEvDate" type="text" placeholder="Hoy, 16:30" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white" />
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Categoría</label>
-          <select id="newEvCategory" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
-            <option value="MECAFEST">Hackathon / MECAFEST</option>
-            <option value="ACADEMICO">Académico & Conferencias</option>
-            <option value="CULTURAL">Cultural & Gala</option>
-          </select>
-        </div>
-
-        <div class="pt-2 flex justify-end gap-2">
-          <button onclick="closeAddEventModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cancelar</button>
-          <button onclick="saveNewManualEvent()" class="px-4 py-2 rounded-xl bg-ucb-gold text-slate-950 font-bold text-xs">Guardar Evento</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================================= -->
-  <!-- MODAL 3: PUNTO QR INTELIGENTE DE SEÑALÉTICA UCB                         -->
-  <!-- ======================================================================= -->
-  <div id="modalQR" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="font-display font-bold text-base text-white flex items-center gap-2">
-          <i class="fa-solid fa-qrcode text-ucb-gold"></i>
+  <div id="modalQR" class="fixed inset-0 z-50 hidden bg-blue-950/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-amber-400 rounded-2xl max-w-md w-full p-5 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-amber-200">
+        <h3 class="font-display font-bold text-base text-ucb-blue flex items-center gap-2">
+          <i class="fa-solid fa-qrcode text-amber-500"></i>
           <span>Señalética QR de Ubicación Instantánea</span>
         </h3>
-        <button onclick="closeQRModal()" class="text-slate-400 hover:text-white">
-          <i class="fa-solid fa-xmark"></i>
+        <button onclick="closeQRModal()" class="text-slate-500 hover:text-ucb-blue">
+          <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
       <div class="mt-3 space-y-3 text-xs sm:text-sm">
-        <p class="text-slate-300">
-          Si un estudiante o visitante está dentro de un edificio sin buena cobertura GPS, escanea el código QR del bloque y la aplicación fija su punto de partida inmediatamente:
+        <p class="text-slate-700 font-medium">
+          Si te encuentras dentro de un edificio sin buena cobertura GPS, selecciona o escanea el código QR del bloque para fijar tu punto de partida inmediatamente:
         </p>
 
         <div>
-          <label class="block text-xs text-slate-400 mb-1">Selecciona el Punto QR que deseas simular o imprimir:</label>
-          <select id="qrBlockSelect" onchange="updateQRPreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+          <label class="block text-xs font-bold text-ucb-blue mb-1">Selecciona el Punto QR del Bloque:</label>
+          <select id="qrBlockSelect" onchange="updateQRPreview()" class="w-full bg-amber-50 border-2 border-amber-300 rounded-xl px-3 py-2 font-bold text-ucb-blue">
             <!-- Populated dynamically -->
           </select>
         </div>
 
         <!-- Visual Simulated QR Totem Card -->
-        <div class="bg-white text-slate-950 rounded-2xl p-4 flex items-center gap-4 shadow-inner">
-          <svg id="qrSvgGraphic" viewBox="0 0 100 100" class="w-24 h-24 shrink-0 border-2 border-slate-900 rounded-lg p-1">
+        <div class="bg-amber-50 text-ucb-blue border-2 border-ucb-blue rounded-2xl p-4 flex items-center gap-4 shadow-inner">
+          <svg id="qrSvgGraphic" viewBox="0 0 100 100" class="w-24 h-24 shrink-0 bg-white border-2 border-ucb-blue rounded-lg p-1">
             <rect x="5" y="5" width="25" height="25" fill="none" stroke="#003B71" stroke-width="6"/>
             <rect x="12" y="12" width="11" height="11" fill="#003B71"/>
             <rect x="70" y="5" width="25" height="25" fill="none" stroke="#003B71" stroke-width="6"/>
             <rect x="77" y="12" width="11" height="11" fill="#003B71"/>
             <rect x="5" y="70" width="25" height="25" fill="none" stroke="#003B71" stroke-width="6"/>
             <rect x="12" y="77" width="11" height="11" fill="#003B71"/>
-            <rect x="40" y="10" width="8" height="8" fill="#0f172a"/>
-            <rect x="52" y="18" width="8" height="16" fill="#0f172a"/>
+            <rect x="40" y="10" width="8" height="8" fill="#003B71"/>
+            <rect x="52" y="18" width="8" height="16" fill="#003B71"/>
             <rect x="38" y="38" width="24" height="24" rx="4" fill="#F2A900"/>
-            <text x="50" y="54" font-size="11" font-weight="bold" text-anchor="middle" fill="#0f172a">UCB</text>
-            <rect x="12" y="42" width="16" height="8" fill="#0f172a"/>
-            <rect x="70" y="44" width="18" height="8" fill="#0f172a"/>
-            <rect x="42" y="72" width="16" height="8" fill="#0f172a"/>
+            <text x="50" y="54" font-size="11" font-weight="bold" text-anchor="middle" fill="#003B71">UCB</text>
+            <rect x="12" y="42" width="16" height="8" fill="#003B71"/>
+            <rect x="70" y="44" width="18" height="8" fill="#003B71"/>
+            <rect x="42" y="72" width="16" height="8" fill="#003B71"/>
             <rect x="68" y="68" width="22" height="22" fill="#003B71"/>
           </svg>
           <div>
-            <div class="text-[10px] font-bold uppercase tracking-wider text-ucb-blue">PUNTO DE ORIENTACIÓN UCB</div>
-            <div id="qrPreviewName" class="font-display font-bold text-base leading-tight mt-0.5">Ingreso Principal UCB</div>
-            <div id="qrPreviewCode" class="text-xs text-slate-600 mt-1 font-mono">ID: INGRESO_14_SEPT</div>
+            <div class="text-[10px] font-extrabold uppercase tracking-wider text-amber-600">PUNTO DE ORIENTACIÓN UCB</div>
+            <div id="qrPreviewName" class="font-display font-bold text-base leading-tight mt-0.5 text-ucb-blue">Ingreso Principal UCB</div>
+            <div id="qrPreviewCode" class="text-xs text-blue-700 mt-1 font-mono font-bold">ID: INGRESO_14_SEPT</div>
           </div>
         </div>
 
         <div class="pt-2 flex justify-end gap-2">
-          <button onclick="closeQRModal()" class="px-3 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cerrar</button>
-          <button onclick="confirmQRCheckIn()" class="px-4 py-2 rounded-xl bg-ucb-cyan text-slate-950 font-bold text-xs flex items-center gap-1.5">
+          <button onclick="closeQRModal()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-ucb-blue text-xs font-bold">Cerrar</button>
+          <button onclick="confirmQRCheckIn()" class="px-4 py-2 rounded-xl bg-ucb-gold hover:bg-amber-400 text-ucb-blue border-2 border-ucb-blue font-extrabold text-xs flex items-center gap-1.5">
             <i class="fa-solid fa-check-double"></i>
-            <span>Simular Escaneo QR (Fijar mi ubicación aquí)</span>
+            <span>Fijar mi ubicación aquí</span>
           </button>
         </div>
       </div>
@@ -1168,17 +741,17 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
   </div>
 
   <!-- NON-INTRUSIVE TOAST NOTIFICATION -->
-  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden hud-glass border-l-4 border-l-ucb-cyan px-4 py-3 rounded-xl shadow-2xl max-w-sm text-xs sm:text-sm flex items-center gap-2.5">
-    <i class="fa-solid fa-circle-info text-ucb-cyan text-base"></i>
-    <span id="toastMessage" class="text-white font-medium">Ruta actualizada</span>
+  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden hud-glass border-l-4 border-l-ucb-blue px-4 py-3 rounded-xl shadow-2xl max-w-sm text-xs sm:text-sm flex items-center gap-2.5">
+    <i class="fa-solid fa-circle-info text-amber-500 text-base"></i>
+    <span id="toastMessage" class="text-ucb-blue font-bold">Ruta actualizada</span>
   </div>
 
   <!-- ======================================================================= -->
-  <!-- APPLICATION LOGIC: CAMPUS GRAPH, DIJKSTRA, AR HUD, GPS & GOOGLE SHEETS  -->
+  <!-- APPLICATION LOGIC: CAMPUS GRAPH, DIJKSTRA, AR HUD & 4-CORNER CALIBRATOR -->
   <!-- ======================================================================= -->
   <script>
     // =========================================================================
-    // 1. BASE DE DATOS DEL CAMPUS UCB LA PAZ (OBRAJES) - SEGÚN MAPA OFICIAL PDF
+    // 1. BASE DE DATOS DEL CAMPUS UCB LA PAZ (OBRAJES)
     // =========================================================================
     const UCB_NODES = [
       {
@@ -1188,8 +761,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Ingreso Principal",
         lat: -16.52335,
         lng: -68.11215,
-        svgX: 380,
-        svgY: 428,
         type: "entry",
         floorInfo: "Nivel Calle · Av. 14 de Septiembre No. 4807 esq. Calle 2",
         dependencies: ["Portería Principal", "Torniquetes de Acceso", "Punto QR Principal", "Seguridad UCB"]
@@ -1201,8 +772,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Ingreso H. Siles",
         lat: -16.52215,
         lng: -68.11145,
-        svgX: 600,
-        svgY: 85,
         type: "entry",
         floorInfo: "Nivel Superior · Av. Hernando Siles",
         dependencies: ["Acceso Superior", "Salida hacia Av. Hernando Siles"]
@@ -1214,8 +783,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Atrio UCB",
         lat: -16.52295,
         lng: -68.11205,
-        svgX: 375,
-        svgY: 315,
         type: "plaza",
         floorInfo: "Explanada Exterior Central",
         dependencies: ["Plaza del Atrio", "Punto de Encuentro Estudiantil", "Conexión a Bloques A, D y K"]
@@ -1227,8 +794,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Ágora UCB",
         lat: -16.52270,
         lng: -68.11175,
-        svgX: 485,
-        svgY: 255,
         type: "plaza",
         floorInfo: "Plaza Central Techada / Explanada Cultural",
         dependencies: ["Ágora UCB", "Ferias Estudiantiles", "Conexión a Bloques B, C y G"]
@@ -1238,10 +803,8 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         code: "BLOQUE A",
         name: "Bloque A - Coliseo UCB",
         shortName: "Bloque A (Coliseo)",
-        lat: -16.52280,
-        lng: -68.11230,
-        svgX: 255,
-        svgY: 255,
+        lat: -16.522352,
+        lng: -68.111889,
         type: "block",
         floorInfo: "Planta Baja y Graderías",
         dependencies: ["Coliseo U.C.B.", "TECH MECH 2026", "Departamento de Deportes", "Club U Católica", "Sala de Danza"]
@@ -1253,8 +816,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque B (Cultura)",
         lat: -16.52265,
         lng: -68.11200,
-        svgX: 380,
-        svgY: 225,
         type: "block",
         floorInfo: "Pisos 1 al 3",
         dependencies: ["Departamento de Cultura y Arte", "Sala de Literatura", "Extensión Cultural", "Unidad de Auditoría Interna"]
@@ -1266,8 +827,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque C (Lab. Ingeniería)",
         lat: -16.52250,
         lng: -68.11180,
-        svgX: 465,
-        svgY: 165,
         type: "block",
         floorInfo: "Pisos 1 al 4 · Laboratorios",
         dependencies: ["Laboratorios de Ingeniería", "Sala de Docentes", "Laboratorios de Computación", "Laboratorio de Computación Aplicada", "Redes y Soporte"]
@@ -1279,8 +838,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque D (Paraninfo)",
         lat: -16.52305,
         lng: -68.11235,
-        svgX: 230,
-        svgY: 365,
         type: "block",
         floorInfo: "Pisos 1 al 5 (Paraninfo en Piso 5 · Ascensor disponible)",
         dependencies: ["Paraninfo U.C.B. (Piso 5)", "Aulas D1 a D30", "Auditorios 2, 3 y 4", "Capilla San Pablo", "Lab. Computación 4", "Lab. Redes 5", "Lab. Psicofisiología", "Laboratorio CINAES", "Centro de Cómputo"]
@@ -1292,8 +849,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque F (Kardex/Derecho)",
         lat: -16.52240,
         lng: -68.11195,
-        svgX: 365,
-        svgY: 125,
         type: "block",
         floorInfo: "Pisos 1 al 4",
         dependencies: ["Registro Académico (Kardex y Registros)", "Decanatura Derecho y Ciencias Políticas", "Carrera de Derecho", "Aulas F1 a F13", "Instituto para la Democracia (IpD)", "Mediador Universitario"]
@@ -1305,8 +860,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque G (Ing. / Tesorería)",
         lat: -16.52255,
         lng: -68.11155,
-        svgX: 590,
-        svgY: 185,
         type: "block",
         floorInfo: "Bloques G1 y G2 · Pisos 1 al 4",
         dependencies: ["Decanatura Facultad de Ingeniería", "Auditorio Principal", "Aulas G1, G2, G3", "Caja Tesorería", "Escuela de la Producción y Competitividad (ePC)", "Centro de Sistemas", "Postgrado de Ingeniería", "Atención Psicológica"]
@@ -1318,8 +871,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque H (Cafetería)",
         lat: -16.52285,
         lng: -68.11130,
-        svgX: 735,
-        svgY: 255,
         type: "block",
         floorInfo: "Planta Baja y Terraza Jardín",
         dependencies: ["Cafetería Central UCB", "Comedor Estudiantil", "Áreas Verdes y Descanso"]
@@ -1331,8 +882,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque I (Biblioteca)",
         lat: -16.52305,
         lng: -68.11110,
-        svgX: 845,
-        svgY: 315,
         type: "block",
         floorInfo: "Pisos 1 al 4 · Salas de Lectura",
         dependencies: ["Biblioteca Central UCB", "Capilla El Arca", "Salas de Estudio Grupal", "Hemeroteca"]
@@ -1344,8 +893,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque J (Internacional)",
         lat: -16.52270,
         lng: -68.11145,
-        svgX: 655,
-        svgY: 135,
         type: "block",
         floorInfo: "Pisos 1 y 2",
         dependencies: ["Internacionalización Académica y Cooperación Global", "Convenios e Intercambios", "Vicerrectorado Académico Nacional"]
@@ -1357,8 +904,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque K (Admisiones/Médico)",
         lat: -16.52315,
         lng: -68.11190,
-        svgX: 475,
-        svgY: 355,
         type: "block",
         floorInfo: "Planta Baja y Pisos 1-2",
         dependencies: ["Oficina de Informaciones", "Departamento de Admisión y Orientación", "Centro Médico U.C.B.", "Pastoral Universitaria", "Cato Voluntarios", "Administración de Empresas y Turismo"]
@@ -1370,8 +915,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque L (Rectorado Sede)",
         lat: -16.52320,
         lng: -68.11140,
-        svgX: 705,
-        svgY: 375,
         type: "block",
         floorInfo: "Edificio Administrativo Sede",
         dependencies: ["Rectorado de Sede La Paz", "Dirección Académica de Sede", "Dirección Administrativa Financiera"]
@@ -1383,8 +926,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque M (Arquitectura)",
         lat: -16.52355,
         lng: -68.11225,
-        svgX: 215,
-        svgY: 525,
         type: "block",
         floorInfo: "Av. 14 de Septiembre No. 4810 esq. Calle 2",
         dependencies: ["Carrera de Arquitectura", "Aulas M1 a M5", "Sala Cowork Arquitectura", "Biblioteca de Arquitectura", "Área Deportiva"]
@@ -1396,8 +937,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque P (Comunicación/Psic.)",
         lat: -16.52335,
         lng: -68.11185,
-        svgX: 420,
-        svgY: 525,
         type: "block",
         floorInfo: "Av. 14 de Septiembre No. 4836",
         dependencies: ["Carrera de Comunicación Social", "Carrera de Psicología", "SECRAD (Radio y TV)", "Sala Audiovisual", "Decanatura Ciencias Sociales y Humanas"]
@@ -1409,8 +948,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque N (Idiomas)",
         lat: -16.52345,
         lng: -68.11160,
-        svgX: 590,
-        svgY: 525,
         type: "block",
         floorInfo: "Av. 14 de Septiembre No. 4850",
         dependencies: ["Centro de Idiomas", "Carrera de Psicopedagogía", "Departamento de Educación", "Recursos Humanos", "Contabilidad y Finanzas"]
@@ -1422,8 +959,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloques S/T (Economía/Comercial)",
         lat: -16.52350,
         lng: -68.11195,
-        svgX: 775,
-        svgY: 525,
         type: "block",
         floorInfo: "Av. 14 de Septiembre / Av. Héctor Ormachea",
         dependencies: ["Decanatura Ciencias Económicas y Financieras", "Ingeniería Comercial", "Marketing Digital", "Contaduría Pública", "Economía e IISEC", "Programa CREA y UCBX"]
@@ -1435,8 +970,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque U (Diseño)",
         lat: -16.52410,
         lng: -68.11260,
-        svgX: 350,
-        svgY: 665,
         type: "block",
         floorInfo: "Av. Héctor Ormachea esq. Calle 3",
         dependencies: ["Carrera de Diseño Gráfico y Digital", "Aulas U1 a U5", "Media Lab (Estudio TV e Islas de Edición)", "Centro de Investigación en Diseño (CID)"]
@@ -1448,8 +981,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         shortName: "Bloque V (Medicina)",
         lat: -16.52520,
         lng: -68.10950,
-        svgX: 720,
-        svgY: 665,
         type: "block",
         floorInfo: "Av. Héctor Ormachea esq. Calle 12",
         dependencies: ["Carrera de Medicina", "Laboratorios Biomédicos", "Rectorado Nacional UCB"]
@@ -1502,82 +1033,13 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     ];
 
     // =========================================================================
-    // 3. EVENTOS INICIALES GUARDADOS
-    // =========================================================================
-    let UCB_EVENTS = [
-      {
-        id: "EV_TECH_MECH",
-        title: "TECH MECH 2026 - Hackathon Reto FDI",
-        category: "MECAFEST",
-        nodeId: "BLOQUE_A",
-        floor: "Planta Baja · Cancha Central",
-        date: "Hoy · 09:00 - 18:00",
-        organizer: "MECACENTRO · Ingeniería Mecatrónica",
-        description: "Competencia central de innovación y prototipado para resolver la navegación digital en el campus UCB."
-      },
-      {
-        id: "EV_MECA_GALA",
-        title: "Meca Gala 2026 - Ceremonia y Premiación",
-        category: "CULTURAL",
-        nodeId: "BLOQUE_D",
-        floor: "Piso 5 · Paraninfo UCB",
-        date: "Viernes · 19:00",
-        organizer: "MECACENTRO UCB",
-        description: "Noche de gala, entrega de premios (Bs 1.300 al equipo ganador) y celebración oficial en el Paraninfo."
-      },
-      {
-        id: "EV_FERIA_ROBOTICA",
-        title: "Expo Feria de Prototipos Mecatrónicos y Drones",
-        category: "MECAFEST",
-        nodeId: "AGORA",
-        floor: "Explanada Central Ágora",
-        date: "Hoy · 11:00 - 16:00",
-        organizer: "Facultad de Ingeniería",
-        description: "Exhibición abierta de robots móviles, sistemas embebidos y brazos robóticos en el Ágora."
-      },
-      {
-        id: "EV_CONF_IA",
-        title: "Conferencia Magistral: IA y Visión Computacional",
-        category: "ACADEMICO",
-        nodeId: "BLOQUE_G",
-        floor: "Piso 2 · Auditorio Principal (Bloque G)",
-        date: "Hoy · 15:00",
-        organizer: "Decanatura de Ingeniería",
-        description: "Aplicaciones industriales de inteligencia artificial, gemelos digitales y realidad aumentada."
-      },
-      {
-        id: "EV_DISENO_LAB",
-        title: "Workshop de Producción Audiovisual y Media Lab",
-        category: "ACADEMICO",
-        nodeId: "BLOQUE_U",
-        floor: "Piso 2 · Media Lab (Aula U3)",
-        date: "Mañana · 10:30",
-        organizer: "Carrera de Diseño Digital",
-        description: "Taller práctico de iluminación, edición y realidad mixta en el estudio de televisión de Diseño."
-      },
-      {
-        id: "EV_BIBLIOTECA",
-        title: "Encuentro de Investigación y Club de Lectura",
-        category: "CULTURAL",
-        nodeId: "BLOQUE_I",
-        floor: "Piso 1 · Sala Principal Biblioteca",
-        date: "Mañana · 14:30",
-        organizer: "Biblioteca Central UCB",
-        description: "Presentación de nuevas bases de datos científicas y catálogo digital para estudiantes."
-      }
-    ];
-
-    // =========================================================================
-    // 4. ESTADO GLOBAL DE LA APLICACIÓN
+    // 3. ESTADO GLOBAL DE LA APLICACIÓN
     // =========================================================================
     const state = {
       activeTab: 'ar',
       originId: 'INGRESO_PRINCIPAL',
       destinationId: 'BLOQUE_A',
-      selectedEventId: 'EV_TECH_MECH',
-      inspectedNodeId: 'BLOQUE_A',
       accessibleMode: false,
-      mapClickMode: 'dest',
       activeRoute: null,
       currentStepIndex: 0,
       
@@ -1592,22 +1054,17 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       gpsActive: false,
       gpsWatchId: null,
       userLat: -16.52335,
-      userLng: -68.11215,
-
-      eventCategoryFilter: 'ALL'
+      userLng: -68.11215
     };
 
     function toggleARBlockLinesMode() {
       state.showAllBlockLines = !state.showAllBlockLines;
       const btnText = document.getElementById('btnARLinesText');
-      const btn = document.getElementById('btnToggleARLines');
       if (state.showAllBlockLines) {
         btnText.textContent = "Líneas: Todas";
-        btn.className = "px-3 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-1.5 shadow-lg transition hud-glass hover:bg-slate-800/90 text-ucb-cyan border border-ucb-cyan/40";
         showToast("Líneas AR activadas para todos los bloques en tu campo visual.");
       } else {
         btnText.textContent = "Líneas: Destino";
-        btn.className = "px-3 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-1.5 shadow-lg transition hud-glass hover:bg-slate-800/90 text-ucb-gold border border-ucb-gold/40";
         showToast("Mostrando únicamente la línea guía principal hacia el bloque destino.");
       }
     }
@@ -1617,9 +1074,9 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     }
 
     // =========================================================================
-    // 4.1 GEOMETRÍA DE 4 ESQUINAS POR BLOQUE (POLÍGONOS GPS, CENTROIDE Y RAY-CASTING)
+    // 4. GEOMETRÍA DE 4 ESQUINAS POR BLOQUE (POLÍGONOS GPS, CENTROIDE Y RAY-CASTING)
     // =========================================================================
-    const STORAGE_KEY_CORNERS = 'ucb_navigator_calibrated_corners_v1';
+    const STORAGE_KEY_CORNERS = 'ucb_navigator_calibrated_corners_v2';
 
     const EXACT_USER_COORDS = {
       "INGRESO_PRINCIPAL": {
@@ -1853,9 +1310,9 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           node.lng = c.lng;
         } else if (EXACT_USER_COORDS[node.id]) {
           const uData = EXACT_USER_COORDS[node.id];
-          node.corners = uData.corners;
-          node.lat = uData.centroid.lat;
-          node.lng = uData.centroid.lng;
+          node.corners = uData.corners.map(c => ({ lat: Number(c.lat), lng: Number(c.lng) }));
+          node.lat = Number(uData.centroid.lat);
+          node.lng = Number(uData.centroid.lng);
           node.isCustomCalibrated = true;
         } else {
           node.corners = createDefaultCornersForCoord(node.defaultLat, node.defaultLng);
@@ -2088,7 +1545,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     }
 
     // =========================================================================
-    // 7. ACTUALIZACIÓN INTEGRAL DE LA RUTA Y VISTAS (AR + MAPA)
+    // 7. ACTUALIZACIÓN DE LA RUTA Y PANELES EN CÁMARA AR
     // =========================================================================
     function recalculateAndRenderRoute() {
       state.activeRoute = computeShortestPathDijkstra(
@@ -2104,6 +1561,9 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       if (!state.gpsActive) {
         state.userLat = originNode.lat;
         state.userLng = originNode.lng;
+        document.getElementById('teleLat').textContent = state.userLat.toFixed(6);
+        document.getElementById('teleLng').textContent = state.userLng.toFixed(6);
+        document.getElementById('teleNearest').textContent = originNode.shortName;
       }
 
       document.getElementById('selectOrigin').value = state.originId;
@@ -2113,27 +1573,14 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       document.getElementById('headerDestLabel').textContent = destNode.shortName;
       document.getElementById('headerDistBadge').textContent = `${state.activeRoute.totalDistance} m`;
 
-      const activeEvent = UCB_EVENTS.find(e => e.id === state.selectedEventId && e.nodeId === state.destinationId);
-      const eventBanner = document.getElementById('arEventBanner');
-      if (activeEvent) {
-        eventBanner.classList.remove('hidden');
-        document.getElementById('arEventTitle').textContent = `Evento: ${activeEvent.title}`;
-        document.getElementById('arFloorBadge').textContent = activeEvent.floor;
-        document.getElementById('destDetailFloor').textContent = `Ubicación del evento: ${activeEvent.floor}`;
-      } else {
-        eventBanner.classList.remove('hidden');
-        document.getElementById('arEventTitle').textContent = `Destino UCB: ${destNode.name}`;
-        document.getElementById('arFloorBadge').textContent = destNode.code;
-        document.getElementById('destDetailFloor').textContent = destNode.floorInfo;
-      }
-
+      document.getElementById('arTargetHeaderTitle').textContent = `Destino UCB: ${destNode.name}`;
+      document.getElementById('arFloorBadge').textContent = destNode.code;
       document.getElementById('destDetailName').textContent = destNode.name;
       document.getElementById('destDetailDeps').textContent = destNode.dependencies.join(' · ');
+      document.getElementById('destDetailFloor').textContent = destNode.floorInfo;
 
       updateARStepHUD();
       renderStepListsUI();
-      renderCampusMapSVG();
-      updateInspectorCard(state.destinationId);
       if (document.getElementById('calibBlockSelect')) {
         previewPolygonFromInputs();
       }
@@ -2169,10 +1616,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       document.getElementById('arNextStepDesc').textContent = currentStep.instruction;
       document.getElementById('arRemainingDist').textContent = `${remainingMeters} m`;
       document.getElementById('arRemainingTime').textContent = formatTimeFromSeconds(remainingSec);
-
-      document.getElementById('mapTotalDist').textContent = `${route.totalDistance} m`;
-      document.getElementById('mapTotalTime').textContent = formatTimeFromSeconds(route.estimatedSeconds);
-      document.getElementById('mapTotalNodes').textContent = `${route.pathNodes.length} puntos`;
     }
 
     function advanceOneStepOnRoute() {
@@ -2186,7 +1629,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         state.userLng = newCurrentNode.lng;
         updateARStepHUD();
         renderStepListsUI();
-        renderCampusMapSVG();
         showToast(`Avanzaste a ${newCurrentNode.shortName}. Sigue la flecha AR.`);
       } else {
         state.originId = state.destinationId;
@@ -2197,55 +1639,49 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
 
     function renderStepListsUI() {
       const arContainer = document.getElementById('arStepsList');
-      const mapContainer = document.getElementById('mapStepsList');
       const steps = state.activeRoute ? state.activeRoute.steps : [];
 
       if (steps.length === 0) {
-        const emptyHtml = `
-          <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-base"></i>
+        arContainer.innerHTML = `
+          <div class="p-3 rounded-xl bg-amber-100 border-2 border-amber-400 text-ucb-blue font-bold text-xs flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-blue-700 text-base"></i>
             <span>Ya te encuentras dentro del perímetro del bloque destino seleccionado.</span>
           </div>`;
-        arContainer.innerHTML = emptyHtml;
-        mapContainer.innerHTML = emptyHtml;
         return;
       }
 
-      const html = steps.map((st, idx) => {
+      arContainer.innerHTML = steps.map((st, idx) => {
         const isCurrent = idx === state.currentStepIndex;
         const isPassed = idx < state.currentStepIndex;
         return `
-          <div class="p-2.5 rounded-xl border transition flex items-start justify-between gap-2 ${
+          <div class="p-2.5 rounded-xl border-2 transition flex items-start justify-between gap-2 ${
             isCurrent
-              ? 'bg-ucb-cyan/15 border-ucb-cyan text-white'
+              ? 'bg-amber-100/90 border-ucb-blue text-ucb-blue shadow-sm'
               : isPassed
-              ? 'bg-slate-950/40 border-slate-800/60 text-slate-500 line-through'
-              : 'bg-slate-950/80 border-slate-800 text-slate-300'
+              ? 'bg-slate-100 border-slate-200 text-slate-400 line-through'
+              : 'bg-white border-amber-200 text-slate-700'
           }">
             <div class="flex items-start gap-2.5">
-              <span class="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5 ${
-                isCurrent ? 'bg-ucb-cyan text-slate-950' : 'bg-slate-800 text-slate-300'
+              <span class="w-5 h-5 rounded-full text-[11px] font-extrabold flex items-center justify-center shrink-0 mt-0.5 ${
+                isCurrent ? 'bg-ucb-blue text-amber-300' : 'bg-amber-200 text-ucb-blue'
               }">
                 ${st.stepNumber}
               </span>
               <div>
-                <div class="text-xs font-bold ${isCurrent ? 'text-ucb-cyan' : 'text-white'}">
-                  ${st.fromNode.shortName} <i class="fa-solid fa-arrow-right text-[10px] mx-1 text-slate-400"></i> ${st.toNode.shortName}
+                <div class="text-xs font-extrabold text-ucb-blue">
+                  ${st.fromNode.shortName} <i class="fa-solid fa-arrow-right text-[10px] mx-1 text-amber-600"></i> ${st.toNode.shortName}
                 </div>
-                <div class="text-[11px] text-slate-400 mt-0.5">${st.instruction}</div>
+                <div class="text-[11px] text-slate-600 font-medium mt-0.5">${st.instruction}</div>
               </div>
             </div>
-            <span class="font-mono text-xs font-semibold text-ucb-gold shrink-0">${st.distance} m</span>
+            <span class="font-mono text-xs font-extrabold text-blue-700 shrink-0">${st.distance} m</span>
           </div>
         `;
       }).join('');
-
-      arContainer.innerHTML = html;
-      mapContainer.innerHTML = html;
     }
 
     // =========================================================================
-    // 8. MOTOR DE REALIDAD AUMENTADA (CÁMARA + FLECHA 3D EN CANVAS + RADAR)
+    // 8. MOTOR DE REALIDAD AUMENTADA (CÁMARA + FLECHA 3D EN TONOS AMARILLO/AZUL)
     // =========================================================================
     async function toggleCameraFeed() {
       const video = document.getElementById('arVideo');
@@ -2262,7 +1698,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         simScene.classList.remove('hidden');
         state.cameraActive = false;
         btnText.textContent = "Encender Cámara AR";
-        btn.className = "px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition bg-emerald-500 hover:bg-emerald-400 text-slate-950";
+        btn.className = "px-3.5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-md transition bg-ucb-gold hover:bg-amber-400 text-ucb-blue border-2 border-ucb-blue";
         showToast("Cámara apagada. Mostrando entorno AR simulado del campus.");
         return;
       }
@@ -2278,7 +1714,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         simScene.classList.add('hidden');
         state.cameraActive = true;
         btnText.textContent = "Apagar Cámara AR";
-        btn.className = "px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition bg-rose-500 hover:bg-rose-400 text-white";
+        btn.className = "px-3.5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-md transition bg-ucb-blue hover:bg-blue-900 text-amber-300 border-2 border-amber-400";
         showToast("📷 Cámara trasera activa con superposición de ruta AR.");
       } catch (err) {
         state.cameraActive = false;
@@ -2375,7 +1811,8 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         const originAnchorX = arrowCenterX;
         const originAnchorY = arrowCenterY + pulseOffset - 10;
 
-        function drawDirectionalLineToBlock(fromX, fromY, toX, toY, isPrimary, colorHex, distM, bearingDeg) {
+        // Líneas direccionales en tonos Amarillo UCB (#F2A900) y Azul UCB (#003B71 / #1D4ED8)
+        function drawDirectionalLineToBlock(fromX, fromY, toX, toY, isPrimary, distM, bearingDeg) {
           ctx.save();
           const dx = toX - fromX;
           const dy = toY - fromY;
@@ -2383,29 +1820,32 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           const length = Math.hypot(dx, dy);
 
           if (isPrimary) {
+            // Halo exterior amarillo dorado
             ctx.beginPath();
             ctx.moveTo(fromX, fromY);
             ctx.lineTo(toX, toY);
-            ctx.strokeStyle = 'rgba(0, 229, 255, 0.28)';
-            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(242, 169, 0, 0.35)';
+            ctx.lineWidth = 11;
             ctx.lineCap = 'round';
             ctx.stroke();
 
+            // Línea guía principal Azul y Amarillo UCB
             const lineGrad = ctx.createLinearGradient(fromX, fromY, toX, toY);
-            lineGrad.addColorStop(0, '#00E5FF');
-            lineGrad.addColorStop(0.6, '#38BDF8');
+            lineGrad.addColorStop(0, '#003B71');
+            lineGrad.addColorStop(0.5, '#2563EB');
             lineGrad.addColorStop(1, '#F2A900');
 
             ctx.beginPath();
             ctx.moveTo(fromX, fromY);
             ctx.lineTo(toX, toY);
             ctx.strokeStyle = lineGrad;
-            ctx.lineWidth = 3.2;
+            ctx.lineWidth = 3.5;
             ctx.setLineDash([12, 8]);
             ctx.lineDashOffset = -(timestamp / 18) % 40;
             ctx.stroke();
             ctx.setLineDash([]);
 
+            // Chevrons direccionales viajando hacia el bloque
             const numChevrons = Math.max(2, Math.floor(length / 55));
             const animProgress = (timestamp / 650) % 1;
             for (let i = 0; i < numChevrons; i++) {
@@ -2420,18 +1860,19 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
                 ctx.moveTo(-7, -7);
                 ctx.lineTo(4, 0);
                 ctx.lineTo(-7, 7);
-                ctx.strokeStyle = '#FFFFFF';
-                ctx.lineWidth = 2.2;
+                ctx.strokeStyle = '#003B71';
+                ctx.lineWidth = 2.5;
                 ctx.stroke();
                 ctx.restore();
               }
             }
           } else {
+            // Línea secundaria azul institucional punteada
             ctx.beginPath();
             ctx.moveTo(fromX, fromY);
             ctx.lineTo(toX, toY);
-            ctx.strokeStyle = colorHex || 'rgba(0, 229, 255, 0.42)';
-            ctx.lineWidth = 1.6;
+            ctx.strokeStyle = 'rgba(0, 59, 113, 0.48)';
+            ctx.lineWidth = 1.8;
             ctx.setLineDash([5, 6]);
             ctx.lineDashOffset = -(timestamp / 35) % 22;
             ctx.stroke();
@@ -2440,18 +1881,22 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
             if (length > 90) {
               const midX = fromX + dx * 0.55;
               const midY = fromY + dy * 0.55;
-              ctx.fillStyle = 'rgba(7, 19, 36, 0.85)';
+              ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+              ctx.strokeStyle = '#F2A900';
+              ctx.lineWidth = 1.2;
               ctx.beginPath();
-              ctx.roundRect(midX - 24, midY - 8, 48, 16, 4);
+              ctx.roundRect(midX - 26, midY - 8, 52, 16, 4);
               ctx.fill();
-              ctx.font = '600 9.5px monospace';
-              ctx.fillStyle = '#38BDF8';
+              ctx.stroke();
+              ctx.font = 'bold 9.5px monospace';
+              ctx.fillStyle = '#003B71';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
               ctx.fillText(`${Math.round(bearingDeg)}°·${distM}m`, midX, midY);
             }
           }
 
+          // Punta de flecha en el extremo
           ctx.save();
           ctx.translate(toX, toY);
           ctx.rotate(angle);
@@ -2461,13 +1906,14 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           ctx.lineTo(-9, 0);
           ctx.lineTo(-12, 6);
           ctx.closePath();
-          ctx.fillStyle = isPrimary ? '#F2A900' : '#00E5FF';
+          ctx.fillStyle = isPrimary ? '#F2A900' : '#003B71';
           ctx.fill();
           ctx.restore();
 
           ctx.restore();
         }
 
+        // A. DIBUJAR LÍNEAS DIRECCIONALES Y PINES FLOTANTES DE LOS BLOQUES
         const fovDeg = 75;
         let targetPinDrawnOnScreen = false;
 
@@ -2488,59 +1934,41 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
             }
 
             if (isTarget) {
-              drawDirectionalLineToBlock(
-                originAnchorX,
-                originAnchorY,
-                screenX,
-                screenY + 18,
-                true,
-                '#F2A900',
-                distM,
-                nodeBearing
-              );
+              drawDirectionalLineToBlock(originAnchorX, originAnchorY, screenX, screenY + 18, true, distM, nodeBearing);
             } else if (state.showAllBlockLines) {
-              drawDirectionalLineToBlock(
-                originAnchorX,
-                originAnchorY,
-                screenX,
-                screenY + 14,
-                false,
-                'rgba(0, 229, 255, 0.38)',
-                distM,
-                nodeBearing
-              );
+              drawDirectionalLineToBlock(originAnchorX, originAnchorY, screenX, screenY + 14, false, distM, nodeBearing);
             }
 
             ctx.save();
             ctx.beginPath();
-            ctx.arc(screenX, screenY + 18, isTarget ? 5 : 3, 0, Math.PI * 2);
-            ctx.fillStyle = isTarget ? '#F2A900' : '#00E5FF';
+            ctx.arc(screenX, screenY + 18, isTarget ? 5 : 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = isTarget ? '#F2A900' : '#003B71';
             ctx.fill();
 
             ctx.beginPath();
             ctx.moveTo(screenX, screenY + 16);
             ctx.lineTo(screenX, screenY + 46);
-            ctx.strokeStyle = isTarget ? 'rgba(242, 169, 0, 0.85)' : 'rgba(0, 229, 255, 0.35)';
-            ctx.lineWidth = isTarget ? 2.5 : 1.2;
+            ctx.strokeStyle = isTarget ? '#F2A900' : 'rgba(0, 59, 113, 0.55)';
+            ctx.lineWidth = isTarget ? 2.5 : 1.5;
             ctx.stroke();
 
             const label = `${node.shortName} (${distM}m)`;
-            ctx.font = isTarget ? 'bold 13px Inter, sans-serif' : '500 11px Inter, sans-serif';
+            ctx.font = isTarget ? 'bold 13px Inter, sans-serif' : '600 11px Inter, sans-serif';
             const textWidth = ctx.measureText(label).width;
             const padX = 10;
             const boxW = textWidth + padX * 2;
             const boxH = isTarget ? 30 : 24;
 
-            ctx.fillStyle = isTarget ? 'rgba(242, 169, 0, 0.95)' : 'rgba(7, 19, 36, 0.85)';
-            ctx.strokeStyle = isTarget ? '#FFFFFF' : 'rgba(0, 229, 255, 0.55)';
-            ctx.lineWidth = 1.5;
+            ctx.fillStyle = isTarget ? '#FACC15' : 'rgba(255, 255, 255, 0.94)';
+            ctx.strokeStyle = '#003B71';
+            ctx.lineWidth = isTarget ? 2 : 1.5;
 
             ctx.beginPath();
             ctx.roundRect(screenX - boxW / 2, screenY - boxH / 2, boxW, boxH, 8);
             ctx.fill();
             ctx.stroke();
 
-            ctx.fillStyle = isTarget ? '#071324' : '#E2E8F0';
+            ctx.fillStyle = '#003B71';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(label, screenX, screenY);
@@ -2548,21 +1976,13 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           }
         });
 
+        // Indicador hacia el borde si el bloque objetivo está fuera de cámara
         if (!targetPinDrawnOnScreen) {
           const targetDist = calculateHaversineMeters(state.userLat, state.userLng, targetNode.lat, targetNode.lng);
           const edgeX = relAngleDeg > 0 ? w - 28 : 28;
           const edgeY = h * 0.45;
 
-          drawDirectionalLineToBlock(
-            originAnchorX,
-            originAnchorY,
-            edgeX,
-            edgeY,
-            true,
-            '#F2A900',
-            targetDist,
-            targetBearing
-          );
+          drawDirectionalLineToBlock(originAnchorX, originAnchorY, edgeX, edgeY, true, targetDist, targetBearing);
 
           ctx.save();
           const edgeLabel = `${relAngleDeg > 0 ? 'Gira a la Derecha ➔' : '⬅ Gira a la Izquierda'} ${targetNode.shortName} (${targetDist}m)`;
@@ -2570,21 +1990,22 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           const tw = ctx.measureText(edgeLabel).width + 20;
           const boxX = relAngleDeg > 0 ? w - tw - 16 : 16;
 
-          ctx.fillStyle = 'rgba(242, 169, 0, 0.95)';
-          ctx.strokeStyle = '#FFFFFF';
+          ctx.fillStyle = '#FACC15';
+          ctx.strokeStyle = '#003B71';
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.roundRect(boxX, edgeY - 36, tw, 28, 8);
           ctx.fill();
           ctx.stroke();
 
-          ctx.fillStyle = '#071324';
+          ctx.fillStyle = '#003B71';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText(edgeLabel, boxX + tw / 2, edgeY - 22);
           ctx.restore();
         }
 
+        // B. GRAN FLECHA DIRECCIONAL 3D EN TONOS AMARILLO Y AZUL UCB
         ctx.save();
         ctx.translate(arrowCenterX, arrowCenterY + pulseOffset);
 
@@ -2592,10 +2013,10 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         ctx.scale(1, 0.42);
         ctx.beginPath();
         ctx.arc(0, 0, 95, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(7, 19, 36, 0.65)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.86)';
         ctx.fill();
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = Math.abs(relAngleDeg) < 20 ? '#10B981' : '#00E5FF';
+        ctx.lineWidth = 4.5;
+        ctx.strokeStyle = Math.abs(relAngleDeg) < 20 ? '#003B71' : '#F2A900';
         ctx.stroke();
 
         for (let a = 0; a < 360; a += 30) {
@@ -2603,13 +2024,14 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           ctx.beginPath();
           ctx.moveTo(Math.cos(rad) * 82, Math.sin(rad) * 82);
           ctx.lineTo(Math.cos(rad) * 92, Math.sin(rad) * 92);
-          ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+          ctx.strokeStyle = 'rgba(0, 59, 113, 0.35)';
           ctx.lineWidth = 2;
           ctx.stroke();
         }
 
         ctx.rotate(relAngleRad);
 
+        // Sombra suave azulada
         ctx.beginPath();
         ctx.moveTo(0, -76);
         ctx.lineTo(44, 42);
@@ -2619,7 +2041,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         ctx.lineTo(-15, 24);
         ctx.lineTo(-44, 42);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.fillStyle = 'rgba(0, 59, 113, 0.25)';
         ctx.translate(0, 12);
         ctx.fill();
         ctx.translate(0, -12);
@@ -2627,11 +2049,11 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         const aligned = Math.abs(relAngleDeg) < 20;
         const grad = ctx.createLinearGradient(0, -76, 0, 68);
         if (aligned) {
-          grad.addColorStop(0, '#34D399');
-          grad.addColorStop(1, '#059669');
+          grad.addColorStop(0, '#FACC15');
+          grad.addColorStop(1, '#F2A900');
         } else {
-          grad.addColorStop(0, '#00E5FF');
-          grad.addColorStop(0.6, '#0284C7');
+          grad.addColorStop(0, '#2563EB');
+          grad.addColorStop(0.55, '#003B71');
           grad.addColorStop(1, '#F2A900');
         }
 
@@ -2647,7 +2069,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         ctx.fillStyle = grad;
         ctx.fill();
         ctx.lineWidth = 3.5;
-        ctx.strokeStyle = '#FFFFFF';
+        ctx.strokeStyle = '#003B71';
         ctx.stroke();
         ctx.restore();
 
@@ -2656,11 +2078,22 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         else if (relAngleDeg < -20) turnInstruction = `↺ GIRA ${Math.abs(Math.round(relAngleDeg))}° A LA IZQUIERDA`;
 
         ctx.font = 'bold 13px Space Grotesk, Inter, sans-serif';
+        const instrW = ctx.measureText(turnInstruction).width + 20;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+        ctx.strokeStyle = '#F2A900';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(-instrW / 2, 48, instrW, 24, 6);
+        ctx.fill();
+        ctx.stroke();
+
         ctx.textAlign = 'center';
-        ctx.fillStyle = aligned ? '#34D399' : '#F2A900';
-        ctx.fillText(turnInstruction, 0, 62);
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#003B71';
+        ctx.fillText(turnInstruction, 0, 60);
         ctx.restore();
 
+        // C. MINI-RADAR CIRCULAR EN BLANCO, AMARILLO Y AZUL
         const radarRadius = 52;
         const radarX = w - radarRadius - 18;
         const radarY = h - radarRadius - 74;
@@ -2670,23 +2103,23 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
 
         ctx.beginPath();
         ctx.arc(0, 0, radarRadius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(7, 19, 36, 0.85)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
         ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = 'rgba(0, 229, 255, 0.5)';
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#003B71';
         ctx.stroke();
 
         ctx.beginPath();
         ctx.arc(0, 0, radarRadius * 0.5, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(242, 169, 0, 0.55)';
+        ctx.lineWidth = 1.2;
         ctx.stroke();
 
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.arc(0, 0, radarRadius, (-125 * Math.PI) / 180, (-55 * Math.PI) / 180);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(0, 229, 255, 0.18)';
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.35)';
         ctx.fill();
 
         UCB_NODES.forEach(node => {
@@ -2705,20 +2138,20 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(bx, by);
-            ctx.strokeStyle = isDest ? '#F2A900' : '#00E5FF';
-            ctx.lineWidth = isDest ? 2 : 1.5;
+            ctx.strokeStyle = isDest ? '#F2A900' : '#2563EB';
+            ctx.lineWidth = isDest ? 2.2 : 1.5;
             ctx.stroke();
           }
 
           ctx.beginPath();
           ctx.arc(bx, by, isDest ? 4.5 : 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = isDest ? '#F2A900' : '#94A3B8';
+          ctx.fillStyle = isDest ? '#F2A900' : '#003B71';
           ctx.fill();
         });
 
         ctx.beginPath();
-        ctx.arc(0, 0, 4, 0, Math.PI * 2);
-        ctx.fillStyle = '#10B981';
+        ctx.arc(0, 0, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#2563EB';
         ctx.fill();
         ctx.restore();
 
@@ -2731,209 +2164,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     }
 
     // =========================================================================
-    // 9. RENDERIZADO DEL MAPA VECTORIAL UCB OBRAJES Y GRAFO DIJKSTRA
-    // =========================================================================
-    function renderCampusMapSVG() {
-      const edgesLayer = document.getElementById('svgEdgesLayer');
-      const routeLayer = document.getElementById('svgRouteLayer');
-      const nodesLayer = document.getElementById('svgNodesLayer');
-      const userMarker = document.getElementById('svgUserMarker');
-
-      edgesLayer.innerHTML = UCB_EDGES.map(edge => {
-        const n1 = getNodeById(edge.from);
-        const n2 = getNodeById(edge.to);
-        const midX = (n1.svgX + n2.svgX) / 2;
-        const midY = (n1.svgY + n2.svgY) / 2;
-        return `
-          <g>
-            <line x1="${n1.svgX}" y1="${n1.svgY}" x2="${n2.svgX}" y2="${n2.svgY}"
-                  stroke="${edge.hasStairs ? '#64748B' : '#334155'}"
-                  stroke-width="3.5"
-                  stroke-dasharray="${edge.hasStairs ? '4,4' : 'none'}" />
-            <rect x="${midX - 14}" y="${midY - 8}" width="28" height="15" rx="4" fill="#0B192C" opacity="0.85" />
-            <text x="${midX}" y="${midY + 3}" font-size="9" fill="#94A3B8" text-anchor="middle" font-family="monospace">${edge.dist}m</text>
-          </g>
-        `;
-      }).join('');
-
-      const route = state.activeRoute;
-      let currentUserNode = getNodeById(state.originId);
-      if (route && route.steps.length > 0 && state.currentStepIndex > 0) {
-        const idx = Math.min(state.currentStepIndex, route.steps.length - 1);
-        currentUserNode = route.steps[idx].fromNode;
-      }
-      const destNode = getNodeById(state.destinationId);
-
-      if (route && route.pathNodes.length > 1) {
-        const pointsStr = route.pathNodes.map(n => `${n.svgX},${n.svgY}`).join(' ');
-
-        const segmentArrowsHtml = route.steps.map(st => `
-          <line x1="${st.fromNode.svgX}" y1="${st.fromNode.svgY}"
-                x2="${(st.fromNode.svgX + st.toNode.svgX) / 2}" y2="${(st.fromNode.svgY + st.toNode.svgY) / 2}"
-                stroke="#00E5FF" stroke-width="3" marker-end="url(#arrowCyan)" opacity="0.95" />
-        `).join('');
-
-        const directBearing = Math.round(calculateBearing(currentUserNode.lat, currentUserNode.lng, destNode.lat, destNode.lng));
-        const directCardinal = getCardinalLabel(directBearing);
-        const vecMidX = (currentUserNode.svgX + destNode.svgX) / 2;
-        const vecMidY = (currentUserNode.svgY + destNode.svgY) / 2 - 12;
-
-        routeLayer.innerHTML = `
-          <polyline points="${pointsStr}" fill="none" stroke="rgba(0, 229, 255, 0.3)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#cyanGlow)" />
-          <polyline points="${pointsStr}" fill="none" stroke="#00E5FF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="route-animated" />
-          ${segmentArrowsHtml}
-          <line x1="${currentUserNode.svgX}" y1="${currentUserNode.svgY}"
-                x2="${destNode.svgX}" y2="${destNode.svgY}"
-                stroke="#F2A900" stroke-width="2.2" stroke-dasharray="6,6"
-                marker-end="url(#arrowGold)" opacity="0.88" />
-          <g transform="translate(${vecMidX}, ${vecMidY})">
-            <rect x="-46" y="-10" width="92" height="18" rx="5" fill="#071324" stroke="#F2A900" stroke-width="1.2" opacity="0.92" />
-            <text x="0" y="2" font-size="9.5" font-weight="bold" fill="#F2A900" text-anchor="middle" font-family="monospace">
-              Rumbo ${directBearing}° ${directCardinal}
-            </text>
-          </g>
-        `;
-      } else {
-        routeLayer.innerHTML = '';
-      }
-
-      nodesLayer.innerHTML = UCB_NODES.map(node => {
-        const isOrigin = node.id === state.originId;
-        const isDest = node.id === state.destinationId;
-        const isInPath = route && route.pathIds.includes(node.id);
-
-        let fillColor = '#E06D53';
-        if (node.type === 'plaza') fillColor = '#2563EB';
-        if (node.type === 'entry') fillColor = '#059669';
-        if (isOrigin) fillColor = '#10B981';
-        if (isDest) fillColor = '#F2A900';
-
-        const strokeColor = (isOrigin || isDest) ? '#FFFFFF' : isInPath ? '#00E5FF' : '#0F172A';
-        const strokeWidth = (isOrigin || isDest || isInPath) ? 3 : 1.5;
-
-        return `
-          <g class="map-node-group" onclick="handleMapNodeClick('${node.id}')">
-            <rect x="${node.svgX - 38}" y="${node.svgY - 20}" width="76" height="40" rx="10"
-                  fill="${fillColor}" stroke="${strokeColor}" stroke-width="${strokeWidth}" />
-            <text x="${node.svgX}" y="${node.svgY - 3}" fill="${isDest ? '#0F172A' : '#FFFFFF'}"
-                  font-size="10.5" font-weight="800" text-anchor="middle">
-              ${node.code}
-            </text>
-            <text x="${node.svgX}" y="${node.svgY + 11}" fill="${isDest ? '#1E293B' : '#F1F5F9'}"
-                  font-size="8.5" font-weight="600" text-anchor="middle">
-              ${node.shortName.replace(/Bloque [A-Z0-9/]+ /i, '')}
-            </text>
-          </g>
-        `;
-      }).join('');
-
-      userMarker.setAttribute('transform', `translate(${currentUserNode.svgX}, ${currentUserNode.svgY})`);
-    }
-
-    function handleMapNodeClick(nodeId) {
-      state.inspectedNodeId = nodeId;
-      updateInspectorCard(nodeId);
-
-      if (state.mapClickMode === 'origin') {
-        state.originId = nodeId;
-        recalculateAndRenderRoute();
-        showToast(`📍 Origen actualizado: ${getNodeById(nodeId).shortName}`);
-      } else {
-        state.destinationId = nodeId;
-        state.selectedEventId = null;
-        recalculateAndRenderRoute();
-        showToast(`🎯 Destino actualizado: ${getNodeById(nodeId).shortName}`);
-      }
-    }
-
-    function setMapClickMode(mode) {
-      state.mapClickMode = mode;
-      const btnDest = document.getElementById('clickModeDest');
-      const btnOrig = document.getElementById('clickModeOrigin');
-
-      if (mode === 'dest') {
-        btnDest.className = "px-2.5 py-1.5 rounded-lg font-semibold bg-ucb-gold text-slate-950 transition";
-        btnOrig.className = "px-2.5 py-1.5 rounded-lg font-semibold text-slate-300 hover:bg-slate-800 transition";
-      } else {
-        btnOrig.className = "px-2.5 py-1.5 rounded-lg font-semibold bg-emerald-400 text-slate-950 transition";
-        btnDest.className = "px-2.5 py-1.5 rounded-lg font-semibold text-slate-300 hover:bg-slate-800 transition";
-      }
-    }
-
-    function updateInspectorCard(nodeId) {
-      const node = getNodeById(nodeId);
-      state.inspectedNodeId = node.id;
-      document.getElementById('inspectCodeBadge').textContent = node.code;
-      document.getElementById('inspectCoordsBadge').textContent = `${node.lat.toFixed(5)}, ${node.lng.toFixed(5)}`;
-      document.getElementById('inspectTitle').textContent = node.name;
-      document.getElementById('inspectFloor').textContent = node.floorInfo;
-
-      document.getElementById('inspectDepsList').innerHTML = node.dependencies.map(dep => `
-        <span class="px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 text-[11px]">
-          ${dep}
-        </span>
-      `).join('');
-    }
-
-    function setInspectedAsOrigin() {
-      state.originId = state.inspectedNodeId;
-      recalculateAndRenderRoute();
-      showToast(`Ubicación actual fijada en ${getNodeById(state.originId).shortName}`);
-    }
-
-    function setInspectedAsDestination() {
-      state.destinationId = state.inspectedNodeId;
-      state.selectedEventId = null;
-      recalculateAndRenderRoute();
-      showToast(`Ruta calculada hacia ${getNodeById(state.destinationId).shortName}`);
-    }
-
-    function handleMapDependencySearch(query) {
-      const dropdown = document.getElementById('mapSearchResults');
-      const q = query.trim().toLowerCase();
-      if (!q) {
-        dropdown.classList.add('hidden');
-        return;
-      }
-
-      const matches = UCB_NODES.filter(n =>
-        n.name.toLowerCase().includes(q) ||
-        n.code.toLowerCase().includes(q) ||
-        n.dependencies.some(d => d.toLowerCase().includes(q))
-      );
-
-      if (matches.length === 0) {
-        dropdown.innerHTML = `<div class="p-3 text-xs text-slate-400">No se encontraron bloques o dependencias para "${query}".</div>`;
-        dropdown.classList.remove('hidden');
-        return;
-      }
-
-      dropdown.innerHTML = matches.map(n => {
-        const matchedDep = n.dependencies.find(d => d.toLowerCase().includes(q)) || n.dependencies[0];
-        return `
-          <button onclick="selectSearchResultNode('${n.id}')" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-900 transition flex items-center justify-between gap-2">
-            <div>
-              <div class="text-xs font-bold text-white">${n.name}</div>
-              <div class="text-[11px] text-ucb-cyan">Incluye: ${matchedDep}</div>
-            </div>
-            <span class="px-2 py-0.5 rounded bg-ucb-gold/20 text-ucb-gold text-[10px] font-bold shrink-0">Ir aquí</span>
-          </button>
-        `;
-      }).join('');
-      dropdown.classList.remove('hidden');
-    }
-
-    function selectSearchResultNode(nodeId) {
-      document.getElementById('mapSearchResults').classList.add('hidden');
-      document.getElementById('mapSearchInput').value = '';
-      state.destinationId = nodeId;
-      state.selectedEventId = null;
-      recalculateAndRenderRoute();
-      showToast(`Destino fijado en ${getNodeById(nodeId).name}`);
-    }
-
-    // =========================================================================
-    // 10. INTEGRACIÓN GPS REAL EN EL CAMPUS + DETECCIÓN POR 4 ESQUINAS (POLÍGONO)
+    // 9. INTEGRACIÓN GPS REAL EN EL CAMPUS + DETECCIÓN POR 4 ESQUINAS (POLÍGONO)
     // =========================================================================
     function toggleRealGPS() {
       const gpsDot = document.getElementById('gpsDot');
@@ -2947,10 +2178,10 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           state.gpsWatchId = null;
         }
         state.gpsActive = false;
-        gpsDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+        gpsDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
         gpsText.textContent = "GPS: Simulado";
         badgeState.textContent = "Simulador";
-        badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold";
+        badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-amber-100 text-ucb-blue border border-amber-400 font-bold";
         teleStatus.textContent = "Estado: Modo simulación manual activo.";
         showToast("Modo Simulación activado. Puedes elegir cualquier bloque como origen.");
         return;
@@ -2963,7 +2194,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
 
       gpsText.textContent = "GPS: Buscando...";
       badgeState.textContent = "Buscando señal...";
-      badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold";
+      badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-blue-100 text-ucb-blue border border-blue-300 font-bold";
       teleStatus.textContent = "Estado: Solicitando permisos de geolocalización satelital...";
 
       state.gpsWatchId = navigator.geolocation.watchPosition(
@@ -3002,22 +2233,22 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           const distToCampus = calculateHaversineMeters(state.userLat, state.userLng, campusCenterLat, campusCenterLng);
 
           if (insideNode) {
-            gpsDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping";
+            gpsDot.className = "w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping";
             gpsText.textContent = `GPS: Dentro de ${insideNode.shortName}`;
             badgeState.textContent = "Dentro de Bloque (4 Esq.)";
-            badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold";
+            badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-amber-200 text-ucb-blue border border-amber-500 font-extrabold";
             teleStatus.textContent = `Estado: ✅ Ubicado exactamente dentro de las 4 esquinas de ${insideNode.name}.`;
           } else if (distToCampus <= 450) {
-            gpsDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+            gpsDot.className = "w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse";
             gpsText.textContent = `GPS: ${nearestNode.shortName} (${minBoundaryMeters}m)`;
             badgeState.textContent = "GPS Campus OK";
-            badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold";
+            badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-blue-100 text-ucb-blue border border-blue-300 font-bold";
             teleStatus.textContent = `Estado: GPS Activo. A ${minBoundaryMeters}m de la esquina más cercana de ${nearestNode.shortName}.`;
           } else {
-            gpsDot.className = "w-2.5 h-2.5 rounded-full bg-orange-400 animate-pulse";
+            gpsDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
             gpsText.textContent = `GPS: Fuera de rango (${Math.round(distToCampus)}m)`;
             badgeState.textContent = "Fuera de Rango";
-            badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-orange-500/20 text-orange-300 border border-orange-500/30 font-semibold";
+            badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-400 font-bold";
             teleStatus.textContent = `Estado: Estás a ${Math.round(distToCampus)}m de la UCB Obrajes. Bloque más cercano: ${nearestNode.shortName}.`;
           }
 
@@ -3031,10 +2262,10 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         err => {
           state.gpsActive = false;
           gpsDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
-          gpsText.textContent = "GPS: Error";
-          badgeState.textContent = "Error GPS";
-          badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold";
-          teleStatus.textContent = `Estado: Error GPS (${err.message}). Usando Modo Simulación.`;
+          gpsText.textContent = "GPS: Simulado";
+          badgeState.textContent = "Simulación";
+          badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-amber-100 text-ucb-blue border border-amber-400 font-bold";
+          teleStatus.textContent = `Estado: Sin acceso a GPS (${err.message}). Usando Modo Simulación.`;
           showToast("No se pudo obtener señal GPS. Usando ubicación simulada.");
         },
         { enableHighAccuracy: true, maximumAge: 2000, timeout: 12000 }
@@ -3042,7 +2273,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     }
 
     // =========================================================================
-    // 10.1 FUNCIONES DE LA PESTAÑA 4: CALIBRADOR DE 4 ESQUINAS POR BLOQUE
+    // 10. FUNCIONES DE LA PESTAÑA 2: CALIBRADOR DE 4 ESQUINAS POR BLOQUE
     // =========================================================================
     function loadBlockCornersIntoForm(nodeId) {
       const node = getNodeById(nodeId);
@@ -3061,11 +2292,11 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       const badge = document.getElementById('calibSavedBadge');
       if (badge) {
         if (node.isCustomCalibrated) {
-          badge.textContent = "✅ Calibrado Personalizado";
-          badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+          badge.textContent = "✅ 4 Esquinas Calibradas";
+          badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-200 text-ucb-blue border border-amber-400";
         } else {
-          badge.textContent = "Valores Base (Por defecto)";
-          badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700";
+          badge.textContent = "Valores Base";
+          badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-300";
         }
       }
 
@@ -3083,6 +2314,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       return corners;
     }
 
+    // Dibuja el polígono de 4 esquinas en tonos blancos, amarillos y azules UCB
     function previewPolygonFromInputs() {
       const svg = document.getElementById('calibPolygonSvg');
       if (!svg) return;
@@ -3100,11 +2332,11 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       const prox = getNearestBoundaryPointOfNode(state.userLat, state.userLng, tempNode);
       const proxEl = document.getElementById('calibProximityStatus');
       if (prox.inside) {
-        proxEl.className = "font-bold text-emerald-400";
+        proxEl.className = "font-extrabold text-ucb-blue";
         proxEl.textContent = "✅ Tu coordenada actual está DENTRO de las 4 esquinas de este bloque (0 m).";
       } else {
         const cornerLabels = ["E1 (NW)", "E2 (NE)", "E3 (SE)", "E4 (SW)"];
-        proxEl.className = "font-semibold text-ucb-cyan";
+        proxEl.className = "font-bold text-blue-700";
         proxEl.textContent = `📏 Estás a ${prox.distanceMeters} m del borde más cercano (${cornerLabels[prox.cornerIndex] || 'Muro'}).`;
       }
 
@@ -3128,7 +2360,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       const cPt = toSvgPt(centroid.lat, centroid.lng);
       const polyPointsAttr = svgPts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
 
-      const cornerColors = ['#00E5FF', '#F2A900', '#10B981', '#C084FC'];
+      const cornerColors = ['#003B71', '#F2A900', '#1D4ED8', '#D97706'];
       const cornerNames = ['E1 NW', 'E2 NE', 'E3 SE', 'E4 SW'];
 
       const sideLabelsHtml = svgPts.map((p1, i) => {
@@ -3136,18 +2368,18 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         const mx = (p1.x + p2.x) / 2;
         const my = (p1.y + p2.y) / 2;
         return `
-          <rect x="${mx - 16}" y="${my - 8}" width="32" height="15" rx="4" fill="#071324" stroke="#334155" stroke-width="1" opacity="0.92" />
-          <text x="${mx}" y="${my + 3}" font-size="9.5" fill="#CBD5E1" text-anchor="middle" font-family="monospace">${metrics.sideLengths[i]}m</text>
+          <rect x="${mx - 17}" y="${my - 8}" width="34" height="16" rx="4" fill="#FFFFFF" stroke="#003B71" stroke-width="1.2" />
+          <text x="${mx}" y="${my + 3}" font-size="9.5" font-weight="bold" fill="#003B71" text-anchor="middle" font-family="monospace">${metrics.sideLengths[i]}m</text>
         `;
       }).join('');
 
       const raysToCentroidHtml = svgPts.map(p => `
-        <line x1="${p.x}" y1="${p.y}" x2="${cPt.x}" y2="${cPt.y}" stroke="rgba(242, 169, 0, 0.35)" stroke-width="1.2" stroke-dasharray="3,3" />
+        <line x1="${p.x}" y1="${p.y}" x2="${cPt.x}" y2="${cPt.y}" stroke="rgba(0, 59, 113, 0.35)" stroke-width="1.3" stroke-dasharray="3,3" />
       `).join('');
 
       const verticesHtml = svgPts.map((p, i) => `
         <g>
-          <circle cx="${p.x}" cy="${p.y}" r="6.5" fill="${cornerColors[i]}" stroke="#071324" stroke-width="2" />
+          <circle cx="${p.x}" cy="${p.y}" r="6.5" fill="${cornerColors[i]}" stroke="#FFFFFF" stroke-width="2" />
           <text x="${p.x}" y="${p.y < 120 ? p.y - 11 : p.y + 18}" font-size="10" font-weight="bold" fill="${cornerColors[i]}" text-anchor="middle" font-family="monospace">
             ${cornerNames[i]}
           </text>
@@ -3156,18 +2388,19 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
 
       svg.innerHTML = `
         <defs>
-          <pattern id="calibGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(148, 163, 184, 0.08)" stroke-width="1"/>
+          <pattern id="calibGridLight" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(0, 59, 113, 0.08)" stroke-width="1"/>
           </pattern>
         </defs>
-        <rect width="320" height="240" fill="url(#calibGrid)" />
-        <polygon points="${polyPointsAttr}" fill="rgba(0, 229, 255, 0.16)" stroke="#00E5FF" stroke-width="2.5" stroke-linejoin="round" />
+        <rect width="320" height="240" fill="#FFFDF5" />
+        <rect width="320" height="240" fill="url(#calibGridLight)" />
+        <polygon points="${polyPointsAttr}" fill="rgba(250, 204, 21, 0.28)" stroke="#003B71" stroke-width="2.5" stroke-linejoin="round" />
         ${raysToCentroidHtml}
         ${sideLabelsHtml}
         ${verticesHtml}
         <g>
-          <circle cx="${cPt.x}" cy="${cPt.y}" r="5.5" fill="#F2A900" stroke="#FFFFFF" stroke-width="2" />
-          <text x="${cPt.x}" y="${cPt.y - 10}" font-size="9.5" font-weight="bold" fill="#F2A900" text-anchor="middle">CENTROIDE</text>
+          <circle cx="${cPt.x}" cy="${cPt.y}" r="6" fill="#F2A900" stroke="#003B71" stroke-width="2" />
+          <text x="${cPt.x}" y="${cPt.y - 10}" font-size="9.5" font-weight="extrabold" fill="#003B71" text-anchor="middle">CENTROIDE</text>
         </g>
       `;
     }
@@ -3266,18 +2499,18 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       tbody.innerHTML = UCB_NODES.map(n => {
         const c = n.corners || createDefaultCornersForCoord(n.lat, n.lng);
         return `
-          <tr onclick="loadBlockCornersIntoForm('${n.id}')" class="hover:bg-slate-800/70 cursor-pointer transition">
-            <td class="py-2 px-2.5 font-sans font-semibold text-white whitespace-nowrap">
-              <span class="inline-block w-2 h-2 rounded-full mr-1.5 ${n.isCustomCalibrated ? 'bg-emerald-400' : 'bg-slate-500'}"></span>
+          <tr onclick="loadBlockCornersIntoForm('${n.id}')" class="hover:bg-amber-50/90 cursor-pointer transition">
+            <td class="py-2.5 px-3 font-sans font-bold text-ucb-blue whitespace-nowrap">
+              <span class="inline-block w-2.5 h-2.5 rounded-full mr-1.5 ${n.isCustomCalibrated ? 'bg-amber-500' : 'bg-slate-300'}"></span>
               ${n.shortName}
             </td>
-            <td class="py-2 px-2.5 text-ucb-gold whitespace-nowrap">${n.lat.toFixed(5)}, ${n.lng.toFixed(5)}</td>
-            <td class="py-2 px-2.5 text-slate-300 whitespace-nowrap">${c[0].lat.toFixed(5)}, ${c[0].lng.toFixed(5)}</td>
-            <td class="py-2 px-2.5 text-slate-300 whitespace-nowrap">${c[1].lat.toFixed(5)}, ${c[1].lng.toFixed(5)}</td>
-            <td class="py-2 px-2.5 text-slate-300 whitespace-nowrap">${c[2].lat.toFixed(5)}, ${c[2].lng.toFixed(5)}</td>
-            <td class="py-2 px-2.5 text-slate-300 whitespace-nowrap">${c[3].lat.toFixed(5)}, ${c[3].lng.toFixed(5)}</td>
-            <td class="py-2 px-2.5 text-right">
-              <button type="button" class="px-2 py-0.5 rounded bg-ucb-cyan/15 text-ucb-cyan font-sans font-semibold text-[10px]">
+            <td class="py-2.5 px-3 text-blue-800 font-bold whitespace-nowrap">${n.lat.toFixed(6)}, ${n.lng.toFixed(6)}</td>
+            <td class="py-2.5 px-3 text-slate-700 whitespace-nowrap">${c[0].lat.toFixed(6)}, ${c[0].lng.toFixed(6)}</td>
+            <td class="py-2.5 px-3 text-slate-700 whitespace-nowrap">${c[1].lat.toFixed(6)}, ${c[1].lng.toFixed(6)}</td>
+            <td class="py-2.5 px-3 text-slate-700 whitespace-nowrap">${c[2].lat.toFixed(6)}, ${c[2].lng.toFixed(6)}</td>
+            <td class="py-2.5 px-3 text-slate-700 whitespace-nowrap">${c[3].lat.toFixed(6)}, ${c[3].lng.toFixed(6)}</td>
+            <td class="py-2.5 px-3 text-right">
+              <button type="button" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-ucb-blue border border-amber-300 font-sans font-bold text-[10px]">
                 Editar 4 Esq.
               </button>
             </td>
@@ -3358,215 +2591,31 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       try {
         localStorage.removeItem(STORAGE_KEY_CORNERS);
       } catch (e) {}
-      UCB_NODES.forEach(node => {
-        node.lat = node.defaultLat || node.lat;
-        node.lng = node.defaultLng || node.lng;
-        node.corners = createDefaultCornersForCoord(node.lat, node.lng);
-        node.isCustomCalibrated = false;
-      });
+      initBlockCornersData();
       loadBlockCornersIntoForm(document.getElementById('calibBlockSelect').value);
       renderCalibrationSummaryTable();
       recalculateAndRenderRoute();
-      showToast("🔄 Se restauraron las coordenadas por defecto de todos los bloques.");
+      showToast("🔄 Se restauraron las coordenadas calibradas base de todos los bloques.");
     }
 
     // =========================================================================
-    // 11. GESTOR DE EVENTOS UCB E IMPORTADOR DESDE GOOGLE CALENDAR / SHEETS
-    // =========================================================================
-    function renderEventsGrid() {
-      const container = document.getElementById('eventsGridContainer');
-      const searchQ = (document.getElementById('eventSearchInput')?.value || '').trim().toLowerCase();
-      document.getElementById('eventsCountBadge').textContent = UCB_EVENTS.length;
-
-      const filtered = UCB_EVENTS.filter(ev => {
-        const matchesCat = state.eventCategoryFilter === 'ALL' || ev.category === state.eventCategoryFilter;
-        const node = getNodeById(ev.nodeId);
-        const matchesText = !searchQ ||
-          ev.title.toLowerCase().includes(searchQ) ||
-          ev.description.toLowerCase().includes(searchQ) ||
-          node.name.toLowerCase().includes(searchQ);
-        return matchesCat && matchesText;
-      });
-
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-full bg-slate-900/70 border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-            No se encontraron eventos con ese filtro.
-          </div>`;
-        return;
-      }
-
-      container.innerHTML = filtered.map(ev => {
-        const node = getNodeById(ev.nodeId);
-        const routePreview = computeShortestPathDijkstra(state.originId, ev.nodeId, state.accessibleMode);
-        const isSelected = state.selectedEventId === ev.id;
-
-        let badgeStyle = "bg-ucb-cyan/15 text-ucb-cyan border-ucb-cyan/30";
-        if (ev.category === "CULTURAL") badgeStyle = "bg-amber-500/15 text-amber-300 border-amber-500/30";
-        if (ev.category === "ACADEMICO") badgeStyle = "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
-
-        return `
-          <div class="bg-slate-900/95 rounded-2xl p-4 border transition flex flex-col justify-between gap-3 shadow-lg ${
-            isSelected ? 'border-ucb-gold ring-1 ring-ucb-gold/40' : 'border-slate-800 hover:border-slate-700'
-          }">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2">
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${badgeStyle}">
-                  ${ev.category}
-                </span>
-                <span class="text-xs font-medium text-slate-400 flex items-center gap-1">
-                  <i class="fa-regular fa-clock text-ucb-gold"></i> ${ev.date}
-                </span>
-              </div>
-
-              <h3 class="font-display font-bold text-base text-white leading-snug">
-                ${ev.title}
-              </h3>
-              <p class="text-xs text-slate-400 mt-1 line-clamp-2">
-                ${ev.description}
-              </p>
-
-              <!-- Location & Distance Pill -->
-              <div class="mt-3 p-2.5 rounded-xl bg-slate-950/90 border border-slate-800/90 space-y-1 text-xs">
-                <div class="font-semibold text-ucb-gold flex items-center gap-1.5">
-                  <i class="fa-solid fa-location-dot"></i>
-                  <span>${node.name}</span>
-                </div>
-                <div class="text-slate-300 text-[11px] flex items-center justify-between">
-                  <span><i class="fa-solid fa-layer-group text-ucb-cyan mr-1"></i>${ev.floor}</span>
-                  <span class="font-mono font-bold text-emerald-400">${routePreview.totalDistance} m (${formatTimeFromSeconds(routePreview.estimatedSeconds)})</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Action Buttons: Navigate via AR Camera or Map -->
-            <div class="grid grid-cols-2 gap-2 pt-1">
-              <button onclick="navigateToEvent('${ev.id}', 'ar')" class="py-2 px-3 rounded-xl bg-ucb-cyan hover:bg-cyan-300 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-cyan-500/10">
-                <i class="fa-solid fa-camera-viewfinder"></i>
-                <span>Cámara AR</span>
-              </button>
-              <button onclick="navigateToEvent('${ev.id}', 'map')" class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-map-location-dot text-ucb-gold"></i>
-                <span>Cómo llegar</span>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function filterEventsByCategory(cat) {
-      state.eventCategoryFilter = cat;
-      document.querySelectorAll('.cat-btn').forEach(btn => {
-        btn.className = "cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap";
-      });
-      const activeBtn = document.getElementById(`catBtn-${cat}`);
-      if (activeBtn) {
-        activeBtn.className = "cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-ucb-gold text-slate-950 transition whitespace-nowrap";
-      }
-      renderEventsGrid();
-    }
-
-    function navigateToEvent(eventId, targetTab) {
-      const ev = UCB_EVENTS.find(e => e.id === eventId);
-      if (!ev) return;
-
-      state.selectedEventId = ev.id;
-      state.destinationId = ev.nodeId;
-      document.getElementById('selectQuickEvent').value = ev.id;
-
-      recalculateAndRenderRoute();
-      switchTab(targetTab);
-      showToast(`Guiando hacia "${ev.title}" en ${getNodeById(ev.nodeId).shortName}`);
-    }
-
-    function matchLocationStringToUCBNode(locText) {
-      const clean = (locText || '').toLowerCase();
-      for (const node of UCB_NODES) {
-        if (
-          clean.includes(node.code.toLowerCase()) ||
-          clean.includes(node.shortName.toLowerCase()) ||
-          node.dependencies.some(d => clean.includes(d.toLowerCase().split(' ')[0]))
-        ) {
-          return node.id;
-        }
-      }
-      if (clean.includes("coliseo")) return "BLOQUE_A";
-      if (clean.includes("paraninfo") || clean.includes("bloque d")) return "BLOQUE_D";
-      if (clean.includes("agora") || clean.includes("ágora")) return "AGORA";
-      if (clean.includes("kardex") || clean.includes("derecho")) return "BLOQUE_F";
-      if (clean.includes("auditorio") || clean.includes("bloque g")) return "BLOQUE_G";
-      if (clean.includes("cafeteria") || clean.includes("cafetería")) return "BLOQUE_H";
-      if (clean.includes("biblioteca")) return "BLOQUE_I";
-      if (clean.includes("idiomas") || clean.includes("bloque n")) return "BLOQUE_N";
-      if (clean.includes("arquitectura") || clean.includes("bloque m")) return "BLOQUE_M";
-      if (clean.includes("econom") || clean.includes("bloque s") || clean.includes("bloque t")) return "BLOQUE_ST";
-      if (clean.includes("diseño") || clean.includes("bloque u")) return "BLOQUE_U";
-      if (clean.includes("medicina") || clean.includes("bloque v")) return "BLOQUE_V";
-      return "ATRIO";
-    }
-
-    function importEventsFromGoogleSheetText() {
-      const raw = document.getElementById('sheetsInputData').value.trim();
-      if (!raw) return;
-
-      const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-      let importedCount = 0;
-
-      lines.forEach((line, idx) => {
-        const parts = line.includes('|') ? line.split('|') : line.split(/\t|,/);
-        if (parts.length >= 2) {
-          const title = parts[0].trim();
-          const rawLoc = parts[1].trim();
-          const dateStr = (parts[2] || 'Próximamente').trim();
-          const matchedNodeId = matchLocationStringToUCBNode(rawLoc);
-
-          UCB_EVENTS.unshift({
-            id: `EV_GSHEET_${Date.now()}_${idx}`,
-            title,
-            category: "ACADEMICO",
-            nodeId: matchedNodeId,
-            floor: rawLoc,
-            date: dateStr,
-            organizer: "Google Calendar Sync",
-            description: `Evento sincronizado automáticamente desde Google Calendar / Google Sheets (${rawLoc}).`
-          });
-          importedCount++;
-        }
-      });
-
-      populateDropdownSelectors();
-      renderEventsGrid();
-      closeGoogleSyncModal();
-      showToast(`✅ Se importaron ${importedCount} eventos desde Google Calendar / Sheets.`);
-    }
-
-    // =========================================================================
-    // 12. CONTROLES DE INTERFAZ, SELECTORES Y MODALES
+    // 11. CONTROLES DE INTERFAZ, SELECTORES Y MODALES
     // =========================================================================
     function populateDropdownSelectors() {
       const originSel = document.getElementById('selectOrigin');
       const destSel = document.getElementById('selectDestination');
-      const newEvNodeSel = document.getElementById('newEvNodeId');
       const qrBlockSel = document.getElementById('qrBlockSelect');
-      const quickEvSel = document.getElementById('selectQuickEvent');
       const calibBlockSel = document.getElementById('calibBlockSelect');
 
       const optionsHtml = UCB_NODES.map(n => `<option value="${n.id}">${n.name}</option>`).join('');
       originSel.innerHTML = optionsHtml;
       destSel.innerHTML = optionsHtml;
-      newEvNodeSel.innerHTML = optionsHtml;
       qrBlockSel.innerHTML = optionsHtml;
       if (calibBlockSel) calibBlockSel.innerHTML = optionsHtml;
 
       originSel.value = state.originId;
       destSel.value = state.destinationId;
       if (calibBlockSel) calibBlockSel.value = state.destinationId;
-
-      quickEvSel.innerHTML =
-        `<option value="">-- Seleccionar evento UCB --</option>` +
-        UCB_EVENTS.map(ev => `<option value="${ev.id}">📅 ${ev.title} (${getNodeById(ev.nodeId).shortName})</option>`).join('');
-      if (state.selectedEventId) quickEvSel.value = state.selectedEventId;
     }
 
     function handleOriginChange(newOriginId) {
@@ -3577,28 +2626,18 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
 
     function handleDestinationChange(newDestId) {
       state.destinationId = newDestId;
-      state.selectedEventId = null;
-      document.getElementById('selectQuickEvent').value = "";
+      if (document.getElementById('calibBlockSelect')) {
+        document.getElementById('calibBlockSelect').value = newDestId;
+        loadBlockCornersIntoForm(newDestId);
+      }
       recalculateAndRenderRoute();
       showToast(`Nuevo destino: ${getNodeById(newDestId).shortName}`);
-    }
-
-    function handleQuickEventSelect(eventId) {
-      if (!eventId) return;
-      const ev = UCB_EVENTS.find(e => e.id === eventId);
-      if (ev) {
-        state.selectedEventId = ev.id;
-        state.destinationId = ev.nodeId;
-        recalculateAndRenderRoute();
-        showToast(`Evento activo: ${ev.title}`);
-      }
     }
 
     function swapOriginAndDestination() {
       const temp = state.originId;
       state.originId = state.destinationId;
       state.destinationId = temp;
-      state.selectedEventId = null;
       recalculateAndRenderRoute();
       showToast("Origen y destino invertidos.");
     }
@@ -3610,81 +2649,35 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
 
       if (state.accessibleMode) {
         badge.textContent = "ON (Sin Gradas)";
-        badge.className = "font-bold text-ucb-cyan";
+        badge.className = "font-extrabold text-blue-700";
         routeTag.textContent = "♿ Ruta Accesible";
-        routeTag.className = "text-[11px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/40 font-medium";
+        routeTag.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-blue-100 text-ucb-blue border border-blue-300 font-bold";
         showToast("♿ Modo Accesible activado: evitando escaleras y priorizando rampas/ascensores.");
       } else {
         badge.textContent = "OFF";
-        badge.className = "font-semibold text-slate-400";
+        badge.className = "font-extrabold text-slate-500";
         routeTag.textContent = "Ruta Óptima";
-        routeTag.className = "text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium";
+        routeTag.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-amber-100 text-ucb-blue border border-amber-400 font-bold";
         showToast("Modo ruta estándar activado.");
       }
       recalculateAndRenderRoute();
-      renderEventsGrid();
     }
 
     function switchTab(tabId) {
       state.activeTab = tabId;
-      ['ar', 'map', 'events', 'calibration'].forEach(id => {
+      ['ar', 'calibration'].forEach(id => {
         const section = document.getElementById(`view-${id}`);
         const btn = document.getElementById(`tabBtn-${id}`);
         if (id === tabId) {
           section.classList.remove('hidden');
           section.classList.add('flex');
-          btn.className = "tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-ucb-cyan text-slate-950 shadow-md shadow-cyan-500/20";
+          btn.className = "tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-ucb-gold text-ucb-blue border-2 border-ucb-blue shadow-sm";
         } else {
           section.classList.add('hidden');
           section.classList.remove('flex');
-          btn.className = "tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800/80 text-slate-300 hover:bg-slate-800";
+          btn.className = "tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-amber-50 text-ucb-blue border border-amber-300 hover:bg-amber-100";
         }
       });
-    }
-
-    function openGoogleSyncModal() {
-      document.getElementById('modalGoogleSync').classList.remove('hidden');
-    }
-    function closeGoogleSyncModal() {
-      document.getElementById('modalGoogleSync').classList.add('hidden');
-    }
-
-    function openAddEventModal() {
-      document.getElementById('modalAddEvent').classList.remove('hidden');
-    }
-    function closeAddEventModal() {
-      document.getElementById('modalAddEvent').classList.add('hidden');
-    }
-
-    function saveNewManualEvent() {
-      const title = document.getElementById('newEvTitle').value.trim();
-      const nodeId = document.getElementById('newEvNodeId').value;
-      const floor = document.getElementById('newEvFloor').value.trim() || "Planta Baja";
-      const date = document.getElementById('newEvDate').value.trim() || "Hoy";
-      const category = document.getElementById('newEvCategory').value;
-
-      if (!title) {
-        showToast("Por favor escribe el nombre del evento.");
-        return;
-      }
-
-      const newEv = {
-        id: `EV_MANUAL_${Date.now()}`,
-        title,
-        category,
-        nodeId,
-        floor,
-        date,
-        organizer: "Comunidad UCB",
-        description: `Evento registrado en ${getNodeById(nodeId).name} (${floor}).`
-      };
-
-      UCB_EVENTS.unshift(newEv);
-      populateDropdownSelectors();
-      renderEventsGrid();
-      closeAddEventModal();
-      document.getElementById('newEvTitle').value = '';
-      showToast(`Evento "${title}" guardado exitosamente.`);
     }
 
     function openQRModal() {
@@ -3721,7 +2714,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     }
 
     // =========================================================================
-    // 13. INICIALIZACIÓN AL CARGAR LA PÁGINA
+    // 12. INICIALIZACIÓN AL CARGAR LA PÁGINA
     // =========================================================================
     window.onload = function () {
       initBlockCornersData();
@@ -3729,7 +2722,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       loadBlockCornersIntoForm(state.destinationId);
       renderCalibrationSummaryTable();
       recalculateAndRenderRoute();
-      renderEventsGrid();
       startARCanvasRenderLoop();
     };
   </script>
