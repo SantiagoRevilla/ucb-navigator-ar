@@ -317,12 +317,19 @@
         <div class="bg-white border-2 border-amber-300 rounded-2xl p-4 shadow-md flex flex-col gap-3">
           <div class="flex items-center justify-between">
             <h2 class="font-display font-bold text-base text-ucb-blue flex items-center gap-2">
-              <i class="fa-solid fa-route text-amber-500"></i>
-              <span>Selección de Bloques UCB</span>
+              <i class="fa-solid fa-compass text-amber-500"></i>
+              <span>Selección de Bloques UCB (14 Puntos)</span>
             </h2>
             <button onclick="swapOriginAndDestination()" class="text-xs px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-ucb-blue font-bold border border-amber-300 transition" title="Invertir origen y destino">
               <i class="fa-solid fa-right-left"></i> Invertir
             </button>
+          </div>
+
+          <!-- Quick Dependency / Office Search Bar -->
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-blue-700 text-xs"></i>
+            <input id="quickDepSearchInput" type="text" oninput="handleQuickDependencySearch(this.value)" placeholder="Buscar oficina o aula (ej. Kardex, Paraninfo, Coliseo, Cafetería)..." class="w-full bg-amber-50/40 border border-amber-300 rounded-xl pl-8 pr-3 py-1.5 text-xs font-semibold text-ucb-blue placeholder-slate-400 focus:outline-none focus:border-ucb-blue" />
+            <div id="quickDepSearchResults" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border-2 border-ucb-blue rounded-xl shadow-xl z-30 max-h-48 overflow-y-auto divide-y divide-amber-100"></div>
           </div>
 
           <!-- Where am I (Origin) -->
@@ -738,52 +745,41 @@
   <!-- ======================================================================= -->
   <script>
     // =========================================================================
-    // 1. BASE DE DATOS DEL CAMPUS UCB LA PAZ (OBRAJES)
+    // 1. BASE DE DATOS EXCLUSIVA DE LOS 14 PUNTOS DEL MAPA PRINCIPAL DEL CAMPUS UCB
     // =========================================================================
     const UCB_NODES = [
       {
         id: "INGRESO_PRINCIPAL",
-        code: "INGRESO 1",
-        name: "Ingreso Principal (Av. 14 de Septiembre)",
+        code: "INGRESO",
+        name: "Ingreso Principal (Acceso Atrio)",
         shortName: "Ingreso Principal",
         lat: -16.52335,
         lng: -68.11215,
         type: "entry",
-        floorInfo: "Nivel Calle · Av. 14 de Septiembre No. 4807 esq. Calle 2",
+        floorInfo: "Nivel Calle · Av. 14 de Septiembre (Acceso por Atrio)",
         dependencies: ["Portería Principal", "Torniquetes de Acceso", "Punto QR Principal", "Seguridad UCB"]
-      },
-      {
-        id: "INGRESO_SILES",
-        code: "INGRESO 2",
-        name: "Ingreso Superior (Av. Hernando Siles)",
-        shortName: "Ingreso H. Siles",
-        lat: -16.52215,
-        lng: -68.11145,
-        type: "entry",
-        floorInfo: "Nivel Superior · Av. Hernando Siles",
-        dependencies: ["Acceso Superior", "Salida hacia Av. Hernando Siles"]
       },
       {
         id: "ATRIO",
         code: "ATRIO",
-        name: "Atrio UCB (Plaza Central)",
+        name: "Atrio UCB (Plaza de Ingreso)",
         shortName: "Atrio UCB",
         lat: -16.52295,
         lng: -68.11205,
         type: "plaza",
-        floorInfo: "Explanada Exterior Central",
-        dependencies: ["Plaza del Atrio", "Punto de Encuentro Estudiantil", "Conexión a Bloques A, D y K"]
+        floorInfo: "Explanada Exterior de Ingreso",
+        dependencies: ["Plaza del Atrio", "Punto de Encuentro Estudiantil", "Conexión a Bloques D, J y K"]
       },
       {
         id: "AGORA",
         code: "ÁGORA",
-        name: "Ágora UCB (Explanada Central)",
+        name: "Ágora UCB",
         shortName: "Ágora UCB",
         lat: -16.52270,
         lng: -68.11175,
         type: "plaza",
-        floorInfo: "Plaza Central Techada / Explanada Cultural",
-        dependencies: ["Ágora UCB", "Ferias Estudiantiles", "Conexión a Bloques B, C y G"]
+        floorInfo: "Explanada Central entre Coliseo y Bloque G2",
+        dependencies: ["Ágora UCB", "Espacio de Ferias y Cowork", "Conexión a Coliseo, Bloque B y G2"]
       },
       {
         id: "BLOQUE_A",
@@ -826,8 +822,8 @@
         lat: -16.52305,
         lng: -68.11235,
         type: "block",
-        floorInfo: "Pisos 1 al 5 (Paraninfo en Piso 5 · Ascensor disponible)",
-        dependencies: ["Paraninfo U.C.B. (Piso 5)", "Aulas D1 a D30", "Auditorios 2, 3 y 4", "Capilla San Pablo", "Lab. Computación 4", "Lab. Redes 5", "Lab. Psicofisiología", "Laboratorio CINAES", "Centro de Cómputo"]
+        floorInfo: "Pisos 1 al 5 (Paraninfo en Piso 5)",
+        dependencies: ["Paraninfo U.C.B. (Piso 5)", "Aulas D1 a D30", "Auditorios 2, 3 y 4", "Capilla San Pablo", "Lab. Computación 4", "Lab. Redes 5", "Laboratorio CINAES", "Centro de Cómputo"]
       },
       {
         id: "BLOQUE_F",
@@ -842,25 +838,25 @@
       },
       {
         id: "BLOQUE_G",
-        code: "BLOQUE G1/G2",
-        name: "Bloque G - Facultad de Ingeniería y Auditorio Principal",
-        shortName: "Bloque G (Ing. / Tesorería)",
+        code: "BLOQUES G1 / G2",
+        name: "Bloques G1 y G2 - Facultad de Ingeniería y Auditorio",
+        shortName: "Bloque G1/G2 (Ingeniería)",
         lat: -16.52255,
         lng: -68.11155,
         type: "block",
-        floorInfo: "Bloques G1 y G2 · Pisos 1 al 4",
-        dependencies: ["Decanatura Facultad de Ingeniería", "Auditorio Principal", "Aulas G1, G2, G3", "Caja Tesorería", "Escuela de la Producción y Competitividad (ePC)", "Centro de Sistemas", "Postgrado de Ingeniería", "Atención Psicológica"]
+        floorInfo: "Secciones G1 y G2 · Pisos 1 al 4",
+        dependencies: ["Decanatura Facultad de Ingeniería", "Auditorio Principal", "Aulas G1, G2, G3", "Caja Tesorería", "Escuela de la Producción y Competitividad (ePC)", "Centro de Sistemas", "Postgrado de Ingeniería"]
       },
       {
         id: "BLOQUE_H",
         code: "BLOQUE H",
-        name: "Bloque H - Cafetería Central y Jardines",
+        name: "Bloque H - Cafetería Central",
         shortName: "Bloque H (Cafetería)",
         lat: -16.52285,
         lng: -68.11130,
         type: "block",
         floorInfo: "Planta Baja y Terraza Jardín",
-        dependencies: ["Cafetería Central UCB", "Comedor Estudiantil", "Áreas Verdes y Descanso"]
+        dependencies: ["Cafetería Central UCB", "Comedor Estudiantil", "Áreas Verdes y Jardines"]
       },
       {
         id: "BLOQUE_I",
@@ -881,19 +877,19 @@
         lat: -16.52270,
         lng: -68.11145,
         type: "block",
-        floorInfo: "Pisos 1 y 2",
+        floorInfo: "Pisos 1 y 2 · Junto al Atrio",
         dependencies: ["Internacionalización Académica y Cooperación Global", "Convenios e Intercambios", "Vicerrectorado Académico Nacional"]
       },
       {
         id: "BLOQUE_K",
         code: "BLOQUE K",
         name: "Bloque K - Informaciones, Admisiones y Centro Médico",
-        shortName: "Bloque K (Admisiones/Médico)",
+        shortName: "Bloque K (Admisiones)",
         lat: -16.52315,
         lng: -68.11190,
         type: "block",
         floorInfo: "Planta Baja y Pisos 1-2",
-        dependencies: ["Oficina de Informaciones", "Departamento de Admisión y Orientación", "Centro Médico U.C.B.", "Pastoral Universitaria", "Cato Voluntarios", "Administración de Empresas y Turismo"]
+        dependencies: ["Oficina de Informaciones", "Departamento de Admisión y Orientación", "Centro Médico U.C.B.", "Pastoral Universitaria", "Cato Voluntarios"]
       },
       {
         id: "BLOQUE_L",
@@ -903,74 +899,8 @@
         lat: -16.52320,
         lng: -68.11140,
         type: "block",
-        floorInfo: "Edificio Administrativo Sede",
+        floorInfo: "Edificio Administrativo Sede · Sector Sur-Este",
         dependencies: ["Rectorado de Sede La Paz", "Dirección Académica de Sede", "Dirección Administrativa Financiera"]
-      },
-      {
-        id: "BLOQUE_M",
-        code: "BLOQUE M",
-        name: "Bloque M - Arquitectura (Av. 14 de Septiembre)",
-        shortName: "Bloque M (Arquitectura)",
-        lat: -16.52355,
-        lng: -68.11225,
-        type: "block",
-        floorInfo: "Av. 14 de Septiembre No. 4810 esq. Calle 2",
-        dependencies: ["Carrera de Arquitectura", "Aulas M1 a M5", "Sala Cowork Arquitectura", "Biblioteca de Arquitectura", "Área Deportiva"]
-      },
-      {
-        id: "BLOQUE_P",
-        code: "BLOQUE P",
-        name: "Bloque P - Comunicación Social, Psicología y SECRAD",
-        shortName: "Bloque P (Comunicación/Psic.)",
-        lat: -16.52335,
-        lng: -68.11185,
-        type: "block",
-        floorInfo: "Av. 14 de Septiembre No. 4836",
-        dependencies: ["Carrera de Comunicación Social", "Carrera de Psicología", "SECRAD (Radio y TV)", "Sala Audiovisual", "Decanatura Ciencias Sociales y Humanas"]
-      },
-      {
-        id: "BLOQUE_N",
-        code: "BLOQUE N",
-        name: "Bloque N - Centro de Idiomas y Psicopedagogía",
-        shortName: "Bloque N (Idiomas)",
-        lat: -16.52345,
-        lng: -68.11160,
-        type: "block",
-        floorInfo: "Av. 14 de Septiembre No. 4850",
-        dependencies: ["Centro de Idiomas", "Carrera de Psicopedagogía", "Departamento de Educación", "Recursos Humanos", "Contabilidad y Finanzas"]
-      },
-      {
-        id: "BLOQUE_ST",
-        code: "BLOQUES S y T",
-        name: "Bloques S y T - Ciencias Económicas, Comercial y UCBX",
-        shortName: "Bloques S/T (Economía/Comercial)",
-        lat: -16.52350,
-        lng: -68.11195,
-        type: "block",
-        floorInfo: "Av. 14 de Septiembre / Av. Héctor Ormachea",
-        dependencies: ["Decanatura Ciencias Económicas y Financieras", "Ingeniería Comercial", "Marketing Digital", "Contaduría Pública", "Economía e IISEC", "Programa CREA y UCBX"]
-      },
-      {
-        id: "BLOQUE_U",
-        code: "BLOQUE U",
-        name: "Bloque U - Diseño Gráfico y Media Lab",
-        shortName: "Bloque U (Diseño)",
-        lat: -16.52410,
-        lng: -68.11260,
-        type: "block",
-        floorInfo: "Av. Héctor Ormachea esq. Calle 3",
-        dependencies: ["Carrera de Diseño Gráfico y Digital", "Aulas U1 a U5", "Media Lab (Estudio TV e Islas de Edición)", "Centro de Investigación en Diseño (CID)"]
-      },
-      {
-        id: "BLOQUE_V",
-        code: "BLOQUE V",
-        name: "Bloque V - Medicina y Rectorado Nacional",
-        shortName: "Bloque V (Medicina)",
-        lat: -16.52520,
-        lng: -68.10950,
-        type: "block",
-        floorInfo: "Av. Héctor Ormachea esq. Calle 12",
-        dependencies: ["Carrera de Medicina", "Laboratorios Biomédicos", "Rectorado Nacional UCB"]
       }
     ];
 
@@ -1015,7 +945,7 @@
     // =========================================================================
     // 3. GEOMETRÍA DE 4 ESQUINAS POR BLOQUE (POLÍGONOS GPS, CENTROIDE Y RAY-CASTING)
     // =========================================================================
-    const STORAGE_KEY_CORNERS = 'ucb_navigator_calibrated_corners_v2';
+    const STORAGE_KEY_CORNERS = 'ucb_navigator_calibrated_corners_14blocks_v1';
 
     const EXACT_USER_COORDS = {
       "INGRESO_PRINCIPAL": {
@@ -1025,15 +955,6 @@
           { "lat": -16.52323, "lng": -68.11201 },
           { "lat": -16.52347, "lng": -68.11201 },
           { "lat": -16.52347, "lng": -68.11229 }
-        ]
-      },
-      "INGRESO_SILES": {
-        "centroid": { "lat": -16.52215, "lng": -68.11145 },
-        "corners": [
-          { "lat": -16.52203, "lng": -68.11159 },
-          { "lat": -16.52203, "lng": -68.11131 },
-          { "lat": -16.52227, "lng": -68.11131 },
-          { "lat": -16.52227, "lng": -68.11159 }
         ]
       },
       "ATRIO": {
@@ -1151,60 +1072,6 @@
           { "lat": -16.52308, "lng": -68.11126 },
           { "lat": -16.52332, "lng": -68.11126 },
           { "lat": -16.52332, "lng": -68.11154 }
-        ]
-      },
-      "BLOQUE_M": {
-        "centroid": { "lat": -16.52355, "lng": -68.11225 },
-        "corners": [
-          { "lat": -16.52343, "lng": -68.11239 },
-          { "lat": -16.52343, "lng": -68.11211 },
-          { "lat": -16.52367, "lng": -68.11211 },
-          { "lat": -16.52367, "lng": -68.11239 }
-        ]
-      },
-      "BLOQUE_P": {
-        "centroid": { "lat": -16.52335, "lng": -68.11185 },
-        "corners": [
-          { "lat": -16.52323, "lng": -68.11199 },
-          { "lat": -16.52323, "lng": -68.11171 },
-          { "lat": -16.52347, "lng": -68.11171 },
-          { "lat": -16.52347, "lng": -68.11199 }
-        ]
-      },
-      "BLOQUE_N": {
-        "centroid": { "lat": -16.52345, "lng": -68.1116 },
-        "corners": [
-          { "lat": -16.52333, "lng": -68.11174 },
-          { "lat": -16.52333, "lng": -68.11146 },
-          { "lat": -16.52357, "lng": -68.11146 },
-          { "lat": -16.52357, "lng": -68.11174 }
-        ]
-      },
-      "BLOQUE_ST": {
-        "centroid": { "lat": -16.5235, "lng": -68.11195 },
-        "corners": [
-          { "lat": -16.52338, "lng": -68.11209 },
-          { "lat": -16.52338, "lng": -68.11181 },
-          { "lat": -16.52362, "lng": -68.11181 },
-          { "lat": -16.52362, "lng": -68.11209 }
-        ]
-      },
-      "BLOQUE_U": {
-        "centroid": { "lat": -16.5241, "lng": -68.1126 },
-        "corners": [
-          { "lat": -16.52398, "lng": -68.11274 },
-          { "lat": -16.52398, "lng": -68.11246 },
-          { "lat": -16.52422, "lng": -68.11246 },
-          { "lat": -16.52422, "lng": -68.11274 }
-        ]
-      },
-      "BLOQUE_V": {
-        "centroid": { "lat": -16.5252, "lng": -68.1095 },
-        "corners": [
-          { "lat": -16.52508, "lng": -68.10964 },
-          { "lat": -16.52508, "lng": -68.10936 },
-          { "lat": -16.52532, "lng": -68.10936 },
-          { "lat": -16.52532, "lng": -68.10964 }
         ]
       }
     };
@@ -2397,6 +2264,47 @@
       }
       recalculateAndRenderRoute();
       showToast(`Nuevo destino: ${getNodeById(newDestId).shortName}`);
+    }
+
+    function handleQuickDependencySearch(query) {
+      const dropdown = document.getElementById('quickDepSearchResults');
+      const q = (query || '').trim().toLowerCase();
+      if (!q) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+
+      const matches = UCB_NODES.filter(n =>
+        n.name.toLowerCase().includes(q) ||
+        n.code.toLowerCase().includes(q) ||
+        n.dependencies.some(d => d.toLowerCase().includes(q))
+      );
+
+      if (matches.length === 0) {
+        dropdown.innerHTML = `<div class="p-2.5 text-xs text-slate-500 font-medium">Sin resultados en el campus principal para "${query}".</div>`;
+        dropdown.classList.remove('hidden');
+        return;
+      }
+
+      dropdown.innerHTML = matches.map(n => {
+        const matchedDep = n.dependencies.find(d => d.toLowerCase().includes(q)) || n.dependencies[0];
+        return `
+          <button type="button" onclick="selectQuickDependencyNode('${n.id}')" class="w-full text-left px-3 py-2 hover:bg-amber-50 transition flex items-center justify-between gap-2">
+            <div>
+              <div class="text-xs font-extrabold text-ucb-blue">${n.name}</div>
+              <div class="text-[11px] text-blue-700 font-medium">Incluye: ${matchedDep}</div>
+            </div>
+            <span class="px-2 py-0.5 rounded bg-ucb-gold text-ucb-blue text-[10px] font-extrabold shrink-0">Fijar Destino</span>
+          </button>
+        `;
+      }).join('');
+      dropdown.classList.remove('hidden');
+    }
+
+    function selectQuickDependencyNode(nodeId) {
+      document.getElementById('quickDepSearchResults').classList.add('hidden');
+      document.getElementById('quickDepSearchInput').value = '';
+      handleDestinationChange(nodeId);
     }
 
     function swapOriginAndDestination() {
