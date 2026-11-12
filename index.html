@@ -123,13 +123,6 @@
           <span id="gpsStatusText">GPS: Simulado</span>
         </button>
 
-        <!-- Accessibility Mode Toggle (No Stairs) -->
-        <button id="btnAccessible" onclick="toggleAccessibilityMode()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-blue-50 hover:bg-blue-100 text-ucb-blue border border-blue-200 transition" title="Evitar escaleras pronunciadas y priorizar rampas/ascensores">
-          <i class="fa-solid fa-wheelchair text-blue-700"></i>
-          <span class="hidden sm:inline">Accesible:</span>
-          <span id="accessibleBadge" class="font-extrabold text-slate-500">OFF</span>
-        </button>
-
         <!-- QR Check-in Trigger -->
         <button onclick="openQRModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-ucb-gold hover:bg-amber-400 text-ucb-blue border border-amber-500 transition shadow-sm">
           <i class="fa-solid fa-qrcode"></i>
@@ -151,13 +144,13 @@
         </button>
       </div>
 
-      <!-- Current Route Quick Pill -->
+      <!-- Current Direct Target Quick Pill -->
       <div class="hidden lg:flex items-center gap-2 text-xs bg-amber-50/90 px-3.5 py-1.5 rounded-xl border border-amber-300">
-        <span class="text-blue-900 font-medium">Ruta activa:</span>
+        <span class="text-blue-900 font-medium">Orientación directa:</span>
         <span id="headerOriginLabel" class="font-bold text-blue-700">Ingreso Principal</span>
         <i class="fa-solid fa-arrow-right text-amber-600 text-[10px]"></i>
         <span id="headerDestLabel" class="font-bold text-ucb-blue">Bloque A (Coliseo)</span>
-        <span id="headerDistBadge" class="ml-1 px-2 py-0.5 rounded-md bg-ucb-blue text-amber-300 font-mono font-bold">85 m</span>
+        <span id="headerDistBadge" class="ml-1 px-2 py-0.5 rounded-md bg-ucb-blue text-amber-300 font-mono font-bold">115 m</span>
       </div>
     </div>
   </header>
@@ -191,57 +184,50 @@
           <!-- HTML5 Canvas for 3D Directional Arrow, Floating AR Pins & Compass HUD -->
           <canvas id="arHudCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-10"></canvas>
 
-          <!-- TOP HUD OVERLAY: Next Step Navigation Card -->
+          <!-- TOP HUD OVERLAY: Simplified Direct Block Target Card -->
           <div class="absolute top-3 left-3 right-3 z-20 flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-2.5 pointer-events-none">
             
-            <!-- Primary Navigation Instruction HUD Card -->
+            <!-- Simplified Direct Destination HUD Card -->
             <div class="hud-glass rounded-2xl p-3 sm:p-3.5 max-w-md w-full pointer-events-auto border-l-4 border-l-ucb-blue">
               <div class="flex items-center justify-between gap-2 mb-1.5 pb-1.5 border-b border-amber-200">
                 <div class="flex items-center gap-1.5 text-xs font-extrabold text-ucb-blue truncate">
-                  <i class="fa-solid fa-compass text-amber-500"></i>
-                  <span id="arTargetHeaderTitle" class="truncate">Destino UCB: Bloque A - Coliseo UCB</span>
+                  <i class="fa-solid fa-location-crosshairs text-amber-500"></i>
+                  <span>OBJETIVO DIRECTO EN CÁMARA AR</span>
                 </div>
                 <span id="arFloorBadge" class="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-200 text-ucb-blue border border-amber-400">
                   BLOQUE A
                 </span>
               </div>
 
-              <!-- Next Step Direction -->
+              <!-- Block Title & Floor/Level -->
               <div class="flex items-center gap-3">
                 <div class="w-11 h-11 rounded-xl bg-amber-100 border-2 border-ucb-blue flex items-center justify-center shrink-0 text-ucb-blue text-xl font-bold shadow-sm">
-                  <i id="arTurnIcon" class="fa-solid fa-location-arrow"></i>
+                  <i class="fa-solid fa-location-arrow"></i>
                 </div>
                 <div class="min-w-0 flex-1">
-                  <div class="text-[11px] uppercase tracking-wider text-blue-700 font-bold">
-                    Siguiente punto (<span id="arStepCounter">Paso 1/2</span>)
+                  <div id="arTargetHeaderTitle" class="text-sm sm:text-base font-extrabold text-ucb-blue truncate">
+                    Bloque A - Coliseo UCB
                   </div>
-                  <div id="arNextStepTitle" class="text-sm sm:text-base font-extrabold text-ucb-blue truncate">
-                    Avanza hacia Atrio UCB
-                  </div>
-                  <div id="arNextStepDesc" class="text-xs text-slate-700 font-medium truncate">
-                    Rampa peatonal de ingreso al Atrio
+                  <div id="arDirectFloorDesc" class="text-xs text-slate-700 font-medium truncate">
+                    Planta Baja y Graderías
                   </div>
                 </div>
               </div>
 
-              <!-- Distance, ETA & Step Advance Action -->
+              <!-- Direct Distance, Walking Time & Bearing -->
               <div class="mt-2.5 pt-2 border-t border-amber-200 flex items-center justify-between gap-2 text-xs">
-                <div class="flex items-center gap-3">
-                  <div>
-                    <span class="text-slate-600 font-medium">Distancia:</span>
-                    <span id="arRemainingDist" class="ml-1 font-mono font-extrabold text-ucb-blue text-sm">85 m</span>
-                  </div>
-                  <div>
-                    <span class="text-slate-600 font-medium">Tiempo:</span>
-                    <span id="arRemainingTime" class="ml-1 font-mono font-extrabold text-amber-600 text-sm">~1 min 10 s</span>
-                  </div>
+                <div>
+                  <span class="text-slate-600 font-medium">Distancia:</span>
+                  <span id="arRemainingDist" class="ml-1 font-mono font-extrabold text-ucb-blue text-sm">115 m</span>
                 </div>
-
-                <!-- Simulate Walking to Next Node Button -->
-                <button onclick="advanceOneStepOnRoute()" class="px-2.5 py-1 rounded-lg bg-ucb-blue hover:bg-blue-800 text-amber-300 font-bold transition flex items-center gap-1 shadow-sm" title="Simular que caminaste al siguiente nodo de la ruta">
-                  <i class="fa-solid fa-person-walking"></i>
-                  <span>Avanzar paso</span>
-                </button>
+                <div>
+                  <span class="text-slate-600 font-medium">Tiempo:</span>
+                  <span id="arRemainingTime" class="ml-1 font-mono font-extrabold text-amber-600 text-sm">~1 min 32 s</span>
+                </div>
+                <div>
+                  <span class="text-slate-600 font-medium">Rumbo:</span>
+                  <span id="arDirectBearingBadge" class="ml-1 font-mono font-extrabold text-blue-700 text-sm">014° N</span>
+                </div>
               </div>
             </div>
 
@@ -360,36 +346,37 @@
           </div>
         </div>
 
-        <!-- Active Route Step-by-Step Breakdown Card -->
+        <!-- Destination Block Information Card (Replaces Optimal Route / Steps Card) -->
         <div class="bg-white border-2 border-amber-300 rounded-2xl p-4 shadow-md flex-1 flex flex-col justify-between">
           <div>
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="font-display font-bold text-sm text-ucb-blue flex items-center gap-2">
-                <i class="fa-solid fa-shoe-prints text-blue-700"></i>
-                <span>Indicaciones Paso a Paso (Dijkstra)</span>
-              </h3>
-              <span id="routeModeTag" class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-100 text-ucb-blue border border-amber-400 font-bold">
-                Ruta Óptima
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span id="destCodeBadge" class="px-2.5 py-1 rounded-lg bg-amber-100 text-ucb-blue font-display font-extrabold text-xs border border-amber-400">
+                BLOQUE A
+              </span>
+              <span id="destCoordsBadge" class="text-[11px] font-mono font-bold text-blue-700">
+                -16.522352, -68.111889
               </span>
             </div>
 
-            <!-- Destination Dependency & Floor Info Box -->
-            <div id="destDetailBox" class="mb-3 p-2.5 rounded-xl bg-amber-50/80 border border-amber-300 text-xs">
-              <div class="font-extrabold text-ucb-blue" id="destDetailName">Bloque A - Coliseo UCB</div>
-              <div class="text-slate-700 font-medium mt-0.5" id="destDetailDeps">Coliseo UCB, Deportes, Club U Católica, Sala de Danza</div>
-              <div class="mt-1.5 flex items-center gap-2 text-[11px]">
-                <span class="px-2 py-0.5 rounded bg-blue-100 text-ucb-blue font-bold border border-blue-200" id="destDetailFloor">Planta Baja y Graderías</span>
-              </div>
-            </div>
+            <h3 id="destDetailName" class="font-display font-bold text-base sm:text-lg text-ucb-blue">
+              Bloque A - Coliseo UCB
+            </h3>
+            <p id="destDetailFloor" class="text-xs text-amber-600 font-bold mt-0.5">
+              Planta Baja y Graderías
+            </p>
 
-            <!-- Step List -->
-            <div id="arStepsList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-              <!-- Populated dynamically -->
+            <div class="mt-3 pt-2.5 border-t border-amber-200">
+              <div class="text-[11px] uppercase tracking-wider text-blue-800 font-extrabold mb-2">
+                Dependencias, Aulas y Laboratorios en este bloque:
+              </div>
+              <div id="destDetailDepsTags" class="flex flex-wrap gap-1.5">
+                <!-- Populated dynamically -->
+              </div>
             </div>
           </div>
 
           <!-- Switch to 4-Corner Calibration Button -->
-          <div class="mt-3 pt-3 border-t border-amber-200 flex items-center justify-between gap-2">
+          <div class="mt-4 pt-3 border-t border-amber-200 flex items-center justify-between gap-2">
             <button onclick="switchTab('calibration')" class="w-full py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-300 text-xs font-bold text-ucb-blue transition flex items-center justify-center gap-2">
               <i class="fa-solid fa-draw-polygon text-amber-500"></i>
               <span>Calibrar 4 Esquinas GPS de este Bloque</span>
@@ -988,60 +975,12 @@
     ];
 
     // =========================================================================
-    // 2. GRAFO PEATONAL DEL CAMPUS UCB CON DISTANCIAS (m) Y ACCESIBILIDAD
-    // =========================================================================
-    const UCB_EDGES = [
-      { from: "INGRESO_PRINCIPAL", to: "ATRIO", dist: 45, hasStairs: false, note: "Rampa peatonal de ingreso al Atrio" },
-      { from: "INGRESO_PRINCIPAL", to: "BLOQUE_D", dist: 50, hasStairs: false, note: "Pasillo lateral izquierdo hacia Bloque D" },
-      { from: "INGRESO_PRINCIPAL", to: "BLOQUE_K", dist: 40, hasStairs: false, note: "Acera interna derecha hacia Informaciones (Bloque K)" },
-      
-      { from: "ATRIO", to: "BLOQUE_A", dist: 40, hasStairs: false, note: "Explanada directa hacia la entrada del Coliseo (Bloque A)" },
-      { from: "ATRIO", to: "BLOQUE_D", dist: 35, hasStairs: false, note: "Ingreso principal al Bloque D (Ascensores al Paraninfo)" },
-      { from: "ATRIO", to: "BLOQUE_B", dist: 38, hasStairs: true, note: "Escalinata central del Atrio hacia Bloque B" },
-      { from: "ATRIO", to: "BLOQUE_K", dist: 32, hasStairs: false, note: "Paso plano entre Atrio y Bloque K" },
-      { from: "ATRIO", to: "AGORA", dist: 55, hasStairs: false, note: "Rampa peatonal central conectando Atrio con Ágora" },
-
-      { from: "BLOQUE_A", to: "BLOQUE_D", dist: 35, hasStairs: false, note: "Pasillo lateral entre Coliseo y Bloque D" },
-      { from: "BLOQUE_A", to: "BLOQUE_B", dist: 42, hasStairs: false, note: "Pasillo nivel medio entre Coliseo y Cultura (Bloque B)" },
-      { from: "BLOQUE_B", to: "AGORA", dist: 30, hasStairs: false, note: "Paso directo de Bloque B a la plaza del Ágora" },
-      { from: "BLOQUE_B", to: "BLOQUE_C", dist: 36, hasStairs: true, note: "Gradas entre Bloque B y Laboratorios de Ingeniería (Bloque C)" },
-      { from: "BLOQUE_B", to: "BLOQUE_F", dist: 48, hasStairs: false, note: "Rampa lateral hacia Registro Académico / Kardex (Bloque F)" },
-      { from: "BLOQUE_F", to: "BLOQUE_C", dist: 35, hasStairs: false, note: "Pasillo superior entre Kardex (Bloque F) y Bloque C" },
-
-      { from: "AGORA", to: "BLOQUE_C", dist: 32, hasStairs: false, note: "Acceso desde el Ágora al Edificio de Ingeniería (Bloque C)" },
-      { from: "AGORA", to: "BLOQUE_G", dist: 38, hasStairs: false, note: "Rampa suave hacia Bloque G (Decanatura Ingeniería y Auditorio)" },
-      { from: "AGORA", to: "BLOQUE_K", dist: 48, hasStairs: false, note: "Camino peatonal entre Ágora y Bloque K" },
-      { from: "AGORA", to: "BLOQUE_H", dist: 65, hasStairs: false, note: "Sendero por los jardines hacia la Cafetería (Bloque H)" },
-      { from: "BLOQUE_C", to: "BLOQUE_G", dist: 35, hasStairs: false, note: "Puente/pasillo de conexión entre Bloques C y G" },
-      { from: "BLOQUE_G", to: "BLOQUE_J", dist: 34, hasStairs: false, note: "Camino hacia Internacionalización (Bloque J)" },
-      { from: "BLOQUE_J", to: "INGRESO_SILES", dist: 35, hasStairs: false, note: "Salida peatonal hacia Av. Hernando Siles" },
-      { from: "BLOQUE_F", to: "INGRESO_SILES", dist: 65, hasStairs: false, note: "Vereda superior hacia Av. Hernando Siles" },
-
-      { from: "BLOQUE_G", to: "BLOQUE_H", dist: 50, hasStairs: true, note: "Gradas de jardín entre Bloque G y Cafetería (Bloque H)" },
-      { from: "BLOQUE_H", to: "BLOQUE_I", dist: 45, hasStairs: false, note: "Paseo jardín plano hacia la Biblioteca Central (Bloque I)" },
-      { from: "BLOQUE_H", to: "BLOQUE_L", dist: 42, hasStairs: false, note: "Camino peatonal entre Cafetería y Rectorado (Bloque L)" },
-      { from: "BLOQUE_K", to: "BLOQUE_L", dist: 60, hasStairs: false, note: "Sendero accesible por jardines bajos hacia Bloque L y H" },
-      { from: "BLOQUE_L", to: "BLOQUE_I", dist: 52, hasStairs: false, note: "Acceso lateral accesible a la Biblioteca Central" },
-
-      { from: "INGRESO_PRINCIPAL", to: "BLOQUE_M", dist: 55, hasStairs: false, note: "Cruza el paso de cebra de Av. 14 de Septiembre hacia Arquitectura (Bloque M)" },
-      { from: "INGRESO_PRINCIPAL", to: "BLOQUE_P", dist: 45, hasStairs: false, note: "Cruza Av. 14 de Septiembre hacia Comunicación y SECRAD (Bloque P)" },
-      { from: "BLOQUE_P", to: "BLOQUE_N", dist: 40, hasStairs: false, note: "Acera de Av. 14 de Septiembre hacia Centro de Idiomas (Bloque N)" },
-      { from: "BLOQUE_N", to: "BLOQUE_ST", dist: 55, hasStairs: false, note: "Camina por Av. 14 de Septiembre hacia Ciencias Económicas (Bloques S y T)" },
-      { from: "BLOQUE_M", to: "BLOQUE_U", dist: 110, hasStairs: false, note: "Baja por Calle 2 / Calle 3 hasta Av. Héctor Ormachea (Bloque U - Diseño)" },
-      { from: "BLOQUE_P", to: "BLOQUE_U", dist: 105, hasStairs: false, note: "Conecta hacia Av. Héctor Ormachea esq. Calle 3 (Bloque U - Diseño)" },
-      { from: "BLOQUE_ST", to: "BLOQUE_V", dist: 240, hasStairs: false, note: "Avanza por Av. Héctor Ormachea hasta Calle 12 (Bloque V - Medicina)" }
-    ];
-
-    // =========================================================================
-    // 3. ESTADO GLOBAL DE LA APLICACIÓN
+    // 2. ESTADO GLOBAL DE LA APLICACIÓN
     // =========================================================================
     const state = {
       activeTab: 'ar',
       originId: 'INGRESO_PRINCIPAL',
       destinationId: 'BLOQUE_A',
-      accessibleMode: false,
-      activeRoute: null,
-      currentStepIndex: 0,
       
       cameraActive: false,
       mediaStream: null,
@@ -1074,7 +1013,7 @@
     }
 
     // =========================================================================
-    // 4. GEOMETRÍA DE 4 ESQUINAS POR BLOQUE (POLÍGONOS GPS, CENTROIDE Y RAY-CASTING)
+    // 3. GEOMETRÍA DE 4 ESQUINAS POR BLOQUE (POLÍGONOS GPS, CENTROIDE Y RAY-CASTING)
     // =========================================================================
     const STORAGE_KEY_CORNERS = 'ucb_navigator_calibrated_corners_v2';
 
@@ -1409,92 +1348,7 @@
     }
 
     // =========================================================================
-    // 5. ALGORITMO DE DIJKSTRA PARA RUTA MÁS CORTA EN EL CAMPUS UCB
-    // =========================================================================
-    function computeShortestPathDijkstra(startId, endId, avoidStairs = false) {
-      const distances = {};
-      const previous = {};
-      const edgeUsed = {};
-      const unvisited = new Set();
-
-      UCB_NODES.forEach(node => {
-        distances[node.id] = Infinity;
-        previous[node.id] = null;
-        unvisited.add(node.id);
-      });
-      distances[startId] = 0;
-
-      while (unvisited.size > 0) {
-        let currentId = null;
-        let smallestDist = Infinity;
-        unvisited.forEach(id => {
-          if (distances[id] < smallestDist) {
-            smallestDist = distances[id];
-            currentId = id;
-          }
-        });
-
-        if (currentId === null || currentId === endId) break;
-        unvisited.delete(currentId);
-
-        UCB_EDGES.forEach(edge => {
-          let neighborId = null;
-          if (edge.from === currentId) neighborId = edge.to;
-          else if (edge.to === currentId) neighborId = edge.from;
-
-          if (neighborId && unvisited.has(neighborId)) {
-            const penalty = (avoidStairs && edge.hasStairs) ? 500 : 0;
-            const candidateDist = distances[currentId] + edge.dist + penalty;
-
-            if (candidateDist < distances[neighborId]) {
-              distances[neighborId] = candidateDist;
-              previous[neighborId] = currentId;
-              edgeUsed[neighborId] = edge;
-            }
-          }
-        });
-      }
-
-      const pathIds = [];
-      let curr = endId;
-      while (curr) {
-        pathIds.unshift(curr);
-        curr = previous[curr];
-      }
-
-      if (pathIds[0] !== startId) {
-        pathIds.unshift(startId);
-      }
-
-      let realTotalMeters = 0;
-      const steps = [];
-      for (let i = 0; i < pathIds.length - 1; i++) {
-        const fromNode = getNodeById(pathIds[i]);
-        const toNode = getNodeById(pathIds[i + 1]);
-        const edge = edgeUsed[toNode.id] || { dist: 45, hasStairs: false, note: `Camina hacia ${toNode.shortName}` };
-        realTotalMeters += edge.dist;
-
-        steps.push({
-          stepNumber: i + 1,
-          fromNode,
-          toNode,
-          distance: edge.dist,
-          hasStairs: edge.hasStairs,
-          instruction: edge.note
-        });
-      }
-
-      return {
-        pathIds,
-        pathNodes: pathIds.map(id => getNodeById(id)),
-        totalDistance: realTotalMeters,
-        estimatedSeconds: Math.max(15, Math.round(realTotalMeters / 1.25)),
-        steps
-      };
-    }
-
-    // =========================================================================
-    // 6. CÁLCULOS GEODÉSICOS (RUMBO / AZIMUT Y DISTANCIA GPS)
+    // 4. CÁLCULOS GEODÉSICOS (RUMBO / AZIMUT Y DISTANCIA GPS DIRECTA)
     // =========================================================================
     function calculateBearing(lat1, lng1, lat2, lng2) {
       const toRad = deg => (deg * Math.PI) / 180;
@@ -1518,6 +1372,7 @@
     }
 
     function formatTimeFromSeconds(sec) {
+      if (sec <= 0) return "0 seg";
       if (sec < 60) return `${sec} seg`;
       const mins = Math.floor(sec / 60);
       const rem = sec % 60;
@@ -1545,16 +1400,9 @@
     }
 
     // =========================================================================
-    // 7. ACTUALIZACIÓN DE LA RUTA Y PANELES EN CÁMARA AR
+    // 5. ACTUALIZACIÓN DE ORIENTACIÓN DIRECTA Y PANEL DEL BLOQUE DESTINO
     // =========================================================================
     function recalculateAndRenderRoute() {
-      state.activeRoute = computeShortestPathDijkstra(
-        state.originId,
-        state.destinationId,
-        state.accessibleMode
-      );
-      state.currentStepIndex = 0;
-
       const originNode = getNodeById(state.originId);
       const destNode = getNodeById(state.destinationId);
 
@@ -1569,119 +1417,42 @@
       document.getElementById('selectOrigin').value = state.originId;
       document.getElementById('selectDestination').value = state.destinationId;
 
+      const targetAim = getTargetCoordForNode(destNode);
+      const directDist = state.originId === state.destinationId && !state.gpsActive ? 0 : targetAim.distM;
+      const estimatedSeconds = directDist === 0 ? 0 : Math.max(10, Math.round(directDist / 1.25));
+      const directBearing = Math.round(calculateBearing(state.userLat, state.userLng, targetAim.lat, targetAim.lng));
+
+      // Actualizar barra superior
       document.getElementById('headerOriginLabel').textContent = originNode.shortName;
       document.getElementById('headerDestLabel').textContent = destNode.shortName;
-      document.getElementById('headerDistBadge').textContent = `${state.activeRoute.totalDistance} m`;
+      document.getElementById('headerDistBadge').textContent = `${directDist} m`;
 
-      document.getElementById('arTargetHeaderTitle').textContent = `Destino UCB: ${destNode.name}`;
+      // Actualizar tarjeta HUD superior izquierda en Cámara AR
+      document.getElementById('arTargetHeaderTitle').textContent = destNode.name;
       document.getElementById('arFloorBadge').textContent = destNode.code;
-      document.getElementById('destDetailName').textContent = destNode.name;
-      document.getElementById('destDetailDeps').textContent = destNode.dependencies.join(' · ');
-      document.getElementById('destDetailFloor').textContent = destNode.floorInfo;
+      document.getElementById('arDirectFloorDesc').textContent = destNode.floorInfo;
+      document.getElementById('arRemainingDist').textContent = `${directDist} m`;
+      document.getElementById('arRemainingTime').textContent = formatTimeFromSeconds(estimatedSeconds);
+      document.getElementById('arDirectBearingBadge').textContent = `${String(directBearing).padStart(3, '0')}° ${getCardinalLabel(directBearing)}`;
 
-      updateARStepHUD();
-      renderStepListsUI();
+      // Actualizar tarjeta de Información del Bloque Destino en la columna derecha
+      document.getElementById('destCodeBadge').textContent = destNode.code;
+      document.getElementById('destCoordsBadge').textContent = `${destNode.lat.toFixed(6)}, ${destNode.lng.toFixed(6)}`;
+      document.getElementById('destDetailName').textContent = destNode.name;
+      document.getElementById('destDetailFloor').textContent = destNode.floorInfo;
+      document.getElementById('destDetailDepsTags').innerHTML = destNode.dependencies.map(dep => `
+        <span class="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-300 text-ucb-blue font-semibold text-[11px]">
+          ${dep}
+        </span>
+      `).join('');
+
       if (document.getElementById('calibBlockSelect')) {
         previewPolygonFromInputs();
       }
     }
 
-    function updateARStepHUD() {
-      const route = state.activeRoute;
-      if (!route) return;
-
-      const destNode = getNodeById(state.destinationId);
-      const steps = route.steps;
-
-      if (steps.length === 0 || state.originId === state.destinationId) {
-        document.getElementById('arStepCounter').textContent = "¡Llegaste!";
-        document.getElementById('arNextStepTitle').textContent = `Estás en ${destNode.shortName}`;
-        document.getElementById('arNextStepDesc').textContent = destNode.floorInfo;
-        document.getElementById('arRemainingDist').textContent = "0 m";
-        document.getElementById('arRemainingTime').textContent = "0 seg";
-        return;
-      }
-
-      const idx = Math.min(state.currentStepIndex, steps.length - 1);
-      const currentStep = steps[idx];
-
-      let remainingMeters = 0;
-      for (let i = idx; i < steps.length; i++) {
-        remainingMeters += steps[i].distance;
-      }
-      const remainingSec = Math.max(10, Math.round(remainingMeters / 1.25));
-
-      document.getElementById('arStepCounter').textContent = `Paso ${idx + 1} de ${steps.length}`;
-      document.getElementById('arNextStepTitle').textContent = `Hacia ${currentStep.toNode.shortName} (${currentStep.distance} m)`;
-      document.getElementById('arNextStepDesc').textContent = currentStep.instruction;
-      document.getElementById('arRemainingDist').textContent = `${remainingMeters} m`;
-      document.getElementById('arRemainingTime').textContent = formatTimeFromSeconds(remainingSec);
-    }
-
-    function advanceOneStepOnRoute() {
-      const route = state.activeRoute;
-      if (!route || route.steps.length === 0) return;
-
-      if (state.currentStepIndex < route.steps.length - 1) {
-        state.currentStepIndex++;
-        const newCurrentNode = route.steps[state.currentStepIndex].fromNode;
-        state.userLat = newCurrentNode.lat;
-        state.userLng = newCurrentNode.lng;
-        updateARStepHUD();
-        renderStepListsUI();
-        showToast(`Avanzaste a ${newCurrentNode.shortName}. Sigue la flecha AR.`);
-      } else {
-        state.originId = state.destinationId;
-        recalculateAndRenderRoute();
-        showToast(`🎉 ¡Has llegado a tu destino: ${getNodeById(state.destinationId).name}!`);
-      }
-    }
-
-    function renderStepListsUI() {
-      const arContainer = document.getElementById('arStepsList');
-      const steps = state.activeRoute ? state.activeRoute.steps : [];
-
-      if (steps.length === 0) {
-        arContainer.innerHTML = `
-          <div class="p-3 rounded-xl bg-amber-100 border-2 border-amber-400 text-ucb-blue font-bold text-xs flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-blue-700 text-base"></i>
-            <span>Ya te encuentras dentro del perímetro del bloque destino seleccionado.</span>
-          </div>`;
-        return;
-      }
-
-      arContainer.innerHTML = steps.map((st, idx) => {
-        const isCurrent = idx === state.currentStepIndex;
-        const isPassed = idx < state.currentStepIndex;
-        return `
-          <div class="p-2.5 rounded-xl border-2 transition flex items-start justify-between gap-2 ${
-            isCurrent
-              ? 'bg-amber-100/90 border-ucb-blue text-ucb-blue shadow-sm'
-              : isPassed
-              ? 'bg-slate-100 border-slate-200 text-slate-400 line-through'
-              : 'bg-white border-amber-200 text-slate-700'
-          }">
-            <div class="flex items-start gap-2.5">
-              <span class="w-5 h-5 rounded-full text-[11px] font-extrabold flex items-center justify-center shrink-0 mt-0.5 ${
-                isCurrent ? 'bg-ucb-blue text-amber-300' : 'bg-amber-200 text-ucb-blue'
-              }">
-                ${st.stepNumber}
-              </span>
-              <div>
-                <div class="text-xs font-extrabold text-ucb-blue">
-                  ${st.fromNode.shortName} <i class="fa-solid fa-arrow-right text-[10px] mx-1 text-amber-600"></i> ${st.toNode.shortName}
-                </div>
-                <div class="text-[11px] text-slate-600 font-medium mt-0.5">${st.instruction}</div>
-              </div>
-            </div>
-            <span class="font-mono text-xs font-extrabold text-blue-700 shrink-0">${st.distance} m</span>
-          </div>
-        `;
-      }).join('');
-    }
-
     // =========================================================================
-    // 8. MOTOR DE REALIDAD AUMENTADA (CÁMARA + FLECHA 3D EN TONOS AMARILLO/AZUL)
+    // 6. MOTOR DE REALIDAD AUMENTADA (CÁMARA + FLECHA 3D EN TONOS AMARILLO/AZUL)
     // =========================================================================
     async function toggleCameraFeed() {
       const video = document.getElementById('arVideo');
@@ -1783,14 +1554,8 @@
         const h = canvas.height;
         ctx.clearRect(0, 0, w, h);
 
-        const route = state.activeRoute;
         const destNode = getNodeById(state.destinationId);
-        let targetNode = destNode;
-
-        if (route && route.steps.length > 0) {
-          const stepIdx = Math.min(state.currentStepIndex, route.steps.length - 1);
-          targetNode = route.steps[stepIdx].toNode;
-        }
+        const targetNode = destNode;
 
         const targetAim = getTargetCoordForNode(targetNode);
         const targetBearing = Math.round(
@@ -2640,27 +2405,6 @@
       state.destinationId = temp;
       recalculateAndRenderRoute();
       showToast("Origen y destino invertidos.");
-    }
-
-    function toggleAccessibilityMode() {
-      state.accessibleMode = !state.accessibleMode;
-      const badge = document.getElementById('accessibleBadge');
-      const routeTag = document.getElementById('routeModeTag');
-
-      if (state.accessibleMode) {
-        badge.textContent = "ON (Sin Gradas)";
-        badge.className = "font-extrabold text-blue-700";
-        routeTag.textContent = "♿ Ruta Accesible";
-        routeTag.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-blue-100 text-ucb-blue border border-blue-300 font-bold";
-        showToast("♿ Modo Accesible activado: evitando escaleras y priorizando rampas/ascensores.");
-      } else {
-        badge.textContent = "OFF";
-        badge.className = "font-extrabold text-slate-500";
-        routeTag.textContent = "Ruta Óptima";
-        routeTag.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-amber-100 text-ucb-blue border border-amber-400 font-bold";
-        showToast("Modo ruta estándar activado.");
-      }
-      recalculateAndRenderRoute();
     }
 
     function switchTab(tabId) {
