@@ -286,10 +286,16 @@
 
             <!-- Right Top Camera Toggle & Mini Status -->
             <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 pointer-events-auto">
-              <button id="btnCameraToggle" onclick="toggleCameraFeed()" class="px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition bg-emerald-500 hover:bg-emerald-400 text-slate-950">
-                <i class="fa-solid fa-video"></i>
-                <span id="btnCameraText">Encender Cámara AR</span>
-              </button>
+              <div class="flex items-center gap-2">
+                <button id="btnToggleARLines" onclick="toggleARBlockLinesMode()" class="px-3 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-1.5 shadow-lg transition hud-glass hover:bg-slate-800/90 text-ucb-cyan border border-ucb-cyan/40" title="Alternar visualización de líneas guía hacia todos los bloques o solo al destino">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                  <span id="btnARLinesText">Líneas: Todas</span>
+                </button>
+                <button id="btnCameraToggle" onclick="toggleCameraFeed()" class="px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition bg-emerald-500 hover:bg-emerald-400 text-slate-950">
+                  <i class="fa-solid fa-video"></i>
+                  <span id="btnCameraText">Encender Cámara AR</span>
+                </button>
+              </div>
 
               <div class="hud-glass px-2.5 py-1.5 rounded-xl text-[11px] text-slate-300 flex items-center gap-2">
                 <span>Rumbo: <strong id="hudHeadingText" class="text-ucb-cyan font-mono">045° NE</strong></span>
@@ -483,6 +489,7 @@
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span> Origen (Tú)</span>
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-ucb-gold inline-block"></span> Destino</span>
             <span class="flex items-center gap-1.5"><span class="w-4 h-1 bg-ucb-cyan inline-block"></span> Ruta Dijkstra</span>
+            <span class="flex items-center gap-1.5"><span class="w-4 h-0.5 border-b-2 border-dashed border-ucb-gold inline-block"></span> Vector Directo al Bloque</span>
           </div>
 
           <!-- SVG Map inspired by Official UCB Obrajes Map 2025/2026 -->
@@ -493,6 +500,13 @@
                 <feGaussianBlur stdDeviation="4" result="blur" />
                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>
+              <!-- Directional Arrowhead Markers for Route & Direct Vector -->
+              <marker id="arrowCyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#00E5FF" />
+              </marker>
+              <marker id="arrowGold" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" fill="#F2A900" />
+              </marker>
               <!-- Grid Pattern -->
               <pattern id="campusGrid" width="40" height="40" patternUnits="userSpaceOnUse">
                 <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148, 163, 184, 0.07)" stroke-width="1"/>
@@ -1442,6 +1456,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       mediaStream: null,
       compassHeading: 35,    // Grados 0 - 359 (0 = Norte)
       usingDeviceCompass: false,
+      showAllBlockLines: true, // Muestra líneas trazadoras hacia todos los bloques visibles o solo al destino
       arAnimFrame: null,
 
       // GPS Real
@@ -1454,455 +1469,198 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       eventCategoryFilter: 'ALL'
     };
 
+    // Alternar modo de visualización de líneas guía en la vista de Cámara AR
+    function toggleARBlockLinesMode() {
+      state.showAllBlockLines = !state.showAllBlockLines;
+      const btnText = document.getElementById('btnARLinesText');
+      const btn = document.getElementById('btnToggleARLines');
+      if (state.showAllBlockLines) {
+        btnText.textContent = "Líneas: Todas";
+        btn.className = "px-3 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-1.5 shadow-lg transition hud-glass hover:bg-slate-800/90 text-ucb-cyan border border-ucb-cyan/40";
+        showToast("Líneas AR activadas para todos los bloques en tu campo visual.");
+      } else {
+        btnText.textContent = "Líneas: Destino";
+        btn.className = "px-3 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-1.5 shadow-lg transition hud-glass hover:bg-slate-800/90 text-ucb-gold border border-ucb-gold/40";
+        showToast("Mostrando únicamente la línea guía principal hacia el bloque destino.");
+      }
+    }
+
     // Helper para obtener un nodo por ID
     function getNodeById(id) {
       return UCB_NODES.find(n => n.id === id) || UCB_NODES[0];
     }
-
-    // =========================================================================
-    // 5. ALGORITMO DE DIJKSTRA PARA RUTA MÁS CORTA EN EL CAMPUS UCB
-    // =========================================================================
-    function computeShortestPathDijkstra(startId, endId, avoidStairs = false) {
-      const distances = {};
-      const previous = {};
-      const edgeUsed = {};
-      const unvisited = new Set();
-
-      UCB_NODES.forEach(node => {
-        distances[node.id] = Infinity;
-        previous[node.id] = null;
-        unvisited.add(node.id);
-      });
-      distances[startId] = 0;
-
-      while (unvisited.size > 0) {
-        // Encontrar el nodo no visitado con menor distancia acumulada
-        let currentId = null;
-        let smallestDist = Infinity;
-        unvisited.forEach(id => {
-          if (distances[id] < smallestDist) {
-            smallestDist = distances[id];
-            currentId = id;
-          }
-        });
-
-        if (currentId === null || currentId === endId) break;
-        unvisited.delete(currentId);
-
-        // Evaluar vecinos (el grafo es bidireccional)
-        UCB_EDGES.forEach(edge => {
-          let neighborId = null;
-          if (edge.from === currentId) neighborId = edge.to;
-          else if (edge.to === currentId) neighborId = edge.from;
-
-          if (neighborId && unvisited.has(neighborId)) {
-            // Si el modo accesible está activo, penalizamos los tramos con escaleras para priorizar rampas
-            const penalty = (avoidStairs && edge.hasStairs) ? 500 : 0;
-            const candidateDist = distances[currentId] + edge.dist + penalty;
-
-            if (candidateDist < distances[neighborId]) {
-              distances[neighborId] = candidateDist;
-              previous[neighborId] = currentId;
-              edgeUsed[neighborId] = edge;
-            }
-          }
-        });
-      }
-
-      // Reconstruir el camino óptimo
-      const pathIds = [];
-      let curr = endId;
-      while (curr) {
-        pathIds.unshift(curr);
-        curr = previous[curr];
-      }
-
-      if (pathIds[0] !== startId) {
-        pathIds.unshift(startId);
-      }
-
-      // Construir pasos detallados y distancia física real
-      let realTotalMeters = 0;
-      const steps = [];
-      for (let i = 0; i < pathIds.length - 1; i++) {
-        const fromNode = getNodeById(pathIds[i]);
-        const toNode = getNodeById(pathIds[i + 1]);
-        const edge = edgeUsed[toNode.id] || { dist: 45, hasStairs: false, note: `Camina hacia ${toNode.shortName}` };
-        realTotalMeters += edge.dist;
-
-        steps.push({
-          stepNumber: i + 1,
-          fromNode,
-          toNode,
-          distance: edge.dist,
-          hasStairs: edge.hasStairs,
-          instruction: edge.note
-        });
-      }
-
-      return {
-        pathIds,
-        pathNodes: pathIds.map(id => getNodeById(id)),
-        totalDistance: realTotalMeters,
-        estimatedSeconds: Math.max(15, Math.round(realTotalMeters / 1.25)), // ~1.25 m/s velocidad promedio en campus con pendiente
-        steps
-      };
-    }
-
-    // =========================================================================
-    // 6. CÁLCULOS GEODÉSICOS (RUMBO / AZIMUT Y DISTANCIA GPS)
-    // =========================================================================
-    // Calcula el ángulo de brújula (0° = Norte, 90° = Este, 180° = Sur, 270° = Oeste) entre dos coordenadas
-    function calculateBearing(lat1, lng1, lat2, lng2) {
-      const toRad = deg => (deg * Math.PI) / 180;
-      const toDeg = rad => (rad * 180) / Math.PI;
-      const dLng = toRad(lng2 - lng1);
-      const y = Math.sin(dLng) * Math.cos(toRad(lat2));
-      const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
-                Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
-      const brng = toDeg(Math.atan2(y, x));
-      return (brng + 360) % 360;
-    }
-
-    // Distancia Haversine en metros entre dos coordenadas GPS
-    function calculateHaversineMeters(lat1, lng1, lat2, lng2) {
-      const R = 6371000;
-      const toRad = deg => (deg * Math.PI) / 180;
-      const dLat = toRad(lat2 - lat1);
-      const dLng = toRad(lng2 - lng1);
-      const a = Math.sin(dLat / 2) ** 2 +
-                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-      return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-    }
-
-    function formatTimeFromSeconds(sec) {
-      if (sec < 60) return `${sec} seg`;
-      const mins = Math.floor(sec / 60);
-      const rem = sec % 60;
-      return rem > 0 ? `~${mins} min ${rem} s` : `~${mins} min`;
-    }
-
-    function getCardinalLabel(deg) {
-      const dirs = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
-      return dirs[Math.round(deg / 45) % 8];
-    }
-
-    // =========================================================================
-    // 7. ACTUALIZACIÓN INTEGRAL DE LA RUTA Y VISTAS (AR + MAPA)
-    // =========================================================================
-    function recalculateAndRenderRoute() {
-      state.activeRoute = computeShortestPathDijkstra(
-        state.originId,
-        state.destinationId,
-        state.accessibleMode
-      );
-      state.currentStepIndex = 0;
-
-      const originNode = getNodeById(state.originId);
-      const destNode = getNodeById(state.destinationId);
-
-      // Si no está con GPS físico activo, sincronizamos las coordenadas del usuario con el nodo de origen
-      if (!state.gpsActive) {
-        state.userLat = originNode.lat;
-        state.userLng = originNode.lng;
-      }
-
-      // Actualizar selectores
-      document.getElementById('selectOrigin').value = state.originId;
-      document.getElementById('selectDestination').value = state.destinationId;
-
-      // Actualizar píldora superior
-      document.getElementById('headerOriginLabel').textContent = originNode.shortName;
-      document.getElementById('headerDestLabel').textContent = destNode.shortName;
-      document.getElementById('headerDistBadge').textContent = `${state.activeRoute.totalDistance} m`;
-
-      // Actualizar tarjeta de detalle del destino en la pestaña AR
-      const activeEvent = UCB_EVENTS.find(e => e.id === state.selectedEventId && e.nodeId === state.destinationId);
-      const eventBanner = document.getElementById('arEventBanner');
-      if (activeEvent) {
-        eventBanner.classList.remove('hidden');
-        document.getElementById('arEventTitle').textContent = `Evento: ${activeEvent.title}`;
-        document.getElementById('arFloorBadge').textContent = activeEvent.floor;
-        document.getElementById('destDetailFloor').textContent = `Ubicación del evento: ${activeEvent.floor}`;
-      } else {
-        eventBanner.classList.remove('hidden');
-        document.getElementById('arEventTitle').textContent = `Destino UCB: ${destNode.name}`;
-        document.getElementById('arFloorBadge').textContent = destNode.code;
-        document.getElementById('destDetailFloor').textContent = destNode.floorInfo;
-      }
-
-      document.getElementById('destDetailName').textContent = destNode.name;
-      document.getElementById('destDetailDeps').textContent = destNode.dependencies.join(' · ');
-
-      updateARStepHUD();
-      renderStepListsUI();
-      renderCampusMapSVG();
-      updateInspectorCard(state.destinationId);
-    }
-
-    // Actualiza la tarjeta HUD superior de la cámara AR según el paso actual de la ruta
-    function updateARStepHUD() {
-      const route = state.activeRoute;
-      if (!route) return;
-
-      const destNode = getNodeById(state.destinationId);
-      const steps = route.steps;
-
-      if (steps.length === 0 || state.originId === state.destinationId) {
-        document.getElementById('arStepCounter').textContent = "¡Llegaste!";
-        document.getElementById('arNextStepTitle').textContent = `Estás en ${destNode.shortName}`;
-        document.getElementById('arNextStepDesc').textContent = destNode.floorInfo;
-        document.getElementById('arRemainingDist').textContent = "0 m";
-        document.getElementById('arRemainingTime').textContent = "0 seg";
-        return;
-      }
-
-      const idx = Math.min(state.currentStepIndex, steps.length - 1);
-      const currentStep = steps[idx];
-
-      // Calcular distancia restante desde el paso actual
-      let remainingMeters = 0;
-      for (let i = idx; i < steps.length; i++) {
-        remainingMeters += steps[i].distance;
-      }
-      const remainingSec = Math.max(10, Math.round(remainingMeters / 1.25));
-
-      document.getElementById('arStepCounter').textContent = `Paso ${idx + 1} de ${steps.length}`;
-      document.getElementById('arNextStepTitle').textContent = `Hacia ${currentStep.toNode.shortName} (${currentStep.distance} m)`;
-      document.getElementById('arNextStepDesc').textContent = currentStep.instruction;
-      document.getElementById('arRemainingDist').textContent = `${remainingMeters} m`;
-      document.getElementById('arRemainingTime').textContent = formatTimeFromSeconds(remainingSec);
-
-      // Estadísticas en el pie del mapa
-      document.getElementById('mapTotalDist').textContent = `${route.totalDistance} m`;
-      document.getElementById('mapTotalTime').textContent = formatTimeFromSeconds(route.estimatedSeconds);
-      document.getElementById('mapTotalNodes').textContent = `${route.pathNodes.length} puntos`;
-    }
-
-    // Permite simular que el usuario camina al siguiente nodo de la ruta
-    function advanceOneStepOnRoute() {
-      const route = state.activeRoute;
-      if (!route || route.steps.length === 0) return;
-
-      if (state.currentStepIndex < route.steps.length - 1) {
-        state.currentStepIndex++;
-        const newCurrentNode = route.steps[state.currentStepIndex].fromNode;
-        state.userLat = newCurrentNode.lat;
-        state.userLng = newCurrentNode.lng;
-        updateARStepHUD();
-        renderStepListsUI();
-        renderCampusMapSVG();
-        showToast(`Avanzaste a ${newCurrentNode.shortName}. Sigue la flecha AR.`);
-      } else {
-        // Llegó al destino final
-        state.originId = state.destinationId;
-        recalculateAndRenderRoute();
-        showToast(`🎉 ¡Has llegado a tu destino: ${getNodeById(state.destinationId).name}!`);
-      }
-    }
-
-    // Renderiza la lista de pasos tanto en la pestaña AR como en la pestaña Mapa
-    function renderStepListsUI() {
-      const arContainer = document.getElementById('arStepsList');
-      const mapContainer = document.getElementById('mapStepsList');
-      const steps = state.activeRoute ? state.activeRoute.steps : [];
-
-      if (steps.length === 0) {
-        const emptyHtml = `
-          <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-base"></i>
-            <span>Ya te encuentras exactamente en el bloque de destino seleccionado.</span>
-          </div>`;
-        arContainer.innerHTML = emptyHtml;
-        mapContainer.innerHTML = emptyHtml;
-        return;
-      }
-
-      const html = steps.map((st, idx) => {
-        const isCurrent = idx === state.currentStepIndex;
-        const isPassed = idx < state.currentStepIndex;
-        return `
-          <div class="p-2.5 rounded-xl border transition flex items-start justify-between gap-2 ${
-            isCurrent
-              ? 'bg-ucb-cyan/15 border-ucb-cyan text-white'
-              : isPassed
-              ? 'bg-slate-950/40 border-slate-800/60 text-slate-500 line-through'
-              : 'bg-slate-950/80 border-slate-800 text-slate-300'
-          }">
-            <div class="flex items-start gap-2.5">
-              <span class="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5 ${
-                isCurrent ? 'bg-ucb-cyan text-slate-950' : 'bg-slate-800 text-slate-300'
-              }">
-                ${st.stepNumber}
-              </span>
-              <div>
-                <div class="text-xs font-bold ${isCurrent ? 'text-ucb-cyan' : 'text-white'}">
-                  ${st.fromNode.shortName} <i class="fa-solid fa-arrow-right text-[10px] mx-1 text-slate-400"></i> ${st.toNode.shortName}
-                </div>
-                <div class="text-[11px] text-slate-400 mt-0.5">${st.instruction}</div>
-              </div>
-            </div>
-            <span class="font-mono text-xs font-semibold text-ucb-gold shrink-0">${st.distance} m</span>
-          </div>
-        `;
-      }).join('');
-
-      arContainer.innerHTML = html;
-      mapContainer.innerHTML = html;
-    }
-
-    // =========================================================================
-    // 8. MOTOR DE REALIDAD AUMENTADA (CÁMARA + FLECHA 3D EN CANVAS + RADAR)
-    // =========================================================================
-    async function toggleCameraFeed() {
-      const video = document.getElementById('arVideo');
-      const simScene = document.getElementById('arSimulatedScene');
-      const btnText = document.getElementById('btnCameraText');
-      const btn = document.getElementById('btnCameraToggle');
-
-      if (state.cameraActive) {
-        if (state.mediaStream) {
-          state.mediaStream.getTracks().forEach(t => t.stop());
-          state.mediaStream = null;
-        }
-        video.classList.add('hidden');
-        simScene.classList.remove('hidden');
-        state.cameraActive = false;
-        btnText.textContent = "Encender Cámara AR";
-        btn.className = "px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition bg-emerald-500 hover:bg-emerald-400 text-slate-950";
-        showToast("Cámara apagada. Mostrando entorno AR simulado del campus.");
-        return;
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" } },
-          audio: false
-        });
-        state.mediaStream = stream;
-        video.srcObject = stream;
-        video.classList.remove('hidden');
-        simScene.classList.add('hidden');
-        state.cameraActive = true;
-        btnText.textContent = "Apagar Cámara AR";
-        btn.className = "px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition bg-rose-500 hover:bg-rose-400 text-white";
-        showToast("📷 Cámara trasera activa con superposición de ruta AR.");
-      } catch (err) {
-        // Fallback automático sin bloquear al usuario
-        state.cameraActive = false;
-        video.classList.add('hidden');
-        simScene.classList.remove('hidden');
-        showToast("Sin cámara física o permiso denegado: Modo Simulador AR 3D activo.");
-      }
-    }
-
-    // Solicitar permiso de brújula/giroscopio en móviles (iOS y Android)
-    async function requestDeviceOrientationPermission() {
-      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        try {
-          const response = await DeviceOrientationEvent.requestPermission();
-          if (response === 'granted') {
-            window.addEventListener('deviceorientation', handleDeviceOrientationEvent, true);
-            state.usingDeviceCompass = true;
-            showToast("Brújula del dispositivo conectada.");
-          } else {
-            showToast("Permiso de giroscopio denegado. Usa el control deslizante inferior.");
-          }
-        } catch (e) {
-          showToast("Usa el control deslizante para rotar la vista AR.");
-        }
-      } else if ('ondeviceorientationabsolute' in window) {
-        window.addEventListener('deviceorientationabsolute', handleDeviceOrientationEvent, true);
-        state.usingDeviceCompass = true;
-        showToast("Sensor de orientación activo.");
-      } else if ('ondeviceorientation' in window) {
-        window.addEventListener('deviceorientation', handleDeviceOrientationEvent, true);
-        state.usingDeviceCompass = true;
-        showToast("Sensor de orientación activo.");
-      } else {
-        showToast("Dispositivo sin brújula física: gira con el control deslizante.");
-      }
-    }
-
-    function handleDeviceOrientationEvent(event) {
-      let heading = null;
-      if (typeof event.webkitCompassHeading === 'number') {
-        heading = event.webkitCompassHeading;
-      } else if (typeof event.alpha === 'number') {
-        heading = (360 - event.alpha) % 360;
-      }
-      if (heading !== null && !isNaN(heading)) {
-        state.compassHeading = Math.round(heading);
-        document.getElementById('compassSlider').value = state.compassHeading;
-      }
-    }
-
-    function handleManualCompassChange(val) {
-      state.compassHeading = Number(val);
-    }
-
-    // Bucle de renderizado en tiempo real del Canvas HUD (Flecha 3D + Marcadores Flotantes + Mini-Radar)
-    function startARCanvasRenderLoop() {
-      const canvas = document.getElementById('arHudCanvas');
-      const ctx = canvas.getContext('2d');
-
-      function renderFrame(timestamp) {
-        const rect = canvas.parentElement.getBoundingClientRect();
-        if (canvas.width !== rect.width || canvas.height !== rect.height) {
-          canvas.width = rect.width;
-          canvas.height = rect.height;
-        }
-
-        const w = canvas.width;
-        const h = canvas.height;
-        ctx.clearRect(0, 0, w, h);
-
-        // Determinar nodo objetivo inmediato (siguiente paso de Dijkstra) y nodo destino final
-        const route = state.activeRoute;
-        const destNode = getNodeById(state.destinationId);
-        let targetNode = destNode;
-
-        if (route && route.steps.length > 0) {
-          const stepIdx = Math.min(state.currentStepIndex, route.steps.length - 1);
-          targetNode = route.steps[stepIdx].toNode;
-        }
-
-        // Calcular el rumbo hacia el nodo objetivo desde la posición actual del usuario
-        const targetBearing = Math.round(
-          calculateBearing(state.userLat, state.userLng, targetNode.lat, targetNode.lng)
-        );
-
-        // Diferencia angular relativa (-180° a +180°) entre hacia dónde mira la cámara y hacia dónde está el objetivo
-        let relAngleDeg = ((targetBearing - state.compassHeading + 540) % 360) - 180;
-        const relAngleRad = (relAngleDeg * Math.PI) / 180;
-
+// ... existing code ... -->
         // Actualizar etiquetas de rumbo en el HUD
         document.getElementById('hudHeadingText').textContent =
           `${String(state.compassHeading).padStart(3, '0')}° ${getCardinalLabel(state.compassHeading)}`;
         document.getElementById('hudBearingText').textContent =
           `${String(targetBearing).padStart(3, '0')}°`;
 
+        // Coordenadas de origen de la guía AR (base de la flecha 3D del usuario)
+        const arrowCenterX = w / 2;
+        const arrowCenterY = h * 0.68;
+        const pulseOffset = Math.sin(timestamp / 220) * 6;
+        const originAnchorX = arrowCenterX;
+        const originAnchorY = arrowCenterY + pulseOffset - 10;
+
+        // Función auxiliar para dibujar una línea con punta de flecha y chevrons animados hacia un punto (tx, ty)
+        function drawDirectionalLineToBlock(fromX, fromY, toX, toY, isPrimary, colorHex, distM, bearingDeg) {
+          ctx.save();
+          const dx = toX - fromX;
+          const dy = toY - fromY;
+          const angle = Math.atan2(dy, dx);
+          const length = Math.hypot(dx, dy);
+
+          if (isPrimary) {
+            // 1. Halo luminoso exterior de la línea guía principal
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.strokeStyle = 'rgba(0, 229, 255, 0.28)';
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // 2. Línea láser central con gradiente animado
+            const lineGrad = ctx.createLinearGradient(fromX, fromY, toX, toY);
+            lineGrad.addColorStop(0, '#00E5FF');
+            lineGrad.addColorStop(0.6, '#38BDF8');
+            lineGrad.addColorStop(1, '#F2A900');
+
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.strokeStyle = lineGrad;
+            ctx.lineWidth = 3.2;
+            ctx.setLineDash([12, 8]);
+            ctx.lineDashOffset = -(timestamp / 18) % 40;
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 3. Chevrons / pulsos direccionales viajando por la línea hacia el bloque
+            const numChevrons = Math.max(2, Math.floor(length / 55));
+            const animProgress = (timestamp / 650) % 1;
+            for (let i = 0; i < numChevrons; i++) {
+              const t = (i + animProgress) / numChevrons;
+              if (t > 0.12 && t < 0.92) {
+                const cx = fromX + dx * t;
+                const cy = fromY + dy * t;
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle);
+                ctx.beginPath();
+                ctx.moveTo(-7, -7);
+                ctx.lineTo(4, 0);
+                ctx.lineTo(-7, 7);
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 2.2;
+                ctx.stroke();
+                ctx.restore();
+              }
+            }
+          } else {
+            // Línea trazadora secundaria hacia otros bloques visibles
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.strokeStyle = colorHex || 'rgba(0, 229, 255, 0.42)';
+            ctx.lineWidth = 1.6;
+            ctx.setLineDash([5, 6]);
+            ctx.lineDashOffset = -(timestamp / 35) % 22;
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Etiqueta de rumbo/distancia en el punto medio de la línea secundaria
+            if (length > 90) {
+              const midX = fromX + dx * 0.55;
+              const midY = fromY + dy * 0.55;
+              ctx.fillStyle = 'rgba(7, 19, 36, 0.85)';
+              ctx.beginPath();
+              ctx.roundRect(midX - 24, midY - 8, 48, 16, 4);
+              ctx.fill();
+              ctx.font = '600 9.5px monospace';
+              ctx.fillStyle = '#38BDF8';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(`${Math.round(bearingDeg)}°·${distM}m`, midX, midY);
+            }
+          }
+
+          // Punta de flecha en el extremo que apunta al bloque
+          ctx.save();
+          ctx.translate(toX, toY);
+          ctx.rotate(angle);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(-12, -6);
+          ctx.lineTo(-9, 0);
+          ctx.lineTo(-12, 6);
+          ctx.closePath();
+          ctx.fillStyle = isPrimary ? '#F2A900' : '#00E5FF';
+          ctx.fill();
+          ctx.restore();
+
+          ctx.restore();
+        }
+
         // -------------------------------------------------------------------
-        // A. DIBUJAR PINES AR FLOTANTES DE LOS BLOQUES EN EL CAMPO DE VISIÓN
+        // A. DIBUJAR LÍNEAS DIRECCIONALES Y PINES AR FLOTANTES DE LOS BLOQUES
         // -------------------------------------------------------------------
         const fovDeg = 75; // Campo de visión horizontal simulado de la cámara
+        let targetPinDrawnOnScreen = false;
+
         UCB_NODES.forEach(node => {
           if (node.id === state.originId && !state.gpsActive) return;
 
           const nodeBearing = calculateBearing(state.userLat, state.userLng, node.lat, node.lng);
           const diffDeg = ((nodeBearing - state.compassHeading + 540) % 360) - 180;
+          const distM = calculateHaversineMeters(state.userLat, state.userLng, node.lat, node.lng);
+          const isTarget = node.id === targetNode.id || node.id === destNode.id;
 
           if (Math.abs(diffDeg) <= fovDeg / 2) {
-            const distM = calculateHaversineMeters(state.userLat, state.userLng, node.lat, node.lng);
             const screenX = w / 2 + (diffDeg / (fovDeg / 2)) * (w * 0.42);
-            const isTarget = node.id === targetNode.id || node.id === destNode.id;
-            const screenY = isTarget ? h * 0.42 : h * 0.48 - Math.min(60, distM * 0.15);
+            const screenY = isTarget ? h * 0.36 : h * 0.46 - Math.min(65, distM * 0.15);
+
+            if (node.id === targetNode.id) {
+              targetPinDrawnOnScreen = true;
+            }
+
+            // Dibujar línea direccional desde el usuario hacia el bloque
+            if (isTarget) {
+              drawDirectionalLineToBlock(
+                originAnchorX,
+                originAnchorY,
+                screenX,
+                screenY + 18,
+                true,
+                '#F2A900',
+                distM,
+                nodeBearing
+              );
+            } else if (state.showAllBlockLines) {
+              drawDirectionalLineToBlock(
+                originAnchorX,
+                originAnchorY,
+                screenX,
+                screenY + 14,
+                false,
+                'rgba(0, 229, 255, 0.38)',
+                distM,
+                nodeBearing
+              );
+            }
 
             ctx.save();
+            // Punto de impacto / diana sobre el bloque
+            ctx.beginPath();
+            ctx.arc(screenX, screenY + 18, isTarget ? 5 : 3, 0, Math.PI * 2);
+            ctx.fillStyle = isTarget ? '#F2A900' : '#00E5FF';
+            ctx.fill();
+
             // Línea vertical de anclaje al suelo
             ctx.beginPath();
             ctx.moveTo(screenX, screenY + 16);
-            ctx.lineTo(screenX, screenY + 48);
+            ctx.lineTo(screenX, screenY + 46);
             ctx.strokeStyle = isTarget ? 'rgba(242, 169, 0, 0.85)' : 'rgba(0, 229, 255, 0.35)';
             ctx.lineWidth = isTarget ? 2.5 : 1.2;
             ctx.stroke();
@@ -1915,8 +1673,8 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
             const boxW = textWidth + padX * 2;
             const boxH = isTarget ? 30 : 24;
 
-            ctx.fillStyle = isTarget ? 'rgba(242, 169, 0, 0.95)' : 'rgba(7, 19, 36, 0.82)';
-            ctx.strokeStyle = isTarget ? '#FFFFFF' : 'rgba(0, 229, 255, 0.5)';
+            ctx.fillStyle = isTarget ? 'rgba(242, 169, 0, 0.95)' : 'rgba(7, 19, 36, 0.85)';
+            ctx.strokeStyle = isTarget ? '#FFFFFF' : 'rgba(0, 229, 255, 0.55)';
             ctx.lineWidth = 1.5;
 
             ctx.beginPath();
@@ -1932,13 +1690,48 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           }
         });
 
+        // Si el bloque objetivo está fuera del ángulo de visión de la cámara, trazamos la línea guía hacia el borde lateral
+        if (!targetPinDrawnOnScreen) {
+          const targetDist = calculateHaversineMeters(state.userLat, state.userLng, targetNode.lat, targetNode.lng);
+          const edgeX = relAngleDeg > 0 ? w - 28 : 28;
+          const edgeY = h * 0.45;
+
+          drawDirectionalLineToBlock(
+            originAnchorX,
+            originAnchorY,
+            edgeX,
+            edgeY,
+            true,
+            '#F2A900',
+            targetDist,
+            targetBearing
+          );
+
+          // Indicador luminoso en el borde apuntando hacia la dirección del bloque fuera de pantalla
+          ctx.save();
+          const edgeLabel = `${relAngleDeg > 0 ? 'Gira a la Derecha ➔' : '⬅ Gira a la Izquierda'} ${targetNode.shortName} (${targetDist}m)`;
+          ctx.font = 'bold 12px Inter, sans-serif';
+          const tw = ctx.measureText(edgeLabel).width + 20;
+          const boxX = relAngleDeg > 0 ? w - tw - 16 : 16;
+
+          ctx.fillStyle = 'rgba(242, 169, 0, 0.95)';
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.roundRect(boxX, edgeY - 36, tw, 28, 8);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#071324';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(edgeLabel, boxX + tw / 2, edgeY - 22);
+          ctx.restore();
+        }
+
         // -------------------------------------------------------------------
         // B. DIBUJAR GRAN FLECHA DIRECCIONAL 3D ANIMADA EN EL CENTRO INFERIOR
         // -------------------------------------------------------------------
-        const arrowCenterX = w / 2;
-        const arrowCenterY = h * 0.68;
-        const pulseOffset = Math.sin(timestamp / 220) * 6;
-
         ctx.save();
         ctx.translate(arrowCenterX, arrowCenterY + pulseOffset);
 
@@ -2055,7 +1848,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         ctx.fillStyle = 'rgba(0, 229, 255, 0.18)';
         ctx.fill();
 
-        // Dibujar bloques cercanos en el radar rotados según la brújula del usuario
+        // Dibujar bloques cercanos en el radar y línea radial directa hacia el bloque destino
         UCB_NODES.forEach(node => {
           const dist = calculateHaversineMeters(state.userLat, state.userLng, node.lat, node.lng);
           const brng = calculateBearing(state.userLat, state.userLng, node.lat, node.lng);
@@ -2065,8 +1858,20 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           const bx = Math.cos(relRad) * normDist;
           const by = Math.sin(relRad) * normDist;
 
-          ctx.beginPath();
           const isDest = node.id === state.destinationId;
+          const isNextTarget = node.id === targetNode.id;
+
+          // Línea direccional interna en el radar apuntando al bloque objetivo
+          if (isDest || isNextTarget) {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(bx, by);
+            ctx.strokeStyle = isDest ? '#F2A900' : '#00E5FF';
+            ctx.lineWidth = isDest ? 2 : 1.5;
+            ctx.stroke();
+          }
+
+          ctx.beginPath();
           ctx.arc(bx, by, isDest ? 4.5 : 2.5, 0, Math.PI * 2);
           ctx.fillStyle = isDest ? '#F2A900' : '#94A3B8';
           ctx.fill();
@@ -2114,13 +1919,46 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
         `;
       }).join('');
 
-      // 2. Dibujar la Ruta Más Corta calculada por Dijkstra
+      // Determinar el nodo donde se encuentra el usuario actualmente y el nodo de destino
       const route = state.activeRoute;
+      let currentUserNode = getNodeById(state.originId);
+      if (route && route.steps.length > 0 && state.currentStepIndex > 0) {
+        const idx = Math.min(state.currentStepIndex, route.steps.length - 1);
+        currentUserNode = route.steps[idx].fromNode;
+      }
+      const destNode = getNodeById(state.destinationId);
+
+      // 2. Dibujar la Ruta Más Corta calculada por Dijkstra + Flechas por tramo + Línea de Dirección Directa (Azimut) hacia el Bloque
       if (route && route.pathNodes.length > 1) {
         const pointsStr = route.pathNodes.map(n => `${n.svgX},${n.svgY}`).join(' ');
+
+        // Flechas direccionales sobre cada segmento de la ruta Dijkstra
+        const segmentArrowsHtml = route.steps.map(st => `
+          <line x1="${st.fromNode.svgX}" y1="${st.fromNode.svgY}"
+                x2="${(st.fromNode.svgX + st.toNode.svgX) / 2}" y2="${(st.fromNode.svgY + st.toNode.svgY) / 2}"
+                stroke="#00E5FF" stroke-width="3" marker-end="url(#arrowCyan)" opacity="0.95" />
+        `).join('');
+
+        // Línea de vector directo (brújula) que apunta desde tu ubicación actual directo hacia el bloque destino
+        const directBearing = Math.round(calculateBearing(currentUserNode.lat, currentUserNode.lng, destNode.lat, destNode.lng));
+        const directCardinal = getCardinalLabel(directBearing);
+        const vecMidX = (currentUserNode.svgX + destNode.svgX) / 2;
+        const vecMidY = (currentUserNode.svgY + destNode.svgY) / 2 - 12;
+
         routeLayer.innerHTML = `
           <polyline points="${pointsStr}" fill="none" stroke="rgba(0, 229, 255, 0.3)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#cyanGlow)" />
           <polyline points="${pointsStr}" fill="none" stroke="#00E5FF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="route-animated" />
+          ${segmentArrowsHtml}
+          <line x1="${currentUserNode.svgX}" y1="${currentUserNode.svgY}"
+                x2="${destNode.svgX}" y2="${destNode.svgY}"
+                stroke="#F2A900" stroke-width="2.2" stroke-dasharray="6,6"
+                marker-end="url(#arrowGold)" opacity="0.88" />
+          <g transform="translate(${vecMidX}, ${vecMidY})">
+            <rect x="-46" y="-10" width="92" height="18" rx="5" fill="#071324" stroke="#F2A900" stroke-width="1.2" opacity="0.92" />
+            <text x="0" y="2" font-size="9.5" font-weight="bold" fill="#F2A900" text-anchor="middle" font-family="monospace">
+              Rumbo ${directBearing}° ${directCardinal}
+            </text>
+          </g>
         `;
       } else {
         routeLayer.innerHTML = '';
