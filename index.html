@@ -1,0 +1,2729 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>UCB Navigator AR | ¿Dónde es el evento? - TECH MECH 2026</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Google Fonts: Inter & Space Grotesk -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+          },
+          colors: {
+            ucb: {
+              blue: '#003B71',
+              dark: '#071324',
+              gold: '#F2A900',
+              cyan: '#00E5FF',
+              emerald: '#10B981'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background-color: #071324;
+      color: #F8FAFC;
+      overflow-x: hidden;
+    }
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B192C;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E3E62;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #F2A900;
+    }
+
+    /* Animated Route Dash on SVG Map */
+    @keyframes dashFlow {
+      to {
+        stroke-dashoffset: -40;
+      }
+    }
+    .route-animated {
+      stroke-dasharray: 10, 6;
+      animation: dashFlow 1.1s linear infinite;
+    }
+
+    /* Pulse ring for user location on map */
+    @keyframes pulseRing {
+      0% { transform: scale(0.8); opacity: 0.9; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+    .gps-pulse {
+      transform-origin: center;
+      transform-box: fill-box;
+      animation: pulseRing 1.8s ease-out infinite;
+    }
+
+    /* Glassmorphism HUD panels */
+    .hud-glass {
+      background: rgba(7, 19, 36, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    /* Simulated AR background when camera is off/unavailable */
+    .ar-sim-bg {
+      background:
+        radial-gradient(circle at 50% 35%, rgba(0, 229, 255, 0.16), transparent 60%),
+        linear-gradient(180deg, #0b1d36 0%, #102a4c 48%, #162436 50%, #091321 100%);
+    }
+
+    /* Perspective grid for AR floor */
+    .ar-floor-grid {
+      background-size: 40px 40px;
+      background-image:
+        linear-gradient(to right, rgba(0, 229, 255, 0.12) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 229, 255, 0.12) 1px, transparent 1px);
+      transform: perspective(350px) rotateX(65deg);
+      transform-origin: center bottom;
+    }
+
+    /* Map building hover effect */
+    .map-node-group {
+      cursor: pointer;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .map-node-group:hover {
+      filter: drop-shadow(0px 0px 8px rgba(242, 169, 0, 0.85));
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-ucb-gold selection:text-slate-950">
+
+  <!-- TOP HEADER BAR -->
+  <header class="sticky top-0 z-40 hud-glass border-b border-slate-800/80 px-3 sm:px-6 py-2.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <!-- Brand Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-ucb-blue via-blue-700 to-ucb-gold p-0.5 shadow-lg shadow-blue-950/60 flex items-center justify-center">
+          <div class="w-full h-full bg-slate-950/90 rounded-[10px] flex items-center justify-center text-ucb-gold font-display font-bold text-lg">
+            UCB
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display font-bold text-base sm:text-lg tracking-tight text-white">
+              UCB Navigator <span class="text-ucb-cyan">AR</span>
+            </h1>
+            <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-ucb-gold/20 text-ucb-gold border border-ucb-gold/40">
+              TECH MECH 2026 · Reto FDI
+            </span>
+          </div>
+          <p class="text-[11px] sm:text-xs text-slate-400">
+            Campus La Paz (Obrajes) · Guía de Eventos, Ruta Dijkstra y Cámara AR
+          </p>
+        </div>
+      </div>
+
+      <!-- Right Status & Quick Controls -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- GPS Toggle Button -->
+        <button id="btnToggleGPS" onclick="toggleRealGPS()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition shadow-sm">
+          <span id="gpsDot" class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          <i class="fa-solid fa-location-crosshairs text-ucb-cyan"></i>
+          <span id="gpsStatusText">GPS: Simulado</span>
+        </button>
+
+        <!-- Accessibility Mode Toggle (No Stairs) -->
+        <button id="btnAccessible" onclick="toggleAccessibilityMode()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-800/90 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Evitar escaleras pronunciadas y priorizar rampas/ascensores">
+          <i class="fa-solid fa-wheelchair text-sky-400"></i>
+          <span class="hidden sm:inline">Accesible:</span>
+          <span id="accessibleBadge" class="font-semibold text-slate-400">OFF</span>
+        </button>
+
+        <!-- QR Check-in Trigger -->
+        <button onclick="openQRModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-ucb-gold/15 hover:bg-ucb-gold/25 text-ucb-gold border border-ucb-gold/40 transition">
+          <i class="fa-solid fa-qrcode"></i>
+          <span class="hidden sm:inline">Punto QR</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Desktop & Mobile Navigation Tabs -->
+    <div class="max-w-7xl mx-auto mt-2.5 pt-2 border-t border-slate-800/70 flex items-center justify-between gap-1 overflow-x-auto no-scrollbar">
+      <div class="flex items-center gap-1.5 w-full sm:w-auto">
+        <button onclick="switchTab('ar')" id="tabBtn-ar" class="tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-ucb-cyan text-slate-950 shadow-md shadow-cyan-500/20">
+          <i class="fa-solid fa-camera-viewfinder"></i>
+          <span>1. Cámara AR</span>
+        </button>
+        <button onclick="switchTab('map')" id="tabBtn-map" class="tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800/80 text-slate-300 hover:bg-slate-800">
+          <i class="fa-solid fa-map-location-dot"></i>
+          <span>2. Mapa UCB + Ruta</span>
+        </button>
+        <button onclick="switchTab('events')" id="tabBtn-events" class="tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800/80 text-slate-300 hover:bg-slate-800">
+          <i class="fa-solid fa-calendar-check"></i>
+          <span>3. Eventos (<span id="eventsCountBadge">6</span>)</span>
+        </button>
+        <button onclick="switchTab('proposal')" id="tabBtn-proposal" class="tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800/80 text-slate-300 hover:bg-slate-800">
+          <i class="fa-solid fa-sack-dollar"></i>
+          <span>4. Presupuesto & Google Sync</span>
+        </button>
+      </div>
+
+      <!-- Current Route Quick Pill -->
+      <div class="hidden lg:flex items-center gap-2 text-xs bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800">
+        <span class="text-slate-400">Ruta activa:</span>
+        <span id="headerOriginLabel" class="font-semibold text-emerald-400">Ingreso Principal</span>
+        <i class="fa-solid fa-arrow-right text-slate-500 text-[10px]"></i>
+        <span id="headerDestLabel" class="font-semibold text-ucb-gold">Bloque A - Coliseo</span>
+        <span id="headerDistBadge" class="ml-1 px-2 py-0.5 rounded-md bg-ucb-cyan/15 text-ucb-cyan font-mono font-semibold">85 m</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-4 flex flex-col gap-4">
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 1: MODO CÁMARA AR (REALIDAD AUMENTADA CON FLECHAS 3D Y HUD)      -->
+    <!-- ===================================================================== -->
+    <section id="view-ar" class="flex flex-col lg:grid lg:grid-cols-12 gap-4">
+      
+      <!-- Left/Main Column: Live AR Camera Viewport + HUD Overlay -->
+      <div class="lg:col-span-8 flex flex-col">
+        <div class="relative w-full h-[540px] sm:h-[600px] rounded-2xl overflow-hidden border border-slate-700/80 shadow-2xl bg-slate-950 select-none">
+          
+          <!-- Live Video Feed Element (Rear Camera) -->
+          <video id="arVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover hidden"></video>
+
+          <!-- Fallback / Simulated Interactive 3D Campus Background when Camera is Off -->
+          <div id="arSimulatedScene" class="absolute inset-0 ar-sim-bg flex flex-col justify-between overflow-hidden">
+            <!-- Simulated Sky & La Paz Mountains Silhouette -->
+            <svg class="w-full h-48 opacity-35" viewBox="0 0 800 200" preserveAspectRatio="none">
+              <polygon points="0,200 0,110 90,65 180,120 290,40 410,115 530,50 660,105 740,60 800,95 800,200" fill="#1e3a5f"/>
+              <polygon points="0,200 120,130 240,85 370,140 500,75 630,135 800,80 800,200" fill="#0f2544"/>
+            </svg>
+            <!-- Perspective Floor Grid -->
+            <div class="w-full h-72 ar-floor-grid opacity-70"></div>
+          </div>
+
+          <!-- HTML5 Canvas for 3D Directional Arrow, Floating AR Pins & Compass HUD -->
+          <canvas id="arHudCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-10"></canvas>
+
+          <!-- TOP HUD OVERLAY: Active Event & Next Step Navigation Card -->
+          <div class="absolute top-3 left-3 right-3 z-20 flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-2.5 pointer-events-none">
+            
+            <!-- Primary Navigation Instruction HUD Card -->
+            <div class="hud-glass rounded-2xl p-3 sm:p-3.5 shadow-xl max-w-md w-full pointer-events-auto border-l-4 border-l-ucb-cyan">
+              <!-- Active Event Banner (if selected) -->
+              <div id="arEventBanner" class="flex items-center justify-between gap-2 mb-1.5 pb-1.5 border-b border-slate-700/70">
+                <div class="flex items-center gap-1.5 text-xs font-semibold text-ucb-gold truncate">
+                  <i class="fa-solid fa-bolt"></i>
+                  <span id="arEventTitle" class="truncate">Evento: TECH MECH 2026 - Hackathon Reto FDI</span>
+                </div>
+                <span id="arFloorBadge" class="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                  Planta Baja
+                </span>
+              </div>
+
+              <!-- Next Step Direction -->
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-ucb-cyan/15 border border-ucb-cyan/40 flex items-center justify-center shrink-0 text-ucb-cyan text-xl font-bold">
+                  <i id="arTurnIcon" class="fa-solid fa-location-arrow"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
+                    Siguiente punto en ruta (<span id="arStepCounter">Paso 1/2</span>)
+                  </div>
+                  <div id="arNextStepTitle" class="text-sm sm:text-base font-bold text-white truncate">
+                    Avanza hacia Atrio UCB
+                  </div>
+                  <div id="arNextStepDesc" class="text-xs text-slate-300 truncate">
+                    Destino final: Bloque A - Coliseo UCB
+                  </div>
+                </div>
+              </div>
+
+              <!-- Distance, ETA & Step Advance Action -->
+              <div class="mt-2.5 pt-2 border-t border-slate-800/90 flex items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-3">
+                  <div>
+                    <span class="text-slate-400">Distancia:</span>
+                    <span id="arRemainingDist" class="ml-1 font-mono font-bold text-ucb-cyan text-sm">85 m</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400">Tiempo:</span>
+                    <span id="arRemainingTime" class="ml-1 font-mono font-bold text-emerald-400 text-sm">~1 min 10 s</span>
+                  </div>
+                </div>
+
+                <!-- Simulate Walking to Next Node Button -->
+                <button onclick="advanceOneStepOnRoute()" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-semibold transition flex items-center gap-1" title="Simular que caminaste al siguiente nodo de la ruta">
+                  <i class="fa-solid fa-person-walking"></i>
+                  <span>Avanzar paso</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Top Camera Toggle & Mini Status -->
+            <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 pointer-events-auto">
+              <button id="btnCameraToggle" onclick="toggleCameraFeed()" class="px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition bg-emerald-500 hover:bg-emerald-400 text-slate-950">
+                <i class="fa-solid fa-video"></i>
+                <span id="btnCameraText">Encender Cámara AR</span>
+              </button>
+
+              <div class="hud-glass px-2.5 py-1.5 rounded-xl text-[11px] text-slate-300 flex items-center gap-2">
+                <span>Rumbo: <strong id="hudHeadingText" class="text-ucb-cyan font-mono">045° NE</strong></span>
+                <span class="text-slate-600">|</span>
+                <span>Objetivo: <strong id="hudBearingText" class="text-ucb-gold font-mono">340°</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTTOM HUD OVERLAY: Compass Slider & Direct Origin/Destination Selectors -->
+          <div class="absolute bottom-3 left-3 right-3 z-20 flex flex-col gap-2 pointer-events-auto">
+            <!-- Compass / Device Orientation Control Bar -->
+            <div class="hud-glass rounded-2xl px-3.5 py-2.5 flex flex-col sm:flex-row items-center gap-3">
+              <div class="flex items-center justify-between w-full sm:w-auto gap-2">
+                <span class="text-xs font-semibold text-slate-200 flex items-center gap-1.5 whitespace-nowrap">
+                  <i class="fa-regular fa-compass text-ucb-cyan"></i>
+                  <span>Giro / Brújula AR:</span>
+                </span>
+                <button id="btnDeviceCompass" onclick="requestDeviceOrientationPermission()" class="px-2 py-1 rounded-lg text-[11px] font-medium bg-slate-800 hover:bg-slate-700 text-ucb-cyan border border-slate-700 transition whitespace-nowrap">
+                  <i class="fa-solid fa-mobile-screen"></i> Usar Giroscopio
+                </button>
+              </div>
+
+              <div class="flex items-center gap-2.5 w-full">
+                <span class="text-[11px] font-mono text-slate-400">0° N</span>
+                <input id="compassSlider" type="range" min="0" max="359" value="35" oninput="handleManualCompassChange(this.value)" class="w-full accent-cyan-400 cursor-pointer h-2 bg-slate-800 rounded-lg" />
+                <span class="text-[11px] font-mono text-slate-400">360°</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right Column (4 cols): Quick Route Controller & Step-by-Step Guide -->
+      <div class="lg:col-span-4 flex flex-col gap-4">
+        
+        <!-- GPS Telemetry Real-Time Status Card -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-xl">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-display font-bold text-xs uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-satellite-dish text-ucb-cyan"></i>
+              <span>Telemetría GPS en Tiempo Real</span>
+            </h3>
+            <span id="gpsBadgeState" class="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">
+              Simulador
+            </span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-800/80">
+              <div class="text-[10px] text-slate-400 font-sans">Latitud</div>
+              <div id="teleLat" class="text-emerald-400 font-bold truncate">-16.52335</div>
+            </div>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-800/80">
+              <div class="text-[10px] text-slate-400 font-sans">Longitud</div>
+              <div id="teleLng" class="text-emerald-400 font-bold truncate">-68.11215</div>
+            </div>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-800/80">
+              <div class="text-[10px] text-slate-400 font-sans">Precisión GPS</div>
+              <div id="teleAcc" class="text-ucb-cyan font-bold">±5.0 m</div>
+            </div>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-800/80">
+              <div class="text-[10px] text-slate-400 font-sans">Nodo Cercano</div>
+              <div id="teleNearest" class="text-ucb-gold font-bold truncate">Ingreso Principal</div>
+            </div>
+          </div>
+          <div id="teleStatusText" class="mt-2 text-[11px] text-slate-400 italic">
+            Estado: Modo simulación manual activo.
+          </div>
+        </div>
+
+        <!-- Origin & Destination Selector Card -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h2 class="font-display font-bold text-base text-white flex items-center gap-2">
+              <i class="fa-solid fa-route text-ucb-gold"></i>
+              <span>Control de Navegación UCB</span>
+            </h2>
+            <button onclick="swapOriginAndDestination()" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Invertir origen y destino">
+              <i class="fa-solid fa-right-left"></i> Invertir
+            </button>
+          </div>
+
+          <!-- Where am I (Origin) -->
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">
+              <i class="fa-solid fa-circle-dot text-emerald-400 mr-1"></i> ¿Dónde estás ahora? (Origen / GPS / QR)
+            </label>
+            <select id="selectOrigin" onchange="handleOriginChange(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-ucb-cyan">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <!-- Where do I want to go (Destination Block) -->
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">
+              <i class="fa-solid fa-location-dot text-ucb-gold mr-1"></i> ¿A qué bloque o lugar quieres ir? (Destino)
+            </label>
+            <select id="selectDestination" onchange="handleDestinationChange(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-ucb-gold">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <!-- Quick Event Selector Preset -->
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">
+              <i class="fa-solid fa-star text-ucb-cyan mr-1"></i> O elige un Evento UCB directo:
+            </label>
+            <select id="selectQuickEvent" onchange="handleQuickEventSelect(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-ucb-cyan font-medium focus:outline-none focus:border-ucb-cyan">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Active Route Step-by-Step Breakdown Card -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-display font-bold text-sm text-white flex items-center gap-2">
+                <i class="fa-solid fa-shoe-prints text-ucb-cyan"></i>
+                <span>Ruta Más Corta (Dijkstra)</span>
+              </h3>
+              <span id="routeModeTag" class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium">
+                Ruta Óptima
+              </span>
+            </div>
+
+            <!-- Destination Dependency & Floor Info Box -->
+            <div id="destDetailBox" class="mb-3 p-2.5 rounded-xl bg-slate-950/90 border border-slate-800 text-xs">
+              <div class="font-bold text-ucb-gold" id="destDetailName">Bloque A - Coliseo UCB</div>
+              <div class="text-slate-400 mt-0.5" id="destDetailDeps">Coliseo UCB, Deportes, Club U Católica, Sala de Danza</div>
+              <div class="mt-1.5 flex items-center gap-2 text-[11px]">
+                <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-medium" id="destDetailFloor">Nivel: Planta Baja y Graderías</span>
+              </div>
+            </div>
+
+            <!-- Step List -->
+            <div id="arStepsList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
+          <!-- Switch to Map Button -->
+          <div class="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+            <button onclick="switchTab('map')" class="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-map"></i>
+              <span>Ver trazado completo en el Mapa UCB</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 2: MAPA OFICIAL DEL CAMPUS UCB OBRAJES + RUTA DIJKSTRA           -->
+    <!-- ===================================================================== -->
+    <section id="view-map" class="hidden flex-col lg:grid lg:grid-cols-12 gap-4">
+      
+      <!-- Left Column (8 cols): Interactive Vector Map of UCB Obrajes -->
+      <div class="lg:col-span-8 flex flex-col gap-3">
+        
+        <!-- Search Bar by Block or Dependency (e.g., Kardex, Paraninfo, SECRAD, Coliseo) -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          <div class="relative flex-1">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input id="mapSearchInput" type="text" oninput="handleMapDependencySearch(this.value)" placeholder="Buscar bloque, aula o dependencia (ej. Kardex, Paraninfo, Coliseo, Tesorería, SECRAD, Biblioteca)..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-ucb-cyan" />
+            <!-- Search Dropdown Results -->
+            <div id="mapSearchResults" class="hidden absolute left-0 right-0 top-full mt-1 bg-slate-950 border border-slate-700 rounded-xl shadow-2xl z-30 max-h-60 overflow-y-auto divide-y divide-slate-800"></div>
+          </div>
+
+          <!-- Map Click Action Mode Selector -->
+          <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs shrink-0">
+            <span class="px-2 text-slate-400 hidden sm:inline">Al tocar bloque:</span>
+            <button id="clickModeDest" onclick="setMapClickMode('dest')" class="px-2.5 py-1.5 rounded-lg font-semibold bg-ucb-gold text-slate-950 transition">
+              Fijar Destino
+            </button>
+            <button id="clickModeOrigin" onclick="setMapClickMode('origin')" class="px-2.5 py-1.5 rounded-lg font-semibold text-slate-300 hover:bg-slate-800 transition">
+              Fijar Mi Ubicación
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive SVG Map Canvas Container -->
+        <div class="relative bg-[#0B192C] border border-slate-700/80 rounded-2xl overflow-hidden shadow-2xl">
+          
+          <!-- Map Legend Overlay Top-Left -->
+          <div class="absolute top-3 left-3 z-10 hud-glass px-3 py-2 rounded-xl text-[11px] flex flex-wrap items-center gap-3 pointer-events-none">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-[#E06D53] inline-block"></span> Bloques Académicos</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-[#3B82F6] inline-block"></span> Plazas (Atrio/Ágora)</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span> Origen (Tú)</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-ucb-gold inline-block"></span> Destino</span>
+            <span class="flex items-center gap-1.5"><span class="w-4 h-1 bg-ucb-cyan inline-block"></span> Ruta Dijkstra</span>
+          </div>
+
+          <!-- SVG Map inspired by Official UCB Obrajes Map 2025/2026 -->
+          <svg id="ucbCampusSvg" viewBox="0 0 1000 720" class="w-full h-[460px] sm:h-[550px] select-none">
+            <defs>
+              <!-- Glow filter for shortest path -->
+              <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+              <!-- Grid Pattern -->
+              <pattern id="campusGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148, 163, 184, 0.07)" stroke-width="1"/>
+              </pattern>
+            </defs>
+
+            <!-- Background Base -->
+            <rect width="1000" height="720" fill="#091526" />
+            <rect width="1000" height="720" fill="url(#campusGrid)" />
+
+            <!-- GREEN AREAS / GARDENS OF CAMPUS UCB -->
+            <g opacity="0.45">
+              <!-- Central & Upper Gardens -->
+              <path d="M 160,90 Q 450,40 790,95 L 840,420 Q 520,450 170,410 Z" fill="#123524" stroke="#1E5631" stroke-width="2" />
+              <!-- Jardines Cafetería & Biblioteca (East) -->
+              <ellipse cx="750" cy="280" rx="130" ry="110" fill="#16422B" />
+              <!-- Jardines Atrio / Coliseo -->
+              <rect x="210" y="190" width="240" height="170" rx="28" fill="#143D28" />
+            </g>
+
+            <!-- SURROUNDING STREETS & AVENUES (Obrajes - La Paz) -->
+            <!-- Av. Hernando Siles (Top / North) -->
+            <path d="M 40,55 L 960,55" stroke="#1E293B" stroke-width="34" stroke-linecap="round" />
+            <path d="M 40,55 L 960,55" stroke="#475569" stroke-width="1.5" stroke-dasharray="10,10" />
+            <text x="480" y="60" fill="#94A3B8" font-size="12" font-weight="600" text-anchor="middle" letter-spacing="2">AVENIDA HERNANDO SILES</text>
+
+            <!-- Av. 14 de Septiembre (Middle-South Main Avenue dividing Main Campus & Blocks M, N, P, S) -->
+            <path d="M 30,455 L 960,455" stroke="#1E293B" stroke-width="38" stroke-linecap="round" />
+            <path d="M 30,455 L 960,455" stroke="#F2A900" stroke-width="1.5" stroke-dasharray="12,8" opacity="0.6" />
+            <text x="490" y="460" fill="#CBD5E1" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="2">AVENIDA 14 DE SEPTIEMBRE (INGRESO PRINCIPAL UCB)</text>
+
+            <!-- Calle 2 de Obrajes (Vertical connector on West side) -->
+            <path d="M 285,55 L 285,695" stroke="#1E293B" stroke-width="26" />
+            <text x="279" y="565" fill="#94A3B8" font-size="11" font-weight="600" transform="rotate(-90 279,565)">CALLE 2 OBRAJES</text>
+
+            <!-- Av. Héctor Ormachea (Bottom / South towards Diseño & Medicina) -->
+            <path d="M 30,615 L 960,615" stroke="#1E293B" stroke-width="32" stroke-linecap="round" />
+            <text x="510" y="620" fill="#94A3B8" font-size="12" font-weight="600" text-anchor="middle" letter-spacing="1.5">AVENIDA HÉCTOR ORMACHEA (HACIA DISEÑO Y MEDICINA)</text>
+
+            <!-- Pedestrian Walkways Layer (Graph Edges rendered dynamically here) -->
+            <g id="svgEdgesLayer"></g>
+
+            <!-- Highlighted Shortest Route Layer (Dijkstra Path rendered dynamically here) -->
+            <g id="svgRouteLayer"></g>
+
+            <!-- Campus Blocks & Nodes Layer (Rendered dynamically from UCB_NODES) -->
+            <g id="svgNodesLayer"></g>
+
+            <!-- User Live / Simulated Position Marker -->
+            <g id="svgUserMarker" transform="translate(360, 430)">
+              <circle r="20" fill="rgba(16, 185, 129, 0.25)" class="gps-pulse" />
+              <circle r="9" fill="#10B981" stroke="#FFFFFF" stroke-width="2.5" />
+            </g>
+          </svg>
+
+          <!-- Bottom Bar inside Map: Quick Stats & Launch AR Button -->
+          <div class="bg-slate-950/95 border-t border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-4 text-xs sm:text-sm">
+              <div>
+                <span class="text-slate-400">Distancia Total:</span>
+                <strong id="mapTotalDist" class="ml-1 text-ucb-cyan font-mono text-base">85 m</strong>
+              </div>
+              <div class="h-4 w-px bg-slate-800"></div>
+              <div>
+                <span class="text-slate-400">Tiempo a pie:</span>
+                <strong id="mapTotalTime" class="ml-1 text-emerald-400 font-mono text-base">~1 min 10 s</strong>
+              </div>
+              <div class="h-4 w-px bg-slate-800 hidden sm:block"></div>
+              <div class="hidden sm:block">
+                <span class="text-slate-400">Tramos:</span>
+                <strong id="mapTotalNodes" class="ml-1 text-white">3 puntos</strong>
+              </div>
+            </div>
+
+            <button onclick="switchTab('ar')" class="px-4 py-2 rounded-xl bg-ucb-cyan hover:bg-cyan-300 text-slate-950 font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-lg shadow-cyan-500/20">
+              <i class="fa-solid fa-camera-viewfinder"></i>
+              <span>Iniciar Guía con Cámara AR</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column (4 cols): Selected Block Details & Dijkstra Graph Inspector -->
+      <div class="lg:col-span-4 flex flex-col gap-4">
+        
+        <!-- Selected Block / Point of Interest Inspector Card -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span id="inspectCodeBadge" class="px-2.5 py-1 rounded-lg bg-ucb-gold/20 text-ucb-gold font-display font-bold text-xs border border-ucb-gold/40">
+              BLOQUE A
+            </span>
+            <span id="inspectCoordsBadge" class="text-[11px] font-mono text-slate-400">
+              -16.52280, -68.11230
+            </span>
+          </div>
+
+          <h3 id="inspectTitle" class="font-display font-bold text-lg text-white">
+            Bloque A - Coliseo UCB
+          </h3>
+          <p id="inspectFloor" class="text-xs text-ucb-cyan font-medium mt-0.5">
+            Planta Baja y Graderías · Acceso por Atrio
+          </p>
+
+          <div class="mt-3">
+            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">
+              Dependencias, Aulas y Laboratorios en este bloque:
+            </div>
+            <div id="inspectDepsList" class="flex flex-wrap gap-1.5">
+              <!-- Tags populated dynamically -->
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-800 grid grid-cols-2 gap-2">
+            <button onclick="setInspectedAsOrigin()" class="py-2 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-street-view"></i>
+              <span>Estoy Aquí (Origen)</span>
+            </button>
+            <button onclick="setInspectedAsDestination()" class="py-2 px-3 rounded-xl bg-ucb-gold hover:bg-amber-400 text-slate-950 text-xs font-bold transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-diamond-turn-right"></i>
+              <span>Ir Aquí (Destino)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step-by-Step Instructions on Map Tab -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex-1 flex flex-col">
+          <h3 class="font-display font-bold text-sm text-white flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-list-ol text-ucb-cyan"></i>
+            <span>Indicaciones Paso a Paso en el Campus</span>
+          </h3>
+          <div id="mapStepsList" class="space-y-2 overflow-y-auto max-h-80 pr-1 flex-1">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 3: EVENTOS UCB + INTEGRACIÓN CON GOOGLE CALENDAR / SHEETS        -->
+    <!-- ===================================================================== -->
+    <section id="view-events" class="hidden flex-col gap-4">
+      
+      <!-- Top Controls: Search, Category Filters & Import from Google Calendar/Sheets -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div>
+          <h2 class="font-display font-bold text-lg text-white flex items-center gap-2">
+            <i class="fa-solid fa-calendar-days text-ucb-gold"></i>
+            <span>Cartelera Oficial de Eventos UCB & MECAFEST 2026</span>
+          </h2>
+          <p class="text-xs text-slate-400">
+            Selecciona cualquier evento para calcular la ruta más corta o encender las flechas de realidad aumentada hacia el bloque y piso exacto.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="openAddEventModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus text-ucb-cyan"></i>
+            <span>Nuevo Evento</span>
+          </button>
+          <button onclick="openGoogleSyncModal()" class="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition flex items-center gap-1.5">
+            <i class="fa-solid fa-table"></i>
+            <span>Importar de Google Calendar / Sheets</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Pills & Search Input -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          <button onclick="filterEventsByCategory('ALL')" id="catBtn-ALL" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-ucb-gold text-slate-950 transition whitespace-nowrap">
+            Todos
+          </button>
+          <button onclick="filterEventsByCategory('MECAFEST')" id="catBtn-MECAFEST" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">
+            🤖 Hackathon / MECAFEST
+          </button>
+          <button onclick="filterEventsByCategory('ACADEMICO')" id="catBtn-ACADEMICO" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">
+            🎓 Académico & Conferencias
+          </button>
+          <button onclick="filterEventsByCategory('CULTURAL')" id="catBtn-CULTURAL" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">
+            🎭 Cultural & Gala
+          </button>
+        </div>
+
+        <div class="relative w-full sm:w-72">
+          <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input id="eventSearchInput" type="text" oninput="renderEventsGrid()" placeholder="Buscar evento o bloque..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs sm:text-sm text-white focus:outline-none focus:border-ucb-cyan" />
+        </div>
+      </div>
+
+      <!-- Events Grid -->
+      <div id="eventsGridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Populated dynamically -->
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 4: PROPUESTA DE IMPLEMENTACIÓN, FLUJO GOOGLE APPS SCRIPT Y COSTO -->
+    <!-- ===================================================================== -->
+    <section id="view-proposal" class="hidden flex-col gap-5">
+      
+      <!-- Top Summary Banner for Hackathon Judges -->
+      <div class="bg-gradient-to-r from-ucb-blue/80 via-slate-900 to-slate-900 border border-slate-700 rounded-2xl p-5 shadow-xl">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-ucb-gold/20 text-ucb-gold border border-ucb-gold/40">
+              REQUISITO 4 DEL RETO FDI · SOSTENIBILIDAD Y MANTENIMIENTO
+            </span>
+            <h2 class="font-display font-bold text-xl sm:text-2xl text-white mt-2">
+              Propuesta de Implementación, Actualización Automática y Presupuesto
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl">
+              Arquitectura 100% libre de licencias costosas: sincronización automatizada desde <strong>Google Calendar → Google Apps Script → Google Sheets → Web App AR</strong>, combinada con señalética QR pasiva en los bloques de la UCB.
+            </p>
+          </div>
+          <div class="bg-slate-950/90 border border-emerald-500/40 rounded-2xl px-4 py-3 text-center shrink-0">
+            <div class="text-[11px] text-slate-400 uppercase font-semibold">Costo de Mantenimiento</div>
+            <div class="font-display font-bold text-2xl text-emerald-400">Bs 145 <span class="text-xs font-normal text-slate-400">/ mes</span></div>
+            <div class="text-[11px] text-emerald-300 font-medium">Cumple límite &lt; Bs 500/mes (Ahorro 71%)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two Columns: Monthly Budget Breakdown & Initial Setup Cost -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        
+        <!-- Monthly Maintenance Budget (< Bs 500/mes) -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+          <h3 class="font-display font-bold text-base text-white flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-coins text-ucb-gold"></i>
+            <span>1. Desglose de Mantenimiento Mensual (Máximo permitido: Bs 500/mes)</span>
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs sm:text-sm">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400">
+                  <th class="py-2">Ítem / Servicio</th>
+                  <th class="py-2">Detalle Técnico</th>
+                  <th class="py-2 text-right">Costo Mensual</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/70">
+                <tr>
+                  <td class="py-2.5 font-semibold text-white">Hosting Web PWA + SSL</td>
+                  <td class="py-2.5 text-slate-300">Cloudflare Pages / Firebase Hosting (Tráfico universitario ilimitado)</td>
+                  <td class="py-2.5 text-right font-mono text-emerald-400 font-bold">Bs 0</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 font-semibold text-white">Dominio Institucional / Propio</td>
+                  <td class="py-2.5 text-slate-300">Subdominio oficial <code>eventos.ucb.edu.bo</code> o dominio <code>.com</code> anual prorrateado</td>
+                  <td class="py-2.5 text-right font-mono text-white">Bs 15</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 font-semibold text-white">Motor de Mapas, Rutas y AR</td>
+                  <td class="py-2.5 text-slate-300">Grafo vectorial UCB propio + Dijkstra JS + WebRTC Camera API (Sin cobro por API Key)</td>
+                  <td class="py-2.5 text-right font-mono text-emerald-400 font-bold">Bs 0</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 font-semibold text-white">Backend de Eventos (Google Workspace)</td>
+                  <td class="py-2.5 text-slate-300">Google Calendar + Google Apps Script Trigger (Cada hora) + Google Sheets API</td>
+                  <td class="py-2.5 text-right font-mono text-emerald-400 font-bold">Bs 0</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 font-semibold text-white">Reposición de Señalética QR en Bloques</td>
+                  <td class="py-2.5 text-slate-300">Fondo mensual para reposición de 3 a 5 placas acrílicas/adhesivos QR impermeables</td>
+                  <td class="py-2.5 text-right font-mono text-white">Bs 50</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 font-semibold text-white">Administración y Actualización</td>
+                  <td class="py-2.5 text-slate-300">Becario / Centro de Estudiantes (2 hrs/semana validando eventos en Google Calendar)</td>
+                  <td class="py-2.5 text-right font-mono text-white">Bs 80</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="border-t-2 border-slate-700 bg-slate-950/60">
+                  <td colspan="2" class="py-3 px-2 font-bold text-white">TOTAL MANTENIMIENTO MENSUAL</td>
+                  <td class="py-3 px-2 text-right font-mono font-bold text-lg text-ucb-gold">Bs 145 / mes</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Initial Implementation Budget & Administration Model -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col justify-between gap-4">
+          <div>
+            <h3 class="font-display font-bold text-base text-white flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-screwdriver-wrench text-ucb-cyan"></i>
+              <span>2. Inversión de Implementación Inicial (Único Pago)</span>
+            </h3>
+            <div class="space-y-2.5 text-xs sm:text-sm">
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
+                <div>
+                  <div class="font-semibold text-white">22 Placas QR Acrílicas UV (1 por Bloque e Ingresos)</div>
+                  <div class="text-xs text-slate-400">Permiten calibrar la ubicación exacta al instante sin depender de señal GPS en interiores</div>
+                </div>
+                <span class="font-mono font-bold text-ucb-cyan shrink-0 ml-2">Bs 330</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
+                <div>
+                  <div class="font-semibold text-white">2 Banners / Tótems Informativos en Ingreso Principal y Atrio</div>
+                  <div class="text-xs text-slate-400">Impresión en alta resolución con el mapa general y QR de acceso directo a la Web App</div>
+                </div>
+                <span class="font-mono font-bold text-ucb-cyan shrink-0 ml-2">Bs 240</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
+                <div>
+                  <div class="font-semibold text-white">Despliegue de Plataforma Web AR + Script Google Calendar</div>
+                  <div class="text-xs text-slate-400">Desarrollado en la Hackathon TECH MECH 2026 (Código abierto para la UCB)</div>
+                </div>
+                <span class="font-mono font-bold text-emerald-400 shrink-0 ml-2">Bs 0</span>
+              </div>
+              <div class="flex items-center justify-between p-3 rounded-xl bg-ucb-blue/30 border border-ucb-blue">
+                <span class="font-bold text-white">TOTAL INVERSIÓN INICIAL</span>
+                <span class="font-mono font-bold text-lg text-ucb-gold">Bs 570 (Única vez)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Google Calendar Automation Workflow Explanation -->
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-2">
+            <div class="font-bold text-ucb-gold flex items-center gap-1.5">
+              <i class="fa-solid fa-rotate"></i>
+              <span>¿Cómo se actualizan los eventos sin programar?</span>
+            </div>
+            <p class="text-slate-300 leading-relaxed">
+              1. <strong>Pastoral, sociedades científicas, MECACENTRO o Kardex</strong> crean el evento en su <strong>Google Calendar</strong> poniendo el bloque en el campo Ubicación (ej. <code>Bloque A - Coliseo</code> o <code>Paraninfo</code>).<br/>
+              2. Tu código de <strong>Google Apps Script</strong> (`exportarTodosLosEventosASheet`) extrae automáticamente <em>Nombre, Ubicación y Fecha</em> a una hoja de Google Sheets.<br/>
+              3. <strong>UCB Navigator AR</strong> lee esos datos y habilita el botón <strong>"Guiarme con Cámara AR"</strong> al instante.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL 1: IMPORTAR DESDE GOOGLE CALENDAR / GOOGLE SHEETS (APPS SCRIPT)   -->
+  <!-- ======================================================================= -->
+  <div id="modalGoogleSync" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-file-csv text-emerald-400 text-lg"></i>
+          <h3 class="font-display font-bold text-base sm:text-lg text-white">
+            Sincronizar con Google Calendar y Google Sheets
+          </h3>
+        </div>
+        <button onclick="closeGoogleSyncModal()" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="mt-3 space-y-3 text-xs sm:text-sm">
+        <p class="text-slate-300">
+          Esta ventana conecta directamente con la tabla generada por tu script de <strong>Google Apps Script</strong> (columnas: <code>Nombre del Evento | Ubicación | Fecha y Hora</code>). Pega las filas de tu Google Sheet o prueba los datos de ejemplo:
+        </p>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">
+            Datos exportados por Google Apps Script (Formato: Nombre | Ubicación | Fecha y Hora):
+          </label>
+          <textarea id="sheetsInputData" rows="5" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 font-mono text-xs text-emerald-300 focus:outline-none focus:border-emerald-400">Defensa de Grado Ingeniería Mecatrónica | Bloque D - Paraninfo | 2026-11-13 10:00
+Torneo Intercarreras Futsal UCB | Bloque A - Coliseo | 2026-11-13 14:30
+Taller de Finanzas Cuánticas e IISEC | Bloque S - Ciencias Económicas | 2026-11-14 11:00
+Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
+        </div>
+
+        <!-- Collapsible Apps Script Reference Code -->
+        <details class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+          <summary class="cursor-pointer font-semibold text-ucb-cyan text-xs flex items-center justify-between">
+            <span>Ver código Google Apps Script vinculado (Calendar → Sheets)</span>
+            <i class="fa-solid fa-code"></i>
+          </summary>
+          <pre class="mt-2 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed">function exportarTodosLosEventosASheet() {
+  const fechaInicio = new Date();
+  const fechaFin = new Date();
+  fechaFin.setDate(fechaFin.getDate() + 30);
+  const eventos = CalendarApp.getDefaultCalendar().getEvents(fechaInicio, fechaFin);
+  const zonaHoraria = Session.getScriptTimeZone();
+  const filas = eventos.map(e => [
+    e.getTitle(),
+    e.getLocation().trim() || "Atrio UCB",
+    Utilities.formatDate(e.getStartTime(), zonaHoraria, "yyyy-MM-dd HH:mm")
+  ]);
+  const hoja = SpreadsheetApp.openById("TU_ID_DE_LA_HOJA").getActiveSheet();
+  hoja.clearContents();
+  hoja.getRange(1, 1, 1, 3).setValues([["Nombre del Evento", "Ubicación", "Fecha y Hora"]]);
+  if (filas.length > 0) hoja.getRange(2, 1, filas.length, 3).setValues(filas);
+}</pre>
+        </details>
+
+        <div class="pt-2 flex flex-wrap items-center justify-end gap-2">
+          <button onclick="closeGoogleSyncModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+            Cancelar
+          </button>
+          <button onclick="importEventsFromGoogleSheetText()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+            <span>Procesar e Importar Eventos al Campus</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL 2: AGREGAR EVENTO MANUALMENTE                                     -->
+  <!-- ======================================================================= -->
+  <div id="modalAddEvent" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="font-display font-bold text-base text-white flex items-center gap-2">
+          <i class="fa-solid fa-calendar-plus text-ucb-gold"></i>
+          <span>Registrar Nuevo Evento en la UCB</span>
+        </h3>
+        <button onclick="closeAddEventModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="mt-3 space-y-3 text-xs sm:text-sm">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Nombre del Evento *</label>
+          <input id="newEvTitle" type="text" placeholder="Ej. Exposición de Robots Seguidores de Línea" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white" />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Bloque / Ubicación en el Campus UCB *</label>
+          <select id="newEvNodeId" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Piso / Aula específica</label>
+            <input id="newEvFloor" type="text" placeholder="Ej. Piso 3 - Lab 4" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Fecha y Hora</label>
+            <input id="newEvDate" type="text" placeholder="Hoy, 16:30" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Categoría</label>
+          <select id="newEvCategory" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+            <option value="MECAFEST">Hackathon / MECAFEST</option>
+            <option value="ACADEMICO">Académico & Conferencias</option>
+            <option value="CULTURAL">Cultural & Gala</option>
+          </select>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button onclick="closeAddEventModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cancelar</button>
+          <button onclick="saveNewManualEvent()" class="px-4 py-2 rounded-xl bg-ucb-gold text-slate-950 font-bold text-xs">Guardar Evento</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL 3: PUNTO QR INTELIGENTE DE SEÑALÉTICA UCB                         -->
+  <!-- ======================================================================= -->
+  <div id="modalQR" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="font-display font-bold text-base text-white flex items-center gap-2">
+          <i class="fa-solid fa-qrcode text-ucb-gold"></i>
+          <span>Señalética QR de Ubicación Instantánea</span>
+        </h3>
+        <button onclick="closeQRModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="mt-3 space-y-3 text-xs sm:text-sm">
+        <p class="text-slate-300">
+          Si un estudiante o visitante está dentro de un edificio sin buena cobertura GPS, escanea el código QR del bloque y la aplicación fija su punto de partida inmediatamente:
+        </p>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Selecciona el Punto QR que deseas simular o imprimir:</label>
+          <select id="qrBlockSelect" onchange="updateQRPreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <!-- Visual Simulated QR Totem Card -->
+        <div class="bg-white text-slate-950 rounded-2xl p-4 flex items-center gap-4 shadow-inner">
+          <svg id="qrSvgGraphic" viewBox="0 0 100 100" class="w-24 h-24 shrink-0 border-2 border-slate-900 rounded-lg p-1">
+            <rect x="5" y="5" width="25" height="25" fill="none" stroke="#003B71" stroke-width="6"/>
+            <rect x="12" y="12" width="11" height="11" fill="#003B71"/>
+            <rect x="70" y="5" width="25" height="25" fill="none" stroke="#003B71" stroke-width="6"/>
+            <rect x="77" y="12" width="11" height="11" fill="#003B71"/>
+            <rect x="5" y="70" width="25" height="25" fill="none" stroke="#003B71" stroke-width="6"/>
+            <rect x="12" y="77" width="11" height="11" fill="#003B71"/>
+            <rect x="40" y="10" width="8" height="8" fill="#0f172a"/>
+            <rect x="52" y="18" width="8" height="16" fill="#0f172a"/>
+            <rect x="38" y="38" width="24" height="24" rx="4" fill="#F2A900"/>
+            <text x="50" y="54" font-size="11" font-weight="bold" text-anchor="middle" fill="#0f172a">UCB</text>
+            <rect x="12" y="42" width="16" height="8" fill="#0f172a"/>
+            <rect x="70" y="44" width="18" height="8" fill="#0f172a"/>
+            <rect x="42" y="72" width="16" height="8" fill="#0f172a"/>
+            <rect x="68" y="68" width="22" height="22" fill="#003B71"/>
+          </svg>
+          <div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-ucb-blue">PUNTO DE ORIENTACIÓN UCB</div>
+            <div id="qrPreviewName" class="font-display font-bold text-base leading-tight mt-0.5">Ingreso Principal UCB</div>
+            <div id="qrPreviewCode" class="text-xs text-slate-600 mt-1 font-mono">ID: INGRESO_14_SEPT</div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button onclick="closeQRModal()" class="px-3 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cerrar</button>
+          <button onclick="confirmQRCheckIn()" class="px-4 py-2 rounded-xl bg-ucb-cyan text-slate-950 font-bold text-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-check-double"></i>
+            <span>Simular Escaneo QR (Fijar mi ubicación aquí)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NON-INTRUSIVE TOAST NOTIFICATION -->
+  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden hud-glass border-l-4 border-l-ucb-cyan px-4 py-3 rounded-xl shadow-2xl max-w-sm text-xs sm:text-sm flex items-center gap-2.5">
+    <i class="fa-solid fa-circle-info text-ucb-cyan text-base"></i>
+    <span id="toastMessage" class="text-white font-medium">Ruta actualizada</span>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- APPLICATION LOGIC: CAMPUS GRAPH, DIJKSTRA, AR HUD, GPS & GOOGLE SHEETS  -->
+  <!-- ======================================================================= -->
+  <script>
+    // =========================================================================
+    // 1. BASE DE DATOS DEL CAMPUS UCB LA PAZ (OBRAJES) - SEGÚN MAPA OFICIAL PDF
+    // =========================================================================
+    const UCB_NODES = [
+      {
+        id: "INGRESO_PRINCIPAL",
+        code: "INGRESO 1",
+        name: "Ingreso Principal (Av. 14 de Septiembre)",
+        shortName: "Ingreso Principal",
+        lat: -16.52335,
+        lng: -68.11215,
+        svgX: 380,
+        svgY: 428,
+        type: "entry",
+        floorInfo: "Nivel Calle · Av. 14 de Septiembre No. 4807 esq. Calle 2",
+        dependencies: ["Portería Principal", "Torniquetes de Acceso", "Punto QR Principal", "Seguridad UCB"]
+      },
+      {
+        id: "INGRESO_SILES",
+        code: "INGRESO 2",
+        name: "Ingreso Superior (Av. Hernando Siles)",
+        shortName: "Ingreso H. Siles",
+        lat: -16.52215,
+        lng: -68.11145,
+        svgX: 600,
+        svgY: 85,
+        type: "entry",
+        floorInfo: "Nivel Superior · Av. Hernando Siles",
+        dependencies: ["Acceso Superior", "Salida hacia Av. Hernando Siles"]
+      },
+      {
+        id: "ATRIO",
+        code: "ATRIO",
+        name: "Atrio UCB (Plaza Central)",
+        shortName: "Atrio UCB",
+        lat: -16.52295,
+        lng: -68.11205,
+        svgX: 375,
+        svgY: 315,
+        type: "plaza",
+        floorInfo: "Explanada Exterior Central",
+        dependencies: ["Plaza del Atrio", "Punto de Encuentro Estudiantil", "Conexión a Bloques A, D y K"]
+      },
+      {
+        id: "AGORA",
+        code: "ÁGORA",
+        name: "Ágora UCB (Explanada Central)",
+        shortName: "Ágora UCB",
+        lat: -16.52270,
+        lng: -68.11175,
+        svgX: 485,
+        svgY: 255,
+        type: "plaza",
+        floorInfo: "Plaza Central Techada / Explanada Cultural",
+        dependencies: ["Ágora UCB", "Ferias Estudiantiles", "Conexión a Bloques B, C y G"]
+      },
+      {
+        id: "BLOQUE_A",
+        code: "BLOQUE A",
+        name: "Bloque A - Coliseo UCB",
+        shortName: "Bloque A (Coliseo)",
+        lat: -16.52280,
+        lng: -68.11230,
+        svgX: 255,
+        svgY: 255,
+        type: "block",
+        floorInfo: "Planta Baja y Graderías",
+        dependencies: ["Coliseo U.C.B.", "TECH MECH 2026", "Departamento de Deportes", "Club U Católica", "Sala de Danza"]
+      },
+      {
+        id: "BLOQUE_B",
+        code: "BLOQUE B",
+        name: "Bloque B - Cultura y Arte",
+        shortName: "Bloque B (Cultura)",
+        lat: -16.52265,
+        lng: -68.11200,
+        svgX: 380,
+        svgY: 225,
+        type: "block",
+        floorInfo: "Pisos 1 al 3",
+        dependencies: ["Departamento de Cultura y Arte", "Sala de Literatura", "Extensión Cultural", "Unidad de Auditoría Interna"]
+      },
+      {
+        id: "BLOQUE_C",
+        code: "BLOQUE C",
+        name: "Bloque C - Edificio de Ingeniería",
+        shortName: "Bloque C (Lab. Ingeniería)",
+        lat: -16.52250,
+        lng: -68.11180,
+        svgX: 465,
+        svgY: 165,
+        type: "block",
+        floorInfo: "Pisos 1 al 4 · Laboratorios",
+        dependencies: ["Laboratorios de Ingeniería", "Sala de Docentes", "Laboratorios de Computación", "Laboratorio de Computación Aplicada", "Redes y Soporte"]
+      },
+      {
+        id: "BLOQUE_D",
+        code: "BLOQUE D",
+        name: "Bloque D - Aulas D1-D30 y Paraninfo",
+        shortName: "Bloque D (Paraninfo)",
+        lat: -16.52305,
+        lng: -68.11235,
+        svgX: 230,
+        svgY: 365,
+        type: "block",
+        floorInfo: "Pisos 1 al 5 (Paraninfo en Piso 5 · Ascensor disponible)",
+        dependencies: ["Paraninfo U.C.B. (Piso 5)", "Aulas D1 a D30", "Auditorios 2, 3 y 4", "Capilla San Pablo", "Lab. Computación 4", "Lab. Redes 5", "Lab. Psicofisiología", "Laboratorio CINAES", "Centro de Cómputo"]
+      },
+      {
+        id: "BLOQUE_F",
+        code: "BLOQUE F",
+        name: "Bloque F - Derecho y Registro Académico (Kardex)",
+        shortName: "Bloque F (Kardex/Derecho)",
+        lat: -16.52240,
+        lng: -68.11195,
+        svgX: 365,
+        svgY: 125,
+        type: "block",
+        floorInfo: "Pisos 1 al 4",
+        dependencies: ["Registro Académico (Kardex y Registros)", "Decanatura Derecho y Ciencias Políticas", "Carrera de Derecho", "Aulas F1 a F13", "Instituto para la Democracia (IpD)", "Mediador Universitario"]
+      },
+      {
+        id: "BLOQUE_G",
+        code: "BLOQUE G1/G2",
+        name: "Bloque G - Facultad de Ingeniería y Auditorio Principal",
+        shortName: "Bloque G (Ing. / Tesorería)",
+        lat: -16.52255,
+        lng: -68.11155,
+        svgX: 590,
+        svgY: 185,
+        type: "block",
+        floorInfo: "Bloques G1 y G2 · Pisos 1 al 4",
+        dependencies: ["Decanatura Facultad de Ingeniería", "Auditorio Principal", "Aulas G1, G2, G3", "Caja Tesorería", "Escuela de la Producción y Competitividad (ePC)", "Centro de Sistemas", "Postgrado de Ingeniería", "Atención Psicológica"]
+      },
+      {
+        id: "BLOQUE_H",
+        code: "BLOQUE H",
+        name: "Bloque H - Cafetería Central y Jardines",
+        shortName: "Bloque H (Cafetería)",
+        lat: -16.52285,
+        lng: -68.11130,
+        svgX: 735,
+        svgY: 255,
+        type: "block",
+        floorInfo: "Planta Baja y Terraza Jardín",
+        dependencies: ["Cafetería Central UCB", "Comedor Estudiantil", "Áreas Verdes y Descanso"]
+      },
+      {
+        id: "BLOQUE_I",
+        code: "BLOQUE I",
+        name: "Bloque I - Biblioteca Central y Capilla El Arca",
+        shortName: "Bloque I (Biblioteca)",
+        lat: -16.52305,
+        lng: -68.11110,
+        svgX: 845,
+        svgY: 315,
+        type: "block",
+        floorInfo: "Pisos 1 al 4 · Salas de Lectura",
+        dependencies: ["Biblioteca Central UCB", "Capilla El Arca", "Salas de Estudio Grupal", "Hemeroteca"]
+      },
+      {
+        id: "BLOQUE_J",
+        code: "BLOQUE J",
+        name: "Bloque J - Internacionalización y Vicerrectorado",
+        shortName: "Bloque J (Internacional)",
+        lat: -16.52270,
+        lng: -68.11145,
+        svgX: 655,
+        svgY: 135,
+        type: "block",
+        floorInfo: "Pisos 1 y 2",
+        dependencies: ["Internacionalización Académica y Cooperación Global", "Convenios e Intercambios", "Vicerrectorado Académico Nacional"]
+      },
+      {
+        id: "BLOQUE_K",
+        code: "BLOQUE K",
+        name: "Bloque K - Informaciones, Admisiones y Centro Médico",
+        shortName: "Bloque K (Admisiones/Médico)",
+        lat: -16.52315,
+        lng: -68.11190,
+        svgX: 475,
+        svgY: 355,
+        type: "block",
+        floorInfo: "Planta Baja y Pisos 1-2",
+        dependencies: ["Oficina de Informaciones", "Departamento de Admisión y Orientación", "Centro Médico U.C.B.", "Pastoral Universitaria", "Cato Voluntarios", "Administración de Empresas y Turismo"]
+      },
+      {
+        id: "BLOQUE_L",
+        code: "BLOQUE L",
+        name: "Bloque L - Rectorado de Sede La Paz",
+        shortName: "Bloque L (Rectorado Sede)",
+        lat: -16.52320,
+        lng: -68.11140,
+        svgX: 705,
+        svgY: 375,
+        type: "block",
+        floorInfo: "Edificio Administrativo Sede",
+        dependencies: ["Rectorado de Sede La Paz", "Dirección Académica de Sede", "Dirección Administrativa Financiera"]
+      },
+      {
+        id: "BLOQUE_M",
+        code: "BLOQUE M",
+        name: "Bloque M - Arquitectura (Av. 14 de Septiembre)",
+        shortName: "Bloque M (Arquitectura)",
+        lat: -16.52355,
+        lng: -68.11225,
+        svgX: 215,
+        svgY: 525,
+        type: "block",
+        floorInfo: "Av. 14 de Septiembre No. 4810 esq. Calle 2",
+        dependencies: ["Carrera de Arquitectura", "Aulas M1 a M5", "Sala Cowork Arquitectura", "Biblioteca de Arquitectura", "Área Deportiva"]
+      },
+      {
+        id: "BLOQUE_P",
+        code: "BLOQUE P",
+        name: "Bloque P - Comunicación Social, Psicología y SECRAD",
+        shortName: "Bloque P (Comunicación/Psic.)",
+        lat: -16.52335,
+        lng: -68.11185,
+        svgX: 420,
+        svgY: 525,
+        type: "block",
+        floorInfo: "Av. 14 de Septiembre No. 4836",
+        dependencies: ["Carrera de Comunicación Social", "Carrera de Psicología", "SECRAD (Radio y TV)", "Sala Audiovisual", "Decanatura Ciencias Sociales y Humanas"]
+      },
+      {
+        id: "BLOQUE_N",
+        code: "BLOQUE N",
+        name: "Bloque N - Centro de Idiomas y Psicopedagogía",
+        shortName: "Bloque N (Idiomas)",
+        lat: -16.52345,
+        lng: -68.11160,
+        svgX: 590,
+        svgY: 525,
+        type: "block",
+        floorInfo: "Av. 14 de Septiembre No. 4850",
+        dependencies: ["Centro de Idiomas", "Carrera de Psicopedagogía", "Departamento de Educación", "Recursos Humanos", "Contabilidad y Finanzas"]
+      },
+      {
+        id: "BLOQUE_ST",
+        code: "BLOQUES S y T",
+        name: "Bloques S y T - Ciencias Económicas, Comercial y UCBX",
+        shortName: "Bloques S/T (Economía/Comercial)",
+        lat: -16.52350,
+        lng: -68.11195,
+        svgX: 775,
+        svgY: 525,
+        type: "block",
+        floorInfo: "Av. 14 de Septiembre / Av. Héctor Ormachea",
+        dependencies: ["Decanatura Ciencias Económicas y Financieras", "Ingeniería Comercial", "Marketing Digital", "Contaduría Pública", "Economía e IISEC", "Programa CREA y UCBX"]
+      },
+      {
+        id: "BLOQUE_U",
+        code: "BLOQUE U",
+        name: "Bloque U - Diseño Gráfico y Media Lab",
+        shortName: "Bloque U (Diseño)",
+        lat: -16.52410,
+        lng: -68.11260,
+        svgX: 350,
+        svgY: 665,
+        type: "block",
+        floorInfo: "Av. Héctor Ormachea esq. Calle 3",
+        dependencies: ["Carrera de Diseño Gráfico y Digital", "Aulas U1 a U5", "Media Lab (Estudio TV e Islas de Edición)", "Centro de Investigación en Diseño (CID)"]
+      },
+      {
+        id: "BLOQUE_V",
+        code: "BLOQUE V",
+        name: "Bloque V - Medicina y Rectorado Nacional",
+        shortName: "Bloque V (Medicina)",
+        lat: -16.52520,
+        lng: -68.10950,
+        svgX: 720,
+        svgY: 665,
+        type: "block",
+        floorInfo: "Av. Héctor Ormachea esq. Calle 12",
+        dependencies: ["Carrera de Medicina", "Laboratorios Biomédicos", "Rectorado Nacional UCB"]
+      }
+    ];
+
+    // =========================================================================
+    // 2. GRAFO PEATONAL DEL CAMPUS UCB CON DISTANCIAS (m) Y ACCESIBILIDAD
+    // =========================================================================
+    // hasStairs: true indica que el tramo directo tiene gradas y se penaliza si el usuario activa "Modo Accesible"
+    const UCB_EDGES = [
+      // Conexiones desde Ingreso Principal
+      { from: "INGRESO_PRINCIPAL", to: "ATRIO", dist: 45, hasStairs: false, note: "Rampa peatonal de ingreso al Atrio" },
+      { from: "INGRESO_PRINCIPAL", to: "BLOQUE_D", dist: 50, hasStairs: false, note: "Pasillo lateral izquierdo hacia Bloque D" },
+      { from: "INGRESO_PRINCIPAL", to: "BLOQUE_K", dist: 40, hasStairs: false, note: "Acera interna derecha hacia Informaciones (Bloque K)" },
+      
+      // Conexiones desde el Atrio Central
+      { from: "ATRIO", to: "BLOQUE_A", dist: 40, hasStairs: false, note: "Explanada directa hacia la entrada del Coliseo (Bloque A)" },
+      { from: "ATRIO", to: "BLOQUE_D", dist: 35, hasStairs: false, note: "Ingreso principal al Bloque D (Ascensores al Paraninfo)" },
+      { from: "ATRIO", to: "BLOQUE_B", dist: 38, hasStairs: true, note: "Escalinata central del Atrio hacia Bloque B" },
+      { from: "ATRIO", to: "BLOQUE_K", dist: 32, hasStairs: false, note: "Paso plano entre Atrio y Bloque K" },
+      { from: "ATRIO", to: "AGORA", dist: 55, hasStairs: false, note: "Rampa peatonal central conectando Atrio con Ágora" },
+
+      // Conexiones alrededor del Bloque A, B, D y F
+      { from: "BLOQUE_A", to: "BLOQUE_D", dist: 35, hasStairs: false, note: "Pasillo lateral entre Coliseo y Bloque D" },
+      { from: "BLOQUE_A", to: "BLOQUE_B", dist: 42, hasStairs: false, note: "Pasillo nivel medio entre Coliseo y Cultura (Bloque B)" },
+      { from: "BLOQUE_B", to: "AGORA", dist: 30, hasStairs: false, note: "Paso directo de Bloque B a la plaza del Ágora" },
+      { from: "BLOQUE_B", to: "BLOQUE_C", dist: 36, hasStairs: true, note: "Gradas entre Bloque B y Laboratorios de Ingeniería (Bloque C)" },
+      { from: "BLOQUE_B", to: "BLOQUE_F", dist: 48, hasStairs: false, note: "Rampa lateral hacia Registro Académico / Kardex (Bloque F)" },
+      { from: "BLOQUE_F", to: "BLOQUE_C", dist: 35, hasStairs: false, note: "Pasillo superior entre Kardex (Bloque F) y Bloque C" },
+
+      // Conexiones alrededor del Ágora, C, G, J e Ingreso Hernando Siles
+      { from: "AGORA", to: "BLOQUE_C", dist: 32, hasStairs: false, note: "Acceso desde el Ágora al Edificio de Ingeniería (Bloque C)" },
+      { from: "AGORA", to: "BLOQUE_G", dist: 38, hasStairs: false, note: "Rampa suave hacia Bloque G (Decanatura Ingeniería y Auditorio)" },
+      { from: "AGORA", to: "BLOQUE_K", dist: 48, hasStairs: false, note: "Camino peatonal entre Ágora y Bloque K" },
+      { from: "AGORA", to: "BLOQUE_H", dist: 65, hasStairs: false, note: "Sendero por los jardines hacia la Cafetería (Bloque H)" },
+      { from: "BLOQUE_C", to: "BLOQUE_G", dist: 35, hasStairs: false, note: "Puente/pasillo de conexión entre Bloques C y G" },
+      { from: "BLOQUE_G", to: "BLOQUE_J", dist: 34, hasStairs: false, note: "Camino hacia Internacionalización (Bloque J)" },
+      { from: "BLOQUE_J", to: "INGRESO_SILES", dist: 35, hasStairs: false, note: "Salida peatonal hacia Av. Hernando Siles" },
+      { from: "BLOQUE_F", to: "INGRESO_SILES", dist: 65, hasStairs: false, note: "Vereda superior hacia Av. Hernando Siles" },
+
+      // Sector Este: Cafetería (H), Biblioteca (I), Rectorado (L) y Bloque K
+      { from: "BLOQUE_G", to: "BLOQUE_H", dist: 50, hasStairs: true, note: "Gradas de jardín entre Bloque G y Cafetería (Bloque H)" },
+      { from: "BLOQUE_H", to: "BLOQUE_I", dist: 45, hasStairs: false, note: "Paseo jardín plano hacia la Biblioteca Central (Bloque I)" },
+      { from: "BLOQUE_H", to: "BLOQUE_L", dist: 42, hasStairs: false, note: "Camino peatonal entre Cafetería y Rectorado (Bloque L)" },
+      { from: "BLOQUE_K", to: "BLOQUE_L", dist: 60, hasStairs: false, note: "Sendero accesible por jardines bajos hacia Bloque L y H" },
+      { from: "BLOQUE_L", to: "BLOQUE_I", dist: 52, hasStairs: false, note: "Acceso lateral accesible a la Biblioteca Central" },
+
+      // Cruce Av. 14 de Septiembre hacia Bloques M, P, N, S/T, U y V
+      { from: "INGRESO_PRINCIPAL", to: "BLOQUE_M", dist: 55, hasStairs: false, note: "Cruza el paso de cebra de Av. 14 de Septiembre hacia Arquitectura (Bloque M)" },
+      { from: "INGRESO_PRINCIPAL", to: "BLOQUE_P", dist: 45, hasStairs: false, note: "Cruza Av. 14 de Septiembre hacia Comunicación y SECRAD (Bloque P)" },
+      { from: "BLOQUE_P", to: "BLOQUE_N", dist: 40, hasStairs: false, note: "Acera de Av. 14 de Septiembre hacia Centro de Idiomas (Bloque N)" },
+      { from: "BLOQUE_N", to: "BLOQUE_ST", dist: 55, hasStairs: false, note: "Camina por Av. 14 de Septiembre hacia Ciencias Económicas (Bloques S y T)" },
+      { from: "BLOQUE_M", to: "BLOQUE_U", dist: 110, hasStairs: false, note: "Baja por Calle 2 / Calle 3 hasta Av. Héctor Ormachea (Bloque U - Diseño)" },
+      { from: "BLOQUE_P", to: "BLOQUE_U", dist: 105, hasStairs: false, note: "Conecta hacia Av. Héctor Ormachea esq. Calle 3 (Bloque U - Diseño)" },
+      { from: "BLOQUE_ST", to: "BLOQUE_V", dist: 240, hasStairs: false, note: "Avanza por Av. Héctor Ormachea hasta Calle 12 (Bloque V - Medicina)" }
+    ];
+
+    // =========================================================================
+    // 3. EVENTOS INICIALES GUARDADOS (INCLUYE EJEMPLOS OFICIALES DEL RETO PDF)
+    // =========================================================================
+    let UCB_EVENTS = [
+      {
+        id: "EV_TECH_MECH",
+        title: "TECH MECH 2026 - Hackathon Reto FDI",
+        category: "MECAFEST",
+        nodeId: "BLOQUE_A",
+        floor: "Planta Baja · Cancha Central",
+        date: "Hoy · 09:00 - 18:00",
+        organizer: "MECACENTRO · Ingeniería Mecatrónica",
+        description: "Competencia central de innovación y prototipado para resolver la navegación digital en el campus UCB."
+      },
+      {
+        id: "EV_MECA_GALA",
+        title: "Meca Gala 2026 - Ceremonia y Premiación",
+        category: "CULTURAL",
+        nodeId: "BLOQUE_D",
+        floor: "Piso 5 · Paraninfo UCB",
+        date: "Viernes · 19:00",
+        organizer: "MECACENTRO UCB",
+        description: "Noche de gala, entrega de premios (Bs 1.300 al equipo ganador) y celebración oficial en el Paraninfo."
+      },
+      {
+        id: "EV_FERIA_ROBOTICA",
+        title: "Expo Feria de Prototipos Mecatrónicos y Drones",
+        category: "MECAFEST",
+        nodeId: "AGORA",
+        floor: "Explanada Central Ágora",
+        date: "Hoy · 11:00 - 16:00",
+        organizer: "Facultad de Ingeniería",
+        description: "Exhibición abierta de robots móviles, sistemas embebidos y brazos robóticos en el Ágora."
+      },
+      {
+        id: "EV_CONF_IA",
+        title: "Conferencia Magistral: IA y Visión Computacional",
+        category: "ACADEMICO",
+        nodeId: "BLOQUE_G",
+        floor: "Piso 2 · Auditorio Principal (Bloque G)",
+        date: "Hoy · 15:00",
+        organizer: "Decanatura de Ingeniería",
+        description: "Aplicaciones industriales de inteligencia artificial, gemelos digitales y realidad aumentada."
+      },
+      {
+        id: "EV_DISENO_LAB",
+        title: "Workshop de Producción Audiovisual y Media Lab",
+        category: "ACADEMICO",
+        nodeId: "BLOQUE_U",
+        floor: "Piso 2 · Media Lab (Aula U3)",
+        date: "Mañana · 10:30",
+        organizer: "Carrera de Diseño Digital",
+        description: "Taller práctico de iluminación, edición y realidad mixta en el estudio de televisión de Diseño."
+      },
+      {
+        id: "EV_BIBLIOTECA",
+        title: "Encuentro de Investigación y Club de Lectura",
+        category: "CULTURAL",
+        nodeId: "BLOQUE_I",
+        floor: "Piso 1 · Sala Principal Biblioteca",
+        date: "Mañana · 14:30",
+        organizer: "Biblioteca Central UCB",
+        description: "Presentación de nuevas bases de datos científicas y catálogo digital para estudiantes."
+      }
+    ];
+
+    // =========================================================================
+    // 4. ESTADO GLOBAL DE LA APLICACIÓN
+    // =========================================================================
+    const state = {
+      activeTab: 'ar',
+      originId: 'INGRESO_PRINCIPAL',
+      destinationId: 'BLOQUE_A',
+      selectedEventId: 'EV_TECH_MECH',
+      inspectedNodeId: 'BLOQUE_A',
+      accessibleMode: false, // Si es true, evita escaleras pronunciadas en Dijkstra
+      mapClickMode: 'dest',  // 'dest' | 'origin'
+      activeRoute: null,     // { path: [], totalDistance: 0, steps: [] }
+      currentStepIndex: 0,   // Nodo actual dentro de la ruta durante la caminata AR
+      
+      // Cámara AR & Orientación (Brújula)
+      cameraActive: false,
+      mediaStream: null,
+      compassHeading: 35,    // Grados 0 - 359 (0 = Norte)
+      usingDeviceCompass: false,
+      arAnimFrame: null,
+
+      // GPS Real
+      gpsActive: false,
+      gpsWatchId: null,
+      userLat: -16.52335,
+      userLng: -68.11215,
+
+      // Filtro de eventos
+      eventCategoryFilter: 'ALL'
+    };
+
+    // Helper para obtener un nodo por ID
+    function getNodeById(id) {
+      return UCB_NODES.find(n => n.id === id) || UCB_NODES[0];
+    }
+
+    // =========================================================================
+    // 5. ALGORITMO DE DIJKSTRA PARA RUTA MÁS CORTA EN EL CAMPUS UCB
+    // =========================================================================
+    function computeShortestPathDijkstra(startId, endId, avoidStairs = false) {
+      const distances = {};
+      const previous = {};
+      const edgeUsed = {};
+      const unvisited = new Set();
+
+      UCB_NODES.forEach(node => {
+        distances[node.id] = Infinity;
+        previous[node.id] = null;
+        unvisited.add(node.id);
+      });
+      distances[startId] = 0;
+
+      while (unvisited.size > 0) {
+        // Encontrar el nodo no visitado con menor distancia acumulada
+        let currentId = null;
+        let smallestDist = Infinity;
+        unvisited.forEach(id => {
+          if (distances[id] < smallestDist) {
+            smallestDist = distances[id];
+            currentId = id;
+          }
+        });
+
+        if (currentId === null || currentId === endId) break;
+        unvisited.delete(currentId);
+
+        // Evaluar vecinos (el grafo es bidireccional)
+        UCB_EDGES.forEach(edge => {
+          let neighborId = null;
+          if (edge.from === currentId) neighborId = edge.to;
+          else if (edge.to === currentId) neighborId = edge.from;
+
+          if (neighborId && unvisited.has(neighborId)) {
+            // Si el modo accesible está activo, penalizamos los tramos con escaleras para priorizar rampas
+            const penalty = (avoidStairs && edge.hasStairs) ? 500 : 0;
+            const candidateDist = distances[currentId] + edge.dist + penalty;
+
+            if (candidateDist < distances[neighborId]) {
+              distances[neighborId] = candidateDist;
+              previous[neighborId] = currentId;
+              edgeUsed[neighborId] = edge;
+            }
+          }
+        });
+      }
+
+      // Reconstruir el camino óptimo
+      const pathIds = [];
+      let curr = endId;
+      while (curr) {
+        pathIds.unshift(curr);
+        curr = previous[curr];
+      }
+
+      if (pathIds[0] !== startId) {
+        pathIds.unshift(startId);
+      }
+
+      // Construir pasos detallados y distancia física real
+      let realTotalMeters = 0;
+      const steps = [];
+      for (let i = 0; i < pathIds.length - 1; i++) {
+        const fromNode = getNodeById(pathIds[i]);
+        const toNode = getNodeById(pathIds[i + 1]);
+        const edge = edgeUsed[toNode.id] || { dist: 45, hasStairs: false, note: `Camina hacia ${toNode.shortName}` };
+        realTotalMeters += edge.dist;
+
+        steps.push({
+          stepNumber: i + 1,
+          fromNode,
+          toNode,
+          distance: edge.dist,
+          hasStairs: edge.hasStairs,
+          instruction: edge.note
+        });
+      }
+
+      return {
+        pathIds,
+        pathNodes: pathIds.map(id => getNodeById(id)),
+        totalDistance: realTotalMeters,
+        estimatedSeconds: Math.max(15, Math.round(realTotalMeters / 1.25)), // ~1.25 m/s velocidad promedio en campus con pendiente
+        steps
+      };
+    }
+
+    // =========================================================================
+    // 6. CÁLCULOS GEODÉSICOS (RUMBO / AZIMUT Y DISTANCIA GPS)
+    // =========================================================================
+    // Calcula el ángulo de brújula (0° = Norte, 90° = Este, 180° = Sur, 270° = Oeste) entre dos coordenadas
+    function calculateBearing(lat1, lng1, lat2, lng2) {
+      const toRad = deg => (deg * Math.PI) / 180;
+      const toDeg = rad => (rad * 180) / Math.PI;
+      const dLng = toRad(lng2 - lng1);
+      const y = Math.sin(dLng) * Math.cos(toRad(lat2));
+      const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+                Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
+      const brng = toDeg(Math.atan2(y, x));
+      return (brng + 360) % 360;
+    }
+
+    // Distancia Haversine en metros entre dos coordenadas GPS
+    function calculateHaversineMeters(lat1, lng1, lat2, lng2) {
+      const R = 6371000;
+      const toRad = deg => (deg * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+      return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    }
+
+    function formatTimeFromSeconds(sec) {
+      if (sec < 60) return `${sec} seg`;
+      const mins = Math.floor(sec / 60);
+      const rem = sec % 60;
+      return rem > 0 ? `~${mins} min ${rem} s` : `~${mins} min`;
+    }
+
+    function getCardinalLabel(deg) {
+      const dirs = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
+      return dirs[Math.round(deg / 45) % 8];
+    }
+
+    // =========================================================================
+    // 7. ACTUALIZACIÓN INTEGRAL DE LA RUTA Y VISTAS (AR + MAPA)
+    // =========================================================================
+    function recalculateAndRenderRoute() {
+      state.activeRoute = computeShortestPathDijkstra(
+        state.originId,
+        state.destinationId,
+        state.accessibleMode
+      );
+      state.currentStepIndex = 0;
+
+      const originNode = getNodeById(state.originId);
+      const destNode = getNodeById(state.destinationId);
+
+      // Si no está con GPS físico activo, sincronizamos las coordenadas del usuario con el nodo de origen
+      if (!state.gpsActive) {
+        state.userLat = originNode.lat;
+        state.userLng = originNode.lng;
+      }
+
+      // Actualizar selectores
+      document.getElementById('selectOrigin').value = state.originId;
+      document.getElementById('selectDestination').value = state.destinationId;
+
+      // Actualizar píldora superior
+      document.getElementById('headerOriginLabel').textContent = originNode.shortName;
+      document.getElementById('headerDestLabel').textContent = destNode.shortName;
+      document.getElementById('headerDistBadge').textContent = `${state.activeRoute.totalDistance} m`;
+
+      // Actualizar tarjeta de detalle del destino en la pestaña AR
+      const activeEvent = UCB_EVENTS.find(e => e.id === state.selectedEventId && e.nodeId === state.destinationId);
+      const eventBanner = document.getElementById('arEventBanner');
+      if (activeEvent) {
+        eventBanner.classList.remove('hidden');
+        document.getElementById('arEventTitle').textContent = `Evento: ${activeEvent.title}`;
+        document.getElementById('arFloorBadge').textContent = activeEvent.floor;
+        document.getElementById('destDetailFloor').textContent = `Ubicación del evento: ${activeEvent.floor}`;
+      } else {
+        eventBanner.classList.remove('hidden');
+        document.getElementById('arEventTitle').textContent = `Destino UCB: ${destNode.name}`;
+        document.getElementById('arFloorBadge').textContent = destNode.code;
+        document.getElementById('destDetailFloor').textContent = destNode.floorInfo;
+      }
+
+      document.getElementById('destDetailName').textContent = destNode.name;
+      document.getElementById('destDetailDeps').textContent = destNode.dependencies.join(' · ');
+
+      updateARStepHUD();
+      renderStepListsUI();
+      renderCampusMapSVG();
+      updateInspectorCard(state.destinationId);
+    }
+
+    // Actualiza la tarjeta HUD superior de la cámara AR según el paso actual de la ruta
+    function updateARStepHUD() {
+      const route = state.activeRoute;
+      if (!route) return;
+
+      const destNode = getNodeById(state.destinationId);
+      const steps = route.steps;
+
+      if (steps.length === 0 || state.originId === state.destinationId) {
+        document.getElementById('arStepCounter').textContent = "¡Llegaste!";
+        document.getElementById('arNextStepTitle').textContent = `Estás en ${destNode.shortName}`;
+        document.getElementById('arNextStepDesc').textContent = destNode.floorInfo;
+        document.getElementById('arRemainingDist').textContent = "0 m";
+        document.getElementById('arRemainingTime').textContent = "0 seg";
+        return;
+      }
+
+      const idx = Math.min(state.currentStepIndex, steps.length - 1);
+      const currentStep = steps[idx];
+
+      // Calcular distancia restante desde el paso actual
+      let remainingMeters = 0;
+      for (let i = idx; i < steps.length; i++) {
+        remainingMeters += steps[i].distance;
+      }
+      const remainingSec = Math.max(10, Math.round(remainingMeters / 1.25));
+
+      document.getElementById('arStepCounter').textContent = `Paso ${idx + 1} de ${steps.length}`;
+      document.getElementById('arNextStepTitle').textContent = `Hacia ${currentStep.toNode.shortName} (${currentStep.distance} m)`;
+      document.getElementById('arNextStepDesc').textContent = currentStep.instruction;
+      document.getElementById('arRemainingDist').textContent = `${remainingMeters} m`;
+      document.getElementById('arRemainingTime').textContent = formatTimeFromSeconds(remainingSec);
+
+      // Estadísticas en el pie del mapa
+      document.getElementById('mapTotalDist').textContent = `${route.totalDistance} m`;
+      document.getElementById('mapTotalTime').textContent = formatTimeFromSeconds(route.estimatedSeconds);
+      document.getElementById('mapTotalNodes').textContent = `${route.pathNodes.length} puntos`;
+    }
+
+    // Permite simular que el usuario camina al siguiente nodo de la ruta
+    function advanceOneStepOnRoute() {
+      const route = state.activeRoute;
+      if (!route || route.steps.length === 0) return;
+
+      if (state.currentStepIndex < route.steps.length - 1) {
+        state.currentStepIndex++;
+        const newCurrentNode = route.steps[state.currentStepIndex].fromNode;
+        state.userLat = newCurrentNode.lat;
+        state.userLng = newCurrentNode.lng;
+        updateARStepHUD();
+        renderStepListsUI();
+        renderCampusMapSVG();
+        showToast(`Avanzaste a ${newCurrentNode.shortName}. Sigue la flecha AR.`);
+      } else {
+        // Llegó al destino final
+        state.originId = state.destinationId;
+        recalculateAndRenderRoute();
+        showToast(`🎉 ¡Has llegado a tu destino: ${getNodeById(state.destinationId).name}!`);
+      }
+    }
+
+    // Renderiza la lista de pasos tanto en la pestaña AR como en la pestaña Mapa
+    function renderStepListsUI() {
+      const arContainer = document.getElementById('arStepsList');
+      const mapContainer = document.getElementById('mapStepsList');
+      const steps = state.activeRoute ? state.activeRoute.steps : [];
+
+      if (steps.length === 0) {
+        const emptyHtml = `
+          <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-base"></i>
+            <span>Ya te encuentras exactamente en el bloque de destino seleccionado.</span>
+          </div>`;
+        arContainer.innerHTML = emptyHtml;
+        mapContainer.innerHTML = emptyHtml;
+        return;
+      }
+
+      const html = steps.map((st, idx) => {
+        const isCurrent = idx === state.currentStepIndex;
+        const isPassed = idx < state.currentStepIndex;
+        return `
+          <div class="p-2.5 rounded-xl border transition flex items-start justify-between gap-2 ${
+            isCurrent
+              ? 'bg-ucb-cyan/15 border-ucb-cyan text-white'
+              : isPassed
+              ? 'bg-slate-950/40 border-slate-800/60 text-slate-500 line-through'
+              : 'bg-slate-950/80 border-slate-800 text-slate-300'
+          }">
+            <div class="flex items-start gap-2.5">
+              <span class="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5 ${
+                isCurrent ? 'bg-ucb-cyan text-slate-950' : 'bg-slate-800 text-slate-300'
+              }">
+                ${st.stepNumber}
+              </span>
+              <div>
+                <div class="text-xs font-bold ${isCurrent ? 'text-ucb-cyan' : 'text-white'}">
+                  ${st.fromNode.shortName} <i class="fa-solid fa-arrow-right text-[10px] mx-1 text-slate-400"></i> ${st.toNode.shortName}
+                </div>
+                <div class="text-[11px] text-slate-400 mt-0.5">${st.instruction}</div>
+              </div>
+            </div>
+            <span class="font-mono text-xs font-semibold text-ucb-gold shrink-0">${st.distance} m</span>
+          </div>
+        `;
+      }).join('');
+
+      arContainer.innerHTML = html;
+      mapContainer.innerHTML = html;
+    }
+
+    // =========================================================================
+    // 8. MOTOR DE REALIDAD AUMENTADA (CÁMARA + FLECHA 3D EN CANVAS + RADAR)
+    // =========================================================================
+    async function toggleCameraFeed() {
+      const video = document.getElementById('arVideo');
+      const simScene = document.getElementById('arSimulatedScene');
+      const btnText = document.getElementById('btnCameraText');
+      const btn = document.getElementById('btnCameraToggle');
+
+      if (state.cameraActive) {
+        if (state.mediaStream) {
+          state.mediaStream.getTracks().forEach(t => t.stop());
+          state.mediaStream = null;
+        }
+        video.classList.add('hidden');
+        simScene.classList.remove('hidden');
+        state.cameraActive = false;
+        btnText.textContent = "Encender Cámara AR";
+        btn.className = "px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition bg-emerald-500 hover:bg-emerald-400 text-slate-950";
+        showToast("Cámara apagada. Mostrando entorno AR simulado del campus.");
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+          audio: false
+        });
+        state.mediaStream = stream;
+        video.srcObject = stream;
+        video.classList.remove('hidden');
+        simScene.classList.add('hidden');
+        state.cameraActive = true;
+        btnText.textContent = "Apagar Cámara AR";
+        btn.className = "px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition bg-rose-500 hover:bg-rose-400 text-white";
+        showToast("📷 Cámara trasera activa con superposición de ruta AR.");
+      } catch (err) {
+        // Fallback automático sin bloquear al usuario
+        state.cameraActive = false;
+        video.classList.add('hidden');
+        simScene.classList.remove('hidden');
+        showToast("Sin cámara física o permiso denegado: Modo Simulador AR 3D activo.");
+      }
+    }
+
+    // Solicitar permiso de brújula/giroscopio en móviles (iOS y Android)
+    async function requestDeviceOrientationPermission() {
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          const response = await DeviceOrientationEvent.requestPermission();
+          if (response === 'granted') {
+            window.addEventListener('deviceorientation', handleDeviceOrientationEvent, true);
+            state.usingDeviceCompass = true;
+            showToast("Brújula del dispositivo conectada.");
+          } else {
+            showToast("Permiso de giroscopio denegado. Usa el control deslizante inferior.");
+          }
+        } catch (e) {
+          showToast("Usa el control deslizante para rotar la vista AR.");
+        }
+      } else if ('ondeviceorientationabsolute' in window) {
+        window.addEventListener('deviceorientationabsolute', handleDeviceOrientationEvent, true);
+        state.usingDeviceCompass = true;
+        showToast("Sensor de orientación activo.");
+      } else if ('ondeviceorientation' in window) {
+        window.addEventListener('deviceorientation', handleDeviceOrientationEvent, true);
+        state.usingDeviceCompass = true;
+        showToast("Sensor de orientación activo.");
+      } else {
+        showToast("Dispositivo sin brújula física: gira con el control deslizante.");
+      }
+    }
+
+    function handleDeviceOrientationEvent(event) {
+      let heading = null;
+      if (typeof event.webkitCompassHeading === 'number') {
+        heading = event.webkitCompassHeading;
+      } else if (typeof event.alpha === 'number') {
+        heading = (360 - event.alpha) % 360;
+      }
+      if (heading !== null && !isNaN(heading)) {
+        state.compassHeading = Math.round(heading);
+        document.getElementById('compassSlider').value = state.compassHeading;
+      }
+    }
+
+    function handleManualCompassChange(val) {
+      state.compassHeading = Number(val);
+    }
+
+    // Bucle de renderizado en tiempo real del Canvas HUD (Flecha 3D + Marcadores Flotantes + Mini-Radar)
+    function startARCanvasRenderLoop() {
+      const canvas = document.getElementById('arHudCanvas');
+      const ctx = canvas.getContext('2d');
+
+      function renderFrame(timestamp) {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        if (canvas.width !== rect.width || canvas.height !== rect.height) {
+          canvas.width = rect.width;
+          canvas.height = rect.height;
+        }
+
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        // Determinar nodo objetivo inmediato (siguiente paso de Dijkstra) y nodo destino final
+        const route = state.activeRoute;
+        const destNode = getNodeById(state.destinationId);
+        let targetNode = destNode;
+
+        if (route && route.steps.length > 0) {
+          const stepIdx = Math.min(state.currentStepIndex, route.steps.length - 1);
+          targetNode = route.steps[stepIdx].toNode;
+        }
+
+        // Calcular el rumbo hacia el nodo objetivo desde la posición actual del usuario
+        const targetBearing = Math.round(
+          calculateBearing(state.userLat, state.userLng, targetNode.lat, targetNode.lng)
+        );
+
+        // Diferencia angular relativa (-180° a +180°) entre hacia dónde mira la cámara y hacia dónde está el objetivo
+        let relAngleDeg = ((targetBearing - state.compassHeading + 540) % 360) - 180;
+        const relAngleRad = (relAngleDeg * Math.PI) / 180;
+
+        // Actualizar etiquetas de rumbo en el HUD
+        document.getElementById('hudHeadingText').textContent =
+          `${String(state.compassHeading).padStart(3, '0')}° ${getCardinalLabel(state.compassHeading)}`;
+        document.getElementById('hudBearingText').textContent =
+          `${String(targetBearing).padStart(3, '0')}°`;
+
+        // -------------------------------------------------------------------
+        // A. DIBUJAR PINES AR FLOTANTES DE LOS BLOQUES EN EL CAMPO DE VISIÓN
+        // -------------------------------------------------------------------
+        const fovDeg = 75; // Campo de visión horizontal simulado de la cámara
+        UCB_NODES.forEach(node => {
+          if (node.id === state.originId && !state.gpsActive) return;
+
+          const nodeBearing = calculateBearing(state.userLat, state.userLng, node.lat, node.lng);
+          const diffDeg = ((nodeBearing - state.compassHeading + 540) % 360) - 180;
+
+          if (Math.abs(diffDeg) <= fovDeg / 2) {
+            const distM = calculateHaversineMeters(state.userLat, state.userLng, node.lat, node.lng);
+            const screenX = w / 2 + (diffDeg / (fovDeg / 2)) * (w * 0.42);
+            const isTarget = node.id === targetNode.id || node.id === destNode.id;
+            const screenY = isTarget ? h * 0.42 : h * 0.48 - Math.min(60, distM * 0.15);
+
+            ctx.save();
+            // Línea vertical de anclaje al suelo
+            ctx.beginPath();
+            ctx.moveTo(screenX, screenY + 16);
+            ctx.lineTo(screenX, screenY + 48);
+            ctx.strokeStyle = isTarget ? 'rgba(242, 169, 0, 0.85)' : 'rgba(0, 229, 255, 0.35)';
+            ctx.lineWidth = isTarget ? 2.5 : 1.2;
+            ctx.stroke();
+
+            // Caja del marcador flotante
+            const label = `${node.shortName} (${distM}m)`;
+            ctx.font = isTarget ? 'bold 13px Inter, sans-serif' : '500 11px Inter, sans-serif';
+            const textWidth = ctx.measureText(label).width;
+            const padX = 10;
+            const boxW = textWidth + padX * 2;
+            const boxH = isTarget ? 30 : 24;
+
+            ctx.fillStyle = isTarget ? 'rgba(242, 169, 0, 0.95)' : 'rgba(7, 19, 36, 0.82)';
+            ctx.strokeStyle = isTarget ? '#FFFFFF' : 'rgba(0, 229, 255, 0.5)';
+            ctx.lineWidth = 1.5;
+
+            ctx.beginPath();
+            ctx.roundRect(screenX - boxW / 2, screenY - boxH / 2, boxW, boxH, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = isTarget ? '#071324' : '#E2E8F0';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, screenX, screenY);
+            ctx.restore();
+          }
+        });
+
+        // -------------------------------------------------------------------
+        // B. DIBUJAR GRAN FLECHA DIRECCIONAL 3D ANIMADA EN EL CENTRO INFERIOR
+        // -------------------------------------------------------------------
+        const arrowCenterX = w / 2;
+        const arrowCenterY = h * 0.68;
+        const pulseOffset = Math.sin(timestamp / 220) * 6;
+
+        ctx.save();
+        ctx.translate(arrowCenterX, arrowCenterY + pulseOffset);
+
+        // Anillo de piso en perspectiva 3D
+        ctx.save();
+        ctx.scale(1, 0.42); // Aplana el círculo para efecto 3D sobre el piso
+        ctx.beginPath();
+        ctx.arc(0, 0, 95, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(7, 19, 36, 0.65)';
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = Math.abs(relAngleDeg) < 20 ? '#10B981' : '#00E5FF';
+        ctx.stroke();
+
+        // Marcas de graduación del anillo
+        for (let a = 0; a < 360; a += 30) {
+          const rad = (a * Math.PI) / 180;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(rad) * 82, Math.sin(rad) * 82);
+          ctx.lineTo(Math.cos(rad) * 92, Math.sin(rad) * 92);
+          ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        // Rotar la flecha dentro del plano 3D según el ángulo hacia el siguiente nodo
+        ctx.rotate(relAngleRad);
+
+        // Sombra de la flecha 3D
+        ctx.beginPath();
+        ctx.moveTo(0, -76);
+        ctx.lineTo(44, 42);
+        ctx.lineTo(15, 24);
+        ctx.lineTo(15, 68);
+        ctx.lineTo(-15, 68);
+        ctx.lineTo(-15, 24);
+        ctx.lineTo(-44, 42);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.translate(0, 12);
+        ctx.fill();
+        ctx.translate(0, -12);
+
+        // Cuerpo principal de la flecha 3D
+        const aligned = Math.abs(relAngleDeg) < 20;
+        const grad = ctx.createLinearGradient(0, -76, 0, 68);
+        if (aligned) {
+          grad.addColorStop(0, '#34D399');
+          grad.addColorStop(1, '#059669');
+        } else {
+          grad.addColorStop(0, '#00E5FF');
+          grad.addColorStop(0.6, '#0284C7');
+          grad.addColorStop(1, '#F2A900');
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(0, -76);
+        ctx.lineTo(44, 42);
+        ctx.lineTo(15, 24);
+        ctx.lineTo(15, 68);
+        ctx.lineTo(-15, 68);
+        ctx.lineTo(-15, 24);
+        ctx.lineTo(-44, 42);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.stroke();
+        ctx.restore();
+
+        // Etiqueta flotante debajo de la flecha indicando si debe girar o avanzar recto
+        let turnInstruction = "¡RECTO ADELANTE!";
+        if (relAngleDeg > 20) turnInstruction = `GIRA ${Math.round(relAngleDeg)}° A LA DERECHA ↻`;
+        else if (relAngleDeg < -20) turnInstruction = `↺ GIRA ${Math.abs(Math.round(relAngleDeg))}° A LA IZQUIERDA`;
+
+        ctx.font = 'bold 13px Space Grotesk, Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = aligned ? '#34D399' : '#F2A900';
+        ctx.fillText(turnInstruction, 0, 62);
+        ctx.restore();
+
+        // -------------------------------------------------------------------
+        // C. MINI-RADAR CIRCULAR EN LA ESQUINA INFERIOR DERECHA DEL HUD
+        // -------------------------------------------------------------------
+        const radarRadius = 52;
+        const radarX = w - radarRadius - 18;
+        const radarY = h - radarRadius - 74;
+
+        ctx.save();
+        ctx.translate(radarX, radarY);
+
+        // Fondo del radar
+        ctx.beginPath();
+        ctx.arc(0, 0, radarRadius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(7, 19, 36, 0.85)';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(0, 229, 255, 0.5)';
+        ctx.stroke();
+
+        // Círculos concéntricos
+        ctx.beginPath();
+        ctx.arc(0, 0, radarRadius * 0.5, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Cono de visión de la cámara (siempre hacia arriba en el radar)
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, radarRadius, (-125 * Math.PI) / 180, (-55 * Math.PI) / 180);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(0, 229, 255, 0.18)';
+        ctx.fill();
+
+        // Dibujar bloques cercanos en el radar rotados según la brújula del usuario
+        UCB_NODES.forEach(node => {
+          const dist = calculateHaversineMeters(state.userLat, state.userLng, node.lat, node.lng);
+          const brng = calculateBearing(state.userLat, state.userLng, node.lat, node.lng);
+          const relRad = ((brng - state.compassHeading - 90) * Math.PI) / 180;
+          const normDist = Math.min(radarRadius - 7, (dist / 180) * radarRadius);
+
+          const bx = Math.cos(relRad) * normDist;
+          const by = Math.sin(relRad) * normDist;
+
+          ctx.beginPath();
+          const isDest = node.id === state.destinationId;
+          ctx.arc(bx, by, isDest ? 4.5 : 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = isDest ? '#F2A900' : '#94A3B8';
+          ctx.fill();
+        });
+
+        // Punto central (Usuario)
+        ctx.beginPath();
+        ctx.arc(0, 0, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#10B981';
+        ctx.fill();
+        ctx.restore();
+
+        state.arAnimFrame = requestAnimationFrame(renderFrame);
+      }
+
+      if (!state.arAnimFrame) {
+        state.arAnimFrame = requestAnimationFrame(renderFrame);
+      }
+    }
+
+    // =========================================================================
+    // 9. RENDERIZADO DEL MAPA VECTORIAL UCB OBRAJES Y GRAFO DIJKSTRA
+    // =========================================================================
+    function renderCampusMapSVG() {
+      const edgesLayer = document.getElementById('svgEdgesLayer');
+      const routeLayer = document.getElementById('svgRouteLayer');
+      const nodesLayer = document.getElementById('svgNodesLayer');
+      const userMarker = document.getElementById('svgUserMarker');
+
+      // 1. Dibujar todos los caminos peatonales del grafo UCB
+      edgesLayer.innerHTML = UCB_EDGES.map(edge => {
+        const n1 = getNodeById(edge.from);
+        const n2 = getNodeById(edge.to);
+        const midX = (n1.svgX + n2.svgX) / 2;
+        const midY = (n1.svgY + n2.svgY) / 2;
+        return `
+          <g>
+            <line x1="${n1.svgX}" y1="${n1.svgY}" x2="${n2.svgX}" y2="${n2.svgY}"
+                  stroke="${edge.hasStairs ? '#64748B' : '#334155'}"
+                  stroke-width="3.5"
+                  stroke-dasharray="${edge.hasStairs ? '4,4' : 'none'}" />
+            <rect x="${midX - 14}" y="${midY - 8}" width="28" height="15" rx="4" fill="#0B192C" opacity="0.85" />
+            <text x="${midX}" y="${midY + 3}" font-size="9" fill="#94A3B8" text-anchor="middle" font-family="monospace">${edge.dist}m</text>
+          </g>
+        `;
+      }).join('');
+
+      // 2. Dibujar la Ruta Más Corta calculada por Dijkstra
+      const route = state.activeRoute;
+      if (route && route.pathNodes.length > 1) {
+        const pointsStr = route.pathNodes.map(n => `${n.svgX},${n.svgY}`).join(' ');
+        routeLayer.innerHTML = `
+          <polyline points="${pointsStr}" fill="none" stroke="rgba(0, 229, 255, 0.3)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#cyanGlow)" />
+          <polyline points="${pointsStr}" fill="none" stroke="#00E5FF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="route-animated" />
+        `;
+      } else {
+        routeLayer.innerHTML = '';
+      }
+
+      // 3. Dibujar todos los Bloques, Plazas e Ingresos de la UCB
+      nodesLayer.innerHTML = UCB_NODES.map(node => {
+        const isOrigin = node.id === state.originId;
+        const isDest = node.id === state.destinationId;
+        const isInPath = route && route.pathIds.includes(node.id);
+
+        let fillColor = '#E06D53'; // Color terracota oficial del plano UCB para bloques
+        if (node.type === 'plaza') fillColor = '#2563EB';
+        if (node.type === 'entry') fillColor = '#059669';
+        if (isOrigin) fillColor = '#10B981';
+        if (isDest) fillColor = '#F2A900';
+
+        const strokeColor = (isOrigin || isDest) ? '#FFFFFF' : isInPath ? '#00E5FF' : '#0F172A';
+        const strokeWidth = (isOrigin || isDest || isInPath) ? 3 : 1.5;
+
+        return `
+          <g class="map-node-group" onclick="handleMapNodeClick('${node.id}')">
+            <rect x="${node.svgX - 38}" y="${node.svgY - 20}" width="76" height="40" rx="10"
+                  fill="${fillColor}" stroke="${strokeColor}" stroke-width="${strokeWidth}" />
+            <text x="${node.svgX}" y="${node.svgY - 3}" fill="${isDest ? '#0F172A' : '#FFFFFF'}"
+                  font-size="10.5" font-weight="800" text-anchor="middle">
+              ${node.code}
+            </text>
+            <text x="${node.svgX}" y="${node.svgY + 11}" fill="${isDest ? '#1E293B' : '#F1F5F9'}"
+                  font-size="8.5" font-weight="600" text-anchor="middle">
+              ${node.shortName.replace(/Bloque [A-Z0-9/]+ /i, '')}
+            </text>
+          </g>
+        `;
+      }).join('');
+
+      // 4. Posicionar el marcador del usuario en el nodo actual del paso
+      let currentUserNode = getNodeById(state.originId);
+      if (route && route.steps.length > 0 && state.currentStepIndex > 0) {
+        const idx = Math.min(state.currentStepIndex, route.steps.length - 1);
+        currentUserNode = route.steps[idx].fromNode;
+      }
+      userMarker.setAttribute('transform', `translate(${currentUserNode.svgX}, ${currentUserNode.svgY})`);
+    }
+
+    function handleMapNodeClick(nodeId) {
+      state.inspectedNodeId = nodeId;
+      updateInspectorCard(nodeId);
+
+      if (state.mapClickMode === 'origin') {
+        state.originId = nodeId;
+        recalculateAndRenderRoute();
+        showToast(`📍 Origen actualizado: ${getNodeById(nodeId).shortName}`);
+      } else {
+        state.destinationId = nodeId;
+        state.selectedEventId = null;
+        recalculateAndRenderRoute();
+        showToast(`🎯 Destino actualizado: ${getNodeById(nodeId).shortName}`);
+      }
+    }
+
+    function setMapClickMode(mode) {
+      state.mapClickMode = mode;
+      const btnDest = document.getElementById('clickModeDest');
+      const btnOrig = document.getElementById('clickModeOrigin');
+
+      if (mode === 'dest') {
+        btnDest.className = "px-2.5 py-1.5 rounded-lg font-semibold bg-ucb-gold text-slate-950 transition";
+        btnOrig.className = "px-2.5 py-1.5 rounded-lg font-semibold text-slate-300 hover:bg-slate-800 transition";
+      } else {
+        btnOrig.className = "px-2.5 py-1.5 rounded-lg font-semibold bg-emerald-400 text-slate-950 transition";
+        btnDest.className = "px-2.5 py-1.5 rounded-lg font-semibold text-slate-300 hover:bg-slate-800 transition";
+      }
+    }
+
+    function updateInspectorCard(nodeId) {
+      const node = getNodeById(nodeId);
+      state.inspectedNodeId = node.id;
+      document.getElementById('inspectCodeBadge').textContent = node.code;
+      document.getElementById('inspectCoordsBadge').textContent = `${node.lat.toFixed(5)}, ${node.lng.toFixed(5)}`;
+      document.getElementById('inspectTitle').textContent = node.name;
+      document.getElementById('inspectFloor').textContent = node.floorInfo;
+
+      document.getElementById('inspectDepsList').innerHTML = node.dependencies.map(dep => `
+        <span class="px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 text-[11px]">
+          ${dep}
+        </span>
+      `).join('');
+    }
+
+    function setInspectedAsOrigin() {
+      state.originId = state.inspectedNodeId;
+      recalculateAndRenderRoute();
+      showToast(`Ubicación actual fijada en ${getNodeById(state.originId).shortName}`);
+    }
+
+    function setInspectedAsDestination() {
+      state.destinationId = state.inspectedNodeId;
+      state.selectedEventId = null;
+      recalculateAndRenderRoute();
+      showToast(`Ruta calculada hacia ${getNodeById(state.destinationId).shortName}`);
+    }
+
+    // Buscador inteligente de bloques, aulas o dependencias (ej. "Kardex", "Paraninfo", "SECRAD")
+    function handleMapDependencySearch(query) {
+      const dropdown = document.getElementById('mapSearchResults');
+      const q = query.trim().toLowerCase();
+      if (!q) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+
+      const matches = UCB_NODES.filter(n =>
+        n.name.toLowerCase().includes(q) ||
+        n.code.toLowerCase().includes(q) ||
+        n.dependencies.some(d => d.toLowerCase().includes(q))
+      );
+
+      if (matches.length === 0) {
+        dropdown.innerHTML = `<div class="p-3 text-xs text-slate-400">No se encontraron bloques o dependencias para "${query}".</div>`;
+        dropdown.classList.remove('hidden');
+        return;
+      }
+
+      dropdown.innerHTML = matches.map(n => {
+        const matchedDep = n.dependencies.find(d => d.toLowerCase().includes(q)) || n.dependencies[0];
+        return `
+          <button onclick="selectSearchResultNode('${n.id}')" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-900 transition flex items-center justify-between gap-2">
+            <div>
+              <div class="text-xs font-bold text-white">${n.name}</div>
+              <div class="text-[11px] text-ucb-cyan">Incluye: ${matchedDep}</div>
+            </div>
+            <span class="px-2 py-0.5 rounded bg-ucb-gold/20 text-ucb-gold text-[10px] font-bold shrink-0">Ir aquí</span>
+          </button>
+        `;
+      }).join('');
+      dropdown.classList.remove('hidden');
+    }
+
+    function selectSearchResultNode(nodeId) {
+      document.getElementById('mapSearchResults').classList.add('hidden');
+      document.getElementById('mapSearchInput').value = '';
+      state.destinationId = nodeId;
+      state.selectedEventId = null;
+      recalculateAndRenderRoute();
+      showToast(`Destino fijado en ${getNodeById(nodeId).name}`);
+    }
+
+    // =========================================================================
+    // 10. INTEGRACIÓN GPS REAL EN EL CAMPUS + DETECCIÓN DEL BLOQUE MÁS CERCANO
+    // =========================================================================
+    function toggleRealGPS() {
+      const gpsDot = document.getElementById('gpsDot');
+      const gpsText = document.getElementById('gpsStatusText');
+      const badgeState = document.getElementById('gpsBadgeState');
+      const teleStatus = document.getElementById('teleStatusText');
+
+      if (state.gpsActive) {
+        if (state.gpsWatchId !== null) {
+          navigator.geolocation.clearWatch(state.gpsWatchId);
+          state.gpsWatchId = null;
+        }
+        state.gpsActive = false;
+        gpsDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+        gpsText.textContent = "GPS: Simulado";
+        badgeState.textContent = "Simulador";
+        badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold";
+        teleStatus.textContent = "Estado: Modo simulación manual activo.";
+        showToast("Modo Simulación activado. Puedes elegir cualquier bloque como origen.");
+        return;
+      }
+
+      if (!('geolocation' in navigator)) {
+        showToast("Tu navegador no soporta GPS. Usando Modo Simulación.");
+        return;
+      }
+
+      gpsText.textContent = "GPS: Buscando...";
+      badgeState.textContent = "Buscando señal...";
+      badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold";
+      teleStatus.textContent = "Estado: Solicitando permisos de geolocalización satelital...";
+
+      state.gpsWatchId = navigator.geolocation.watchPosition(
+        pos => {
+          state.gpsActive = true;
+          state.userLat = pos.coords.latitude;
+          state.userLng = pos.coords.longitude;
+          const accuracy = pos.coords.accuracy || 10;
+
+          // Actualizar telemetría visual
+          document.getElementById('teleLat').textContent = state.userLat.toFixed(5);
+          document.getElementById('teleLng').textContent = state.userLng.toFixed(5);
+          document.getElementById('teleAcc').textContent = `±${accuracy.toFixed(1)} m`;
+
+          // Encontrar el bloque o nodo UCB más cercano a las coordenadas GPS actuales
+          let nearestNode = UCB_NODES[0];
+          let minMeters = Infinity;
+          UCB_NODES.forEach(node => {
+            const d = calculateHaversineMeters(state.userLat, state.userLng, node.lat, node.lng);
+            if (d < minMeters) {
+              minMeters = d;
+              nearestNode = node;
+            }
+          });
+
+          document.getElementById('teleNearest').textContent = nearestNode.shortName;
+
+          // Validar si está dentro del radio del campus de Obrajes (ej. < 400 metros del centro del campus)
+          const campusCenterLat = -16.52330;
+          const campusCenterLng = -68.11180;
+          const distToCampus = calculateHaversineMeters(state.userLat, state.userLng, campusCenterLat, campusCenterLng);
+
+          if (distToCampus <= 450) {
+            gpsDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+            gpsText.textContent = `GPS: Conectado (${nearestNode.shortName})`;
+            badgeState.textContent = "GPS Campus OK";
+            badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold";
+            teleStatus.textContent = `Estado: GPS Activo dentro del campus UCB (${Math.round(distToCampus)}m del centro). Sincronizado.`;
+          } else {
+            gpsDot.className = "w-2.5 h-2.5 rounded-full bg-orange-400 animate-pulse";
+            gpsText.textContent = `GPS: Fuera de rango (${Math.round(distToCampus)}m)`;
+            badgeState.textContent = "Fuera de Rango";
+            badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-orange-500/20 text-orange-300 border border-orange-500/30 font-semibold";
+            teleStatus.textContent = `Estado: Estás a ${Math.round(distToCampus)}m de la UCB Obrajes. Usando aproximación al nodo más cercano (${nearestNode.shortName}).`;
+          }
+
+          // Actualizar automáticamente el origen si difiere
+          if (state.originId !== nearestNode.id && accuracy < 60) {
+            state.originId = nearestNode.id;
+            recalculateAndRenderRoute();
+          }
+        },
+        err => {
+          state.gpsActive = false;
+          gpsDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+          gpsText.textContent = "GPS: Error";
+          badgeState.textContent = "Error GPS";
+          badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold";
+          teleStatus.textContent = `Estado: Error GPS (${err.message}). Usando Modo Simulación.`;
+          showToast("No se pudo obtener señal GPS. Usando ubicación simulada.");
+        },
+        { enableHighAccuracy: true, maximumAge: 3000, timeout: 12000 }
+      );
+    }
+
+    // =========================================================================
+    // 11. GESTOR DE EVENTOS UCB E IMPORTADOR DESDE GOOGLE CALENDAR / SHEETS
+    // =========================================================================
+    function renderEventsGrid() {
+      const container = document.getElementById('eventsGridContainer');
+      const searchQ = (document.getElementById('eventSearchInput')?.value || '').trim().toLowerCase();
+      document.getElementById('eventsCountBadge').textContent = UCB_EVENTS.length;
+
+      const filtered = UCB_EVENTS.filter(ev => {
+        const matchesCat = state.eventCategoryFilter === 'ALL' || ev.category === state.eventCategoryFilter;
+        const node = getNodeById(ev.nodeId);
+        const matchesText = !searchQ ||
+          ev.title.toLowerCase().includes(searchQ) ||
+          ev.description.toLowerCase().includes(searchQ) ||
+          node.name.toLowerCase().includes(searchQ);
+        return matchesCat && matchesText;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full bg-slate-900/70 border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
+            No se encontraron eventos con ese filtro.
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(ev => {
+        const node = getNodeById(ev.nodeId);
+        const routePreview = computeShortestPathDijkstra(state.originId, ev.nodeId, state.accessibleMode);
+        const isSelected = state.selectedEventId === ev.id;
+
+        let badgeStyle = "bg-ucb-cyan/15 text-ucb-cyan border-ucb-cyan/30";
+        if (ev.category === "CULTURAL") badgeStyle = "bg-amber-500/15 text-amber-300 border-amber-500/30";
+        if (ev.category === "ACADEMICO") badgeStyle = "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+
+        return `
+          <div class="bg-slate-900/95 rounded-2xl p-4 border transition flex flex-col justify-between gap-3 shadow-lg ${
+            isSelected ? 'border-ucb-gold ring-1 ring-ucb-gold/40' : 'border-slate-800 hover:border-slate-700'
+          }">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${badgeStyle}">
+                  ${ev.category}
+                </span>
+                <span class="text-xs font-medium text-slate-400 flex items-center gap-1">
+                  <i class="fa-regular fa-clock text-ucb-gold"></i> ${ev.date}
+                </span>
+              </div>
+
+              <h3 class="font-display font-bold text-base text-white leading-snug">
+                ${ev.title}
+              </h3>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">
+                ${ev.description}
+              </p>
+
+              <!-- Location & Distance Pill -->
+              <div class="mt-3 p-2.5 rounded-xl bg-slate-950/90 border border-slate-800/90 space-y-1 text-xs">
+                <div class="font-semibold text-ucb-gold flex items-center gap-1.5">
+                  <i class="fa-solid fa-location-dot"></i>
+                  <span>${node.name}</span>
+                </div>
+                <div class="text-slate-300 text-[11px] flex items-center justify-between">
+                  <span><i class="fa-solid fa-layer-group text-ucb-cyan mr-1"></i>${ev.floor}</span>
+                  <span class="font-mono font-bold text-emerald-400">${routePreview.totalDistance} m (${formatTimeFromSeconds(routePreview.estimatedSeconds)})</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons: Navigate via AR Camera or Map -->
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button onclick="navigateToEvent('${ev.id}', 'ar')" class="py-2 px-3 rounded-xl bg-ucb-cyan hover:bg-cyan-300 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-cyan-500/10">
+                <i class="fa-solid fa-camera-viewfinder"></i>
+                <span>Cámara AR</span>
+              </button>
+              <button onclick="navigateToEvent('${ev.id}', 'map')" class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-map-location-dot text-ucb-gold"></i>
+                <span>Cómo llegar</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterEventsByCategory(cat) {
+      state.eventCategoryFilter = cat;
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.className = "cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap";
+      });
+      const activeBtn = document.getElementById(`catBtn-${cat}`);
+      if (activeBtn) {
+        activeBtn.className = "cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-ucb-gold text-slate-950 transition whitespace-nowrap";
+      }
+      renderEventsGrid();
+    }
+
+    function navigateToEvent(eventId, targetTab) {
+      const ev = UCB_EVENTS.find(e => e.id === eventId);
+      if (!ev) return;
+
+      state.selectedEventId = ev.id;
+      state.destinationId = ev.nodeId;
+      document.getElementById('selectQuickEvent').value = ev.id;
+
+      recalculateAndRenderRoute();
+      switchTab(targetTab);
+      showToast(`Guiando hacia "${ev.title}" en ${getNodeById(ev.nodeId).shortName}`);
+    }
+
+    // Mapea cualquier texto de ubicación proveniente de Google Calendar a un nodo oficial del campus UCB
+    function matchLocationStringToUCBNode(locText) {
+      const clean = (locText || '').toLowerCase();
+      for (const node of UCB_NODES) {
+        if (
+          clean.includes(node.code.toLowerCase()) ||
+          clean.includes(node.shortName.toLowerCase()) ||
+          node.dependencies.some(d => clean.includes(d.toLowerCase().split(' ')[0]))
+        ) {
+          return node.id;
+        }
+      }
+      if (clean.includes("coliseo")) return "BLOQUE_A";
+      if (clean.includes("paraninfo") || clean.includes("bloque d")) return "BLOQUE_D";
+      if (clean.includes("agora") || clean.includes("ágora")) return "AGORA";
+      if (clean.includes("kardex") || clean.includes("derecho")) return "BLOQUE_F";
+      if (clean.includes("auditorio") || clean.includes("bloque g")) return "BLOQUE_G";
+      if (clean.includes("cafeteria") || clean.includes("cafetería")) return "BLOQUE_H";
+      if (clean.includes("biblioteca")) return "BLOQUE_I";
+      if (clean.includes("idiomas") || clean.includes("bloque n")) return "BLOQUE_N";
+      if (clean.includes("arquitectura") || clean.includes("bloque m")) return "BLOQUE_M";
+      if (clean.includes("econom") || clean.includes("bloque s") || clean.includes("bloque t")) return "BLOQUE_ST";
+      if (clean.includes("diseño") || clean.includes("bloque u")) return "BLOQUE_U";
+      if (clean.includes("medicina") || clean.includes("bloque v")) return "BLOQUE_V";
+      return "ATRIO";
+    }
+
+    function importEventsFromGoogleSheetText() {
+      const raw = document.getElementById('sheetsInputData').value.trim();
+      if (!raw) return;
+
+      const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+      let importedCount = 0;
+
+      lines.forEach((line, idx) => {
+        const parts = line.includes('|') ? line.split('|') : line.split(/\t|,/);
+        if (parts.length >= 2) {
+          const title = parts[0].trim();
+          const rawLoc = parts[1].trim();
+          const dateStr = (parts[2] || 'Próximamente').trim();
+          const matchedNodeId = matchLocationStringToUCBNode(rawLoc);
+
+          UCB_EVENTS.unshift({
+            id: `EV_GSHEET_${Date.now()}_${idx}`,
+            title,
+            category: "ACADEMICO",
+            nodeId: matchedNodeId,
+            floor: rawLoc,
+            date: dateStr,
+            organizer: "Google Calendar Sync",
+            description: `Evento sincronizado automáticamente desde Google Calendar / Google Sheets (${rawLoc}).`
+          });
+          importedCount++;
+        }
+      });
+
+      populateDropdownSelectors();
+      renderEventsGrid();
+      closeGoogleSyncModal();
+      showToast(`✅ Se importaron ${importedCount} eventos desde Google Calendar / Sheets.`);
+    }
+
+    // =========================================================================
+    // 12. CONTROLES DE INTERFAZ, SELECTORES Y MODALES
+    // =========================================================================
+    function populateDropdownSelectors() {
+      const originSel = document.getElementById('selectOrigin');
+      const destSel = document.getElementById('selectDestination');
+      const newEvNodeSel = document.getElementById('newEvNodeId');
+      const qrBlockSel = document.getElementById('qrBlockSelect');
+      const quickEvSel = document.getElementById('selectQuickEvent');
+
+      const optionsHtml = UCB_NODES.map(n => `<option value="${n.id}">${n.name}</option>`).join('');
+      originSel.innerHTML = optionsHtml;
+      destSel.innerHTML = optionsHtml;
+      newEvNodeSel.innerHTML = optionsHtml;
+      qrBlockSel.innerHTML = optionsHtml;
+
+      originSel.value = state.originId;
+      destSel.value = state.destinationId;
+
+      quickEvSel.innerHTML =
+        `<option value="">-- Seleccionar evento UCB --</option>` +
+        UCB_EVENTS.map(ev => `<option value="${ev.id}">📅 ${ev.title} (${getNodeById(ev.nodeId).shortName})</option>`).join('');
+      if (state.selectedEventId) quickEvSel.value = state.selectedEventId;
+    }
+
+    function handleOriginChange(newOriginId) {
+      state.originId = newOriginId;
+      recalculateAndRenderRoute();
+      showToast(`Punto de partida: ${getNodeById(newOriginId).shortName}`);
+    }
+
+    function handleDestinationChange(newDestId) {
+      state.destinationId = newDestId;
+      state.selectedEventId = null;
+      document.getElementById('selectQuickEvent').value = "";
+      recalculateAndRenderRoute();
+      showToast(`Nuevo destino: ${getNodeById(newDestId).shortName}`);
+    }
+
+    function handleQuickEventSelect(eventId) {
+      if (!eventId) return;
+      const ev = UCB_EVENTS.find(e => e.id === eventId);
+      if (ev) {
+        state.selectedEventId = ev.id;
+        state.destinationId = ev.nodeId;
+        recalculateAndRenderRoute();
+        showToast(`Evento activo: ${ev.title}`);
+      }
+    }
+
+    function swapOriginAndDestination() {
+      const temp = state.originId;
+      state.originId = state.destinationId;
+      state.destinationId = temp;
+      state.selectedEventId = null;
+      recalculateAndRenderRoute();
+      showToast("Origen y destino invertidos.");
+    }
+
+    function toggleAccessibilityMode() {
+      state.accessibleMode = !state.accessibleMode;
+      const badge = document.getElementById('accessibleBadge');
+      const routeTag = document.getElementById('routeModeTag');
+
+      if (state.accessibleMode) {
+        badge.textContent = "ON (Sin Gradas)";
+        badge.className = "font-bold text-ucb-cyan";
+        routeTag.textContent = "♿ Ruta Accesible";
+        routeTag.className = "text-[11px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/40 font-medium";
+        showToast("♿ Modo Accesible activado: evitando escaleras y priorizando rampas/ascensores.");
+      } else {
+        badge.textContent = "OFF";
+        badge.className = "font-semibold text-slate-400";
+        routeTag.textContent = "Ruta Óptima";
+        routeTag.className = "text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium";
+        showToast("Modo ruta estándar activado.");
+      }
+      recalculateAndRenderRoute();
+      renderEventsGrid();
+    }
+
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      ['ar', 'map', 'events', 'proposal'].forEach(id => {
+        const section = document.getElementById(`view-${id}`);
+        const btn = document.getElementById(`tabBtn-${id}`);
+        if (id === tabId) {
+          section.classList.remove('hidden');
+          section.classList.add('flex');
+          btn.className = "tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-ucb-cyan text-slate-950 shadow-md shadow-cyan-500/20";
+        } else {
+          section.classList.add('hidden');
+          section.classList.remove('flex');
+          btn.className = "tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800/80 text-slate-300 hover:bg-slate-800";
+        }
+      });
+    }
+
+    // Modal handlers
+    function openGoogleSyncModal() {
+      document.getElementById('modalGoogleSync').classList.remove('hidden');
+    }
+    function closeGoogleSyncModal() {
+      document.getElementById('modalGoogleSync').classList.add('hidden');
+    }
+
+    function openAddEventModal() {
+      document.getElementById('modalAddEvent').classList.remove('hidden');
+    }
+    function closeAddEventModal() {
+      document.getElementById('modalAddEvent').classList.add('hidden');
+    }
+
+    function saveNewManualEvent() {
+      const title = document.getElementById('newEvTitle').value.trim();
+      const nodeId = document.getElementById('newEvNodeId').value;
+      const floor = document.getElementById('newEvFloor').value.trim() || "Planta Baja";
+      const date = document.getElementById('newEvDate').value.trim() || "Hoy";
+      const category = document.getElementById('newEvCategory').value;
+
+      if (!title) {
+        showToast("Por favor escribe el nombre del evento.");
+        return;
+      }
+
+      const newEv = {
+        id: `EV_MANUAL_${Date.now()}`,
+        title,
+        category,
+        nodeId,
+        floor,
+        date,
+        organizer: "Comunidad UCB",
+        description: `Evento registrado en ${getNodeById(nodeId).name} (${floor}).`
+      };
+
+      UCB_EVENTS.unshift(newEv);
+      populateDropdownSelectors();
+      renderEventsGrid();
+      closeAddEventModal();
+      document.getElementById('newEvTitle').value = '';
+      showToast(`Evento "${title}" guardado exitosamente.`);
+    }
+
+    function openQRModal() {
+      document.getElementById('qrBlockSelect').value = state.originId;
+      updateQRPreview();
+      document.getElementById('modalQR').classList.remove('hidden');
+    }
+    function closeQRModal() {
+      document.getElementById('modalQR').classList.add('hidden');
+    }
+    function updateQRPreview() {
+      const nodeId = document.getElementById('qrBlockSelect').value;
+      const node = getNodeById(nodeId);
+      document.getElementById('qrPreviewName').textContent = node.name;
+      document.getElementById('qrPreviewCode').textContent = `QR-UCB-${node.id}`;
+    }
+    function confirmQRCheckIn() {
+      const nodeId = document.getElementById('qrBlockSelect').value;
+      state.originId = nodeId;
+      recalculateAndRenderRoute();
+      closeQRModal();
+      showToast(`📌 Ubicación calibrada por Código QR en ${getNodeById(nodeId).shortName}`);
+    }
+
+    let toastTimeout = null;
+    function showToast(msg) {
+      const banner = document.getElementById('toastBanner');
+      document.getElementById('toastMessage').textContent = msg;
+      banner.classList.remove('hidden');
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 3600);
+    }
+
+    // =========================================================================
+    // 13. INICIALIZACIÓN AL CARGAR LA PÁGINA
+    // =========================================================================
+    window.onload = function () {
+      populateDropdownSelectors();
+      recalculateAndRenderRoute();
+      renderEventsGrid();
+      startARCanvasRenderLoop();
+    };
+  </script>
+</body>
+</html>
