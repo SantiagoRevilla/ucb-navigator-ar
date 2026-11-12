@@ -2694,11 +2694,6 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       }).join('');
 
       // 4. Posicionar el marcador del usuario en el nodo actual del paso
-      let currentUserNode = getNodeById(state.originId);
-      if (route && route.steps.length > 0 && state.currentStepIndex > 0) {
-        const idx = Math.min(state.currentStepIndex, route.steps.length - 1);
-        currentUserNode = route.steps[idx].fromNode;
-      }
       userMarker.setAttribute('transform', `translate(${currentUserNode.svgX}, ${currentUserNode.svgY})`);
     }
 
