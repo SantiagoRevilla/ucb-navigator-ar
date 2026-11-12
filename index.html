@@ -1625,32 +1625,206 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     function getNodeById(id) {
       return UCB_NODES.find(n => n.id === id) || UCB_NODES[0];
     }
-
+<!-- ... existing code ... -->
     // =========================================================================
     // 4.1 GEOMETRÍA DE 4 ESQUINAS POR BLOQUE (POLÍGONOS GPS, CENTROIDE Y RAY-CASTING)
     // =========================================================================
     const STORAGE_KEY_CORNERS = 'ucb_navigator_calibrated_corners_v1';
 
-    // Genera un rectángulo predeterminado de 4 esquinas (NW, NE, SE, SW) alrededor del centro de cada bloque (~14m de semilado)
-    function createDefaultCornersForCoord(lat, lng, deltaLat = 0.00012, deltaLng = 0.00014) {
-      return [
-        { lat: Number((lat + deltaLat).toFixed(6)), lng: Number((lng - deltaLng).toFixed(6)) }, // E1: Noroeste (NW)
-        { lat: Number((lat + deltaLat).toFixed(6)), lng: Number((lng + deltaLng).toFixed(6)) }, // E2: Noreste (NE)
-        { lat: Number((lat - deltaLat).toFixed(6)), lng: Number((lng + deltaLng).toFixed(6)) }, // E3: Sureste (SE)
-        { lat: Number((lat - deltaLat).toFixed(6)), lng: Number((lng - deltaLng).toFixed(6)) }  // E4: Suroeste (SW)
-      ];
-    }
+    const EXACT_USER_COORDS = {
+      "INGRESO_PRINCIPAL": {
+        "centroid": { "lat": -16.52335, "lng": -68.11215 },
+        "corners": [
+          { "lat": -16.52323, "lng": -68.11229 },
+          { "lat": -16.52323, "lng": -68.11201 },
+          { "lat": -16.52347, "lng": -68.11201 },
+          { "lat": -16.52347, "lng": -68.11229 }
+        ]
+      },
+      "INGRESO_SILES": {
+        "centroid": { "lat": -16.52215, "lng": -68.11145 },
+        "corners": [
+          { "lat": -16.52203, "lng": -68.11159 },
+          { "lat": -16.52203, "lng": -68.11131 },
+          { "lat": -16.52227, "lng": -68.11131 },
+          { "lat": -16.52227, "lng": -68.11159 }
+        ]
+      },
+      "ATRIO": {
+        "centroid": { "lat": -16.52295, "lng": -68.11205 },
+        "corners": [
+          { "lat": -16.52283, "lng": -68.11219 },
+          { "lat": -16.52283, "lng": -68.11191 },
+          { "lat": -16.52307, "lng": -68.11191 },
+          { "lat": -16.52307, "lng": -68.11219 }
+        ]
+      },
+      "AGORA": {
+        "centroid": { "lat": -16.5227, "lng": -68.11175 },
+        "corners": [
+          { "lat": -16.52258, "lng": -68.11189 },
+          { "lat": -16.52258, "lng": -68.11161 },
+          { "lat": -16.52282, "lng": -68.11161 },
+          { "lat": -16.52282, "lng": -68.11189 }
+        ]
+      },
+      "BLOQUE_A": {
+        "centroid": { "lat": -16.522339, "lng": -68.111863 },
+        "corners": [
+          { "lat": -16.522234, "lng": -68.112057 },
+          { "lat": -16.522236, "lng": -68.111685 },
+          { "lat": -16.522427, "lng": -68.11167 },
+          { "lat": -16.522457, "lng": -68.112042 }
+        ]
+      },
+      "BLOQUE_B": {
+        "centroid": { "lat": -16.52265, "lng": -68.112 },
+        "corners": [
+          { "lat": -16.52253, "lng": -68.11214 },
+          { "lat": -16.52253, "lng": -68.11186 },
+          { "lat": -16.52277, "lng": -68.11186 },
+          { "lat": -16.52277, "lng": -68.11214 }
+        ]
+      },
+      "BLOQUE_C": {
+        "centroid": { "lat": -16.5225, "lng": -68.1118 },
+        "corners": [
+          { "lat": -16.52238, "lng": -68.11194 },
+          { "lat": -16.52238, "lng": -68.11166 },
+          { "lat": -16.52262, "lng": -68.11166 },
+          { "lat": -16.52262, "lng": -68.11194 }
+        ]
+      },
+      "BLOQUE_D": {
+        "centroid": { "lat": -16.52305, "lng": -68.11235 },
+        "corners": [
+          { "lat": -16.52293, "lng": -68.11249 },
+          { "lat": -16.52293, "lng": -68.11221 },
+          { "lat": -16.52317, "lng": -68.11221 },
+          { "lat": -16.52317, "lng": -68.11249 }
+        ]
+      },
+      "BLOQUE_F": {
+        "centroid": { "lat": -16.5224, "lng": -68.11195 },
+        "corners": [
+          { "lat": -16.52228, "lng": -68.11209 },
+          { "lat": -16.52228, "lng": -68.11181 },
+          { "lat": -16.52252, "lng": -68.11181 },
+          { "lat": -16.52252, "lng": -68.11209 }
+        ]
+      },
+      "BLOQUE_G": {
+        "centroid": { "lat": -16.52255, "lng": -68.11155 },
+        "corners": [
+          { "lat": -16.52243, "lng": -68.11169 },
+          { "lat": -16.52243, "lng": -68.11141 },
+          { "lat": -16.52267, "lng": -68.11141 },
+          { "lat": -16.52267, "lng": -68.11169 }
+        ]
+      },
+      "BLOQUE_H": {
+        "centroid": { "lat": -16.52285, "lng": -68.1113 },
+        "corners": [
+          { "lat": -16.52273, "lng": -68.11144 },
+          { "lat": -16.52273, "lng": -68.11116 },
+          { "lat": -16.52297, "lng": -68.11116 },
+          { "lat": -16.52297, "lng": -68.11144 }
+        ]
+      },
+      "BLOQUE_I": {
+        "centroid": { "lat": -16.52305, "lng": -68.1111 },
+        "corners": [
+          { "lat": -16.52293, "lng": -68.11124 },
+          { "lat": -16.52293, "lng": -68.11096 },
+          { "lat": -16.52317, "lng": -68.11096 },
+          { "lat": -16.52317, "lng": -68.11124 }
+        ]
+      },
+      "BLOQUE_J": {
+        "centroid": { "lat": -16.5227, "lng": -68.11145 },
+        "corners": [
+          { "lat": -16.52258, "lng": -68.11159 },
+          { "lat": -16.52258, "lng": -68.11131 },
+          { "lat": -16.52282, "lng": -68.11131 },
+          { "lat": -16.52282, "lng": -68.11159 }
+        ]
+      },
+      "BLOQUE_K": {
+        "centroid": { "lat": -16.52315, "lng": -68.1119 },
+        "corners": [
+          { "lat": -16.52303, "lng": -68.11204 },
+          { "lat": -16.52303, "lng": -68.11176 },
+          { "lat": -16.52327, "lng": -68.11176 },
+          { "lat": -16.52327, "lng": -68.11204 }
+        ]
+      },
+      "BLOQUE_L": {
+        "centroid": { "lat": -16.5232, "lng": -68.1114 },
+        "corners": [
+          { "lat": -16.52308, "lng": -68.11154 },
+          { "lat": -16.52308, "lng": -68.11126 },
+          { "lat": -16.52332, "lng": -68.11126 },
+          { "lat": -16.52332, "lng": -68.11154 }
+        ]
+      },
+      "BLOQUE_M": {
+        "centroid": { "lat": -16.52355, "lng": -68.11225 },
+        "corners": [
+          { "lat": -16.52343, "lng": -68.11239 },
+          { "lat": -16.52343, "lng": -68.11211 },
+          { "lat": -16.52367, "lng": -68.11211 },
+          { "lat": -16.52367, "lng": -68.11239 }
+        ]
+      },
+      "BLOQUE_P": {
+        "centroid": { "lat": -16.52335, "lng": -68.11185 },
+        "corners": [
+          { "lat": -16.52323, "lng": -68.11199 },
+          { "lat": -16.52323, "lng": -68.11171 },
+          { "lat": -16.52347, "lng": -68.11171 },
+          { "lat": -16.52347, "lng": -68.11199 }
+        ]
+      },
+      "BLOQUE_N": {
+        "centroid": { "lat": -16.52345, "lng": -68.1116 },
+        "corners": [
+          { "lat": -16.52333, "lng": -68.11174 },
+          { "lat": -16.52333, "lng": -68.11146 },
+          { "lat": -16.52357, "lng": -68.11146 },
+          { "lat": -16.52357, "lng": -68.11174 }
+        ]
+      },
+      "BLOQUE_ST": {
+        "centroid": { "lat": -16.5235, "lng": -68.11195 },
+        "corners": [
+          { "lat": -16.52338, "lng": -68.11209 },
+          { "lat": -16.52338, "lng": -68.11181 },
+          { "lat": -16.52362, "lng": -68.11181 },
+          { "lat": -16.52362, "lng": -68.11209 }
+        ]
+      },
+      "BLOQUE_U": {
+        "centroid": { "lat": -16.5241, "lng": -68.1126 },
+        "corners": [
+          { "lat": -16.52398, "lng": -68.11274 },
+          { "lat": -16.52398, "lng": -68.11246 },
+          { "lat": -16.52422, "lng": -68.11246 },
+          { "lat": -16.52422, "lng": -68.11274 }
+        ]
+      },
+      "BLOQUE_V": {
+        "centroid": { "lat": -16.5252, "lng": -68.1095 },
+        "corners": [
+          { "lat": -16.52508, "lng": -68.10964 },
+          { "lat": -16.52508, "lng": -68.10936 },
+          { "lat": -16.52532, "lng": -68.10936 },
+          { "lat": -16.52532, "lng": -68.10964 }
+        ]
+      }
+    };
 
-    // Calcula el centroide geométrico exacto a partir del arreglo de 4 esquinas
-    function computeCentroidFromCorners(corners) {
-      if (!corners || corners.length === 0) return { lat: -16.5230, lng: -68.1120 };
-      const sum = corners.reduce((acc, c) => ({ lat: acc.lat + Number(c.lat), lng: acc.lng + Number(c.lng) }), { lat: 0, lng: 0 });
-      return {
-        lat: Number((sum.lat / corners.length).toFixed(6)),
-        lng: Number((sum.lng / corners.length).toFixed(6))
-      };
-    }
-
+    // Genera un rectángulo predeterminado de 4 esquinas...
+    <!-- ... existing code ... -->
     // Inicializa las 4 esquinas en todos los bloques y carga calibraciones guardadas en localStorage
     function initBlockCornersData() {
       let savedMap = {};
@@ -1672,6 +1846,12 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           const c = computeCentroidFromCorners(node.corners);
           node.lat = c.lat;
           node.lng = c.lng;
+        } else if (EXACT_USER_COORDS[node.id]) {
+          const uData = EXACT_USER_COORDS[node.id];
+          node.corners = uData.corners;
+          node.lat = uData.centroid.lat;
+          node.lng = uData.centroid.lng;
+          node.isCustomCalibrated = true;
         } else {
           node.corners = createDefaultCornersForCoord(node.defaultLat, node.defaultLng);
           node.isCustomCalibrated = false;
@@ -1679,7 +1859,8 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       });
     }
 
-    // Algoritmo Ray-Casting para saber si una coordenada GPS (lat, lng) está DENTRO del polígono de 4 esquinas
+    // Algoritmo Ray-Casting...
+    <!-- ... existing code ... -->
     function isPointInPolygon(lat, lng, corners) {
       if (!corners || corners.length < 3) return false;
       let inside = false;
