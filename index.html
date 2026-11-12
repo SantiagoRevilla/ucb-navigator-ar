@@ -183,9 +183,9 @@
           <i class="fa-solid fa-calendar-check"></i>
           <span>3. Eventos (<span id="eventsCountBadge">6</span>)</span>
         </button>
-        <button onclick="switchTab('proposal')" id="tabBtn-proposal" class="tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800/80 text-slate-300 hover:bg-slate-800">
-          <i class="fa-solid fa-sack-dollar"></i>
-          <span>4. Presupuesto & Google Sync</span>
+        <button onclick="switchTab('calibration')" id="tabBtn-calibration" class="tab-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800/80 text-slate-300 hover:bg-slate-800">
+          <i class="fa-solid fa-draw-polygon text-ucb-gold"></i>
+          <span>4. Calibrar 4 Esquinas GPS</span>
         </button>
       </div>
 
@@ -704,143 +704,278 @@
     </section>
 
     <!-- ===================================================================== -->
-    <!-- VIEW 4: PROPUESTA DE IMPLEMENTACIÓN, FLUJO GOOGLE APPS SCRIPT Y COSTO -->
+    <!-- VIEW 4: CALIBRADOR DE PRECISIÓN GPS (4 ESQUINAS POR BLOQUE UCB)       -->
     <!-- ===================================================================== -->
-    <section id="view-proposal" class="hidden flex-col gap-5">
+    <section id="view-calibration" class="hidden flex-col gap-4">
       
-      <!-- Top Summary Banner for Hackathon Judges -->
-      <div class="bg-gradient-to-r from-ucb-blue/80 via-slate-900 to-slate-900 border border-slate-700 rounded-2xl p-5 shadow-xl">
+      <!-- Top Header Banner -->
+      <div class="bg-gradient-to-r from-ucb-blue/80 via-slate-900 to-slate-900 border border-slate-700 rounded-2xl p-4 sm:p-5 shadow-xl">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-ucb-gold/20 text-ucb-gold border border-ucb-gold/40">
-              REQUISITO 4 DEL RETO FDI · SOSTENIBILIDAD Y MANTENIMIENTO
+              GEOMETRÍA DE ALTA PRECISIÓN · POLÍGONOS DE 4 VÉRTICES GPS
             </span>
-            <h2 class="font-display font-bold text-xl sm:text-2xl text-white mt-2">
-              Propuesta de Implementación, Actualización Automática y Presupuesto
+            <h2 class="font-display font-bold text-lg sm:text-2xl text-white mt-1.5 flex items-center gap-2">
+              <i class="fa-solid fa-draw-polygon text-ucb-cyan"></i>
+              <span>Calibración de las 4 Esquinas de cada Bloque UCB</span>
             </h2>
             <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl">
-              Arquitectura 100% libre de licencias costosas: sincronización automatizada desde <strong>Google Calendar → Google Apps Script → Google Sheets → Web App AR</strong>, combinada con señalética QR pasiva en los bloques de la UCB.
+              Introduce o captura en campo las coordenadas GPS de las <strong>4 esquinas (NW, NE, SE, SW)</strong> de cada bloque. El sistema recalcula automáticamente el <strong>centroide exacto</strong>, detecta si estás físicamente <strong>dentro del perímetro del edificio</strong> y orienta las flechas AR con máxima precisión.
             </p>
           </div>
-          <div class="bg-slate-950/90 border border-emerald-500/40 rounded-2xl px-4 py-3 text-center shrink-0">
-            <div class="text-[11px] text-slate-400 uppercase font-semibold">Costo de Mantenimiento</div>
-            <div class="font-display font-bold text-2xl text-emerald-400">Bs 145 <span class="text-xs font-normal text-slate-400">/ mes</span></div>
-            <div class="text-[11px] text-emerald-300 font-medium">Cumple límite &lt; Bs 500/mes (Ahorro 71%)</div>
+
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <button onclick="exportCalibratedCornersJSON()" class="px-3 py-2 rounded-xl bg-ucb-cyan/15 hover:bg-ucb-cyan/25 text-ucb-cyan border border-ucb-cyan/40 text-xs font-semibold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-download"></i>
+              <span>Exportar / Copiar JSON</span>
+            </button>
+            <button onclick="resetAllCornersToDefault()" class="px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span>Restaurar Todo</span>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Two Columns: Monthly Budget Breakdown & Initial Setup Cost -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Main Grid: Left (4 Corners Form Editor) & Right (2D Polygon Visualizer + Telemetry) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
         
-        <!-- Monthly Maintenance Budget (< Bs 500/mes) -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
-          <h3 class="font-display font-bold text-base text-white flex items-center gap-2 mb-3">
-            <i class="fa-solid fa-coins text-ucb-gold"></i>
-            <span>1. Desglose de Mantenimiento Mensual (Máximo permitido: Bs 500/mes)</span>
-          </h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs sm:text-sm">
-              <thead>
-                <tr class="border-b border-slate-800 text-slate-400">
-                  <th class="py-2">Ítem / Servicio</th>
-                  <th class="py-2">Detalle Técnico</th>
-                  <th class="py-2 text-right">Costo Mensual</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-800/70">
-                <tr>
-                  <td class="py-2.5 font-semibold text-white">Hosting Web PWA + SSL</td>
-                  <td class="py-2.5 text-slate-300">Cloudflare Pages / Firebase Hosting (Tráfico universitario ilimitado)</td>
-                  <td class="py-2.5 text-right font-mono text-emerald-400 font-bold">Bs 0</td>
-                </tr>
-                <tr>
-                  <td class="py-2.5 font-semibold text-white">Dominio Institucional / Propio</td>
-                  <td class="py-2.5 text-slate-300">Subdominio oficial <code>eventos.ucb.edu.bo</code> o dominio <code>.com</code> anual prorrateado</td>
-                  <td class="py-2.5 text-right font-mono text-white">Bs 15</td>
-                </tr>
-                <tr>
-                  <td class="py-2.5 font-semibold text-white">Motor de Mapas, Rutas y AR</td>
-                  <td class="py-2.5 text-slate-300">Grafo vectorial UCB propio + Dijkstra JS + WebRTC Camera API (Sin cobro por API Key)</td>
-                  <td class="py-2.5 text-right font-mono text-emerald-400 font-bold">Bs 0</td>
-                </tr>
-                <tr>
-                  <td class="py-2.5 font-semibold text-white">Backend de Eventos (Google Workspace)</td>
-                  <td class="py-2.5 text-slate-300">Google Calendar + Google Apps Script Trigger (Cada hora) + Google Sheets API</td>
-                  <td class="py-2.5 text-right font-mono text-emerald-400 font-bold">Bs 0</td>
-                </tr>
-                <tr>
-                  <td class="py-2.5 font-semibold text-white">Reposición de Señalética QR en Bloques</td>
-                  <td class="py-2.5 text-slate-300">Fondo mensual para reposición de 3 a 5 placas acrílicas/adhesivos QR impermeables</td>
-                  <td class="py-2.5 text-right font-mono text-white">Bs 50</td>
-                </tr>
-                <tr>
-                  <td class="py-2.5 font-semibold text-white">Administración y Actualización</td>
-                  <td class="py-2.5 text-slate-300">Becario / Centro de Estudiantes (2 hrs/semana validando eventos en Google Calendar)</td>
-                  <td class="py-2.5 text-right font-mono text-white">Bs 80</td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr class="border-t-2 border-slate-700 bg-slate-950/60">
-                  <td colspan="2" class="py-3 px-2 font-bold text-white">TOTAL MANTENIMIENTO MENSUAL</td>
-                  <td class="py-3 px-2 text-right font-mono font-bold text-lg text-ucb-gold">Bs 145 / mes</td>
-                </tr>
-              </tfoot>
-            </table>
+        <!-- Left 7 Cols: Block Selector & 4 Corners Input Cards -->
+        <div class="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col gap-4">
+          
+          <!-- Block Selector Row -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+            <div class="flex-1">
+              <label class="block text-xs font-semibold text-ucb-gold uppercase tracking-wider mb-1">
+                1. Selecciona el Bloque o Plaza a Calibrar:
+              </label>
+              <select id="calibBlockSelect" onchange="loadBlockCornersIntoForm(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-ucb-cyan">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <!-- Target Mode for AR Arrows (Centroid vs Nearest Corner) -->
+            <div class="sm:w-56">
+              <label class="block text-xs font-semibold text-slate-400 mb-1">
+                Apuntado de Flecha AR:
+              </label>
+              <select id="selectARTargetMode" onchange="changeARPolygonTargetMode(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-ucb-cyan focus:outline-none focus:border-ucb-cyan">
+                <option value="centroid">🎯 Apuntar al Centroide (Centro)</option>
+                <option value="nearest_corner">📐 Apuntar a Esquina/Muro más cercano</option>
+              </select>
+            </div>
           </div>
+
+          <!-- 4 Corners Grid (NW, NE, SE, SW) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            
+            <!-- ESQUINA 1: NOROESTE (NW) -->
+            <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-ucb-cyan flex items-center gap-1.5">
+                  <span class="w-5 h-5 rounded-md bg-ucb-cyan text-slate-950 font-mono text-[11px] font-extrabold flex items-center justify-center">E1</span>
+                  Esquina 1 · Noroeste (NW)
+                </span>
+                <button type="button" onclick="captureGPSToCornerInput(0)" class="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold transition flex items-center gap-1" title="Capturar mi coordenada GPS actual en la Esquina 1">
+                  <i class="fa-solid fa-location-crosshairs"></i> Capturar GPS
+                </button>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] text-slate-400">Latitud (E1)</label>
+                  <input id="cornerLat_0" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-slate-400">Longitud (E1)</label>
+                  <input id="cornerLng_0" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                </div>
+              </div>
+            </div>
+
+            <!-- ESQUINA 2: NORESTE (NE) -->
+            <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-ucb-gold flex items-center gap-1.5">
+                  <span class="w-5 h-5 rounded-md bg-ucb-gold text-slate-950 font-mono text-[11px] font-extrabold flex items-center justify-center">E2</span>
+                  Esquina 2 · Noreste (NE)
+                </span>
+                <button type="button" onclick="captureGPSToCornerInput(1)" class="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold transition flex items-center gap-1" title="Capturar mi coordenada GPS actual en la Esquina 2">
+                  <i class="fa-solid fa-location-crosshairs"></i> Capturar GPS
+                </button>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] text-slate-400">Latitud (E2)</label>
+                  <input id="cornerLat_1" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-slate-400">Longitud (E2)</label>
+                  <input id="cornerLng_1" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                </div>
+              </div>
+            </div>
+
+            <!-- ESQUINA 3: SURESTE (SE) -->
+            <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                  <span class="w-5 h-5 rounded-md bg-emerald-400 text-slate-950 font-mono text-[11px] font-extrabold flex items-center justify-center">E3</span>
+                  Esquina 3 · Sureste (SE)
+                </span>
+                <button type="button" onclick="captureGPSToCornerInput(2)" class="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold transition flex items-center gap-1" title="Capturar mi coordenada GPS actual en la Esquina 3">
+                  <i class="fa-solid fa-location-crosshairs"></i> Capturar GPS
+                </button>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] text-slate-400">Latitud (E3)</label>
+                  <input id="cornerLat_2" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-slate-400">Longitud (E3)</label>
+                  <input id="cornerLng_2" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                </div>
+              </div>
+            </div>
+
+            <!-- ESQUINA 4: SUROESTE (SW) -->
+            <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-purple-400 flex items-center gap-1.5">
+                  <span class="w-5 h-5 rounded-md bg-purple-400 text-slate-950 font-mono text-[11px] font-extrabold flex items-center justify-center">E4</span>
+                  Esquina 4 · Suroeste (SW)
+                </span>
+                <button type="button" onclick="captureGPSToCornerInput(3)" class="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold transition flex items-center gap-1" title="Capturar mi coordenada GPS actual en la Esquina 4">
+                  <i class="fa-solid fa-location-crosshairs"></i> Capturar GPS
+                </button>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] text-slate-400">Latitud (E4)</label>
+                  <input id="cornerLat_3" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-slate-400">Longitud (E4)</label>
+                  <input id="cornerLng_3" type="number" step="0.000001" oninput="previewPolygonFromInputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-ucb-cyan focus:outline-none" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Action Buttons: Save 4 Corners & Auto-generate Box from Center -->
+          <div class="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <button type="button" onclick="generateBoxAroundBlockCenter()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-vector-square text-ucb-cyan"></i>
+              <span>Autogenerar Rectángulo Base (±15m)</span>
+            </button>
+
+            <button type="button" onclick="saveCurrentBlockCorners()" class="px-5 py-2.5 rounded-xl bg-ucb-gold hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-lg shadow-amber-500/20">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Guardar 4 Esquinas y Recalcular Centroide</span>
+            </button>
+          </div>
+
+          <!-- JSON Export/Import Collapsible Box -->
+          <details id="jsonExportDetails" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs">
+            <summary class="cursor-pointer font-semibold text-slate-300 flex items-center justify-between">
+              <span><i class="fa-solid fa-code text-ucb-cyan mr-1.5"></i> Respaldo JSON de Polígonos Calibrados (Copiar o Importar)</span>
+              <span class="text-[11px] text-slate-500">Click para abrir</span>
+            </summary>
+            <div class="mt-2.5 space-y-2">
+              <textarea id="calibJsonTextarea" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 font-mono text-[11px] text-emerald-300 focus:outline-none" placeholder="Aquí aparecerá el JSON con las 4 esquinas de todos los bloques..."></textarea>
+              <div class="flex justify-end gap-2">
+                <button type="button" onclick="copyCalibJSONToClipboard()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold">
+                  <i class="fa-regular fa-copy mr-1"></i> Copiar JSON
+                </button>
+                <button type="button" onclick="importCalibratedCornersJSON()" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
+                  <i class="fa-solid fa-file-import mr-1"></i> Importar JSON Pegado
+                </button>
+              </div>
+            </div>
+          </details>
         </div>
 
-        <!-- Initial Implementation Budget & Administration Model -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col justify-between gap-4">
+        <!-- Right 5 Cols: 2D Polygon Geometry Visualizer + Calculated Centroid & Area -->
+        <div class="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col justify-between gap-3">
           <div>
-            <h3 class="font-display font-bold text-base text-white flex items-center gap-2 mb-3">
-              <i class="fa-solid fa-screwdriver-wrench text-ucb-cyan"></i>
-              <span>2. Inversión de Implementación Inicial (Único Pago)</span>
-            </h3>
-            <div class="space-y-2.5 text-xs sm:text-sm">
-              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
-                <div>
-                  <div class="font-semibold text-white">22 Placas QR Acrílicas UV (1 por Bloque e Ingresos)</div>
-                  <div class="text-xs text-slate-400">Permiten calibrar la ubicación exacta al instante sin depender de señal GPS en interiores</div>
-                </div>
-                <span class="font-mono font-bold text-ucb-cyan shrink-0 ml-2">Bs 330</span>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-display font-bold text-sm text-white flex items-center gap-2">
+                <i class="fa-solid fa-compass-drafting text-ucb-gold"></i>
+                <span>Vista Previa Geométrica del Polígono</span>
+              </h3>
+              <span id="calibSavedBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                4 Vértices Activos
+              </span>
+            </div>
+
+            <!-- Interactive SVG Preview of the 4-Corner Polygon -->
+            <div class="bg-[#07111F] border border-slate-800 rounded-xl p-2 flex items-center justify-center relative overflow-hidden">
+              <svg id="calibPolygonSvg" viewBox="0 0 320 240" class="w-full h-56 select-none">
+                <!-- Rendered dynamically by previewPolygonFromInputs() -->
+              </svg>
+            </div>
+
+            <!-- Calculated Metrics: Centroid, Area, Perimeter & Inside Status -->
+            <div class="mt-3 grid grid-cols-2 gap-2 text-xs font-mono">
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                <div class="text-[10px] text-slate-400 font-sans">Centroide Calculado (Lat, Lng)</div>
+                <div id="calibCentroidText" class="text-ucb-gold font-bold truncate mt-0.5">-16.522800, -68.112300</div>
               </div>
-              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
-                <div>
-                  <div class="font-semibold text-white">2 Banners / Tótems Informativos en Ingreso Principal y Atrio</div>
-                  <div class="text-xs text-slate-400">Impresión en alta resolución con el mapa general y QR de acceso directo a la Web App</div>
-                </div>
-                <span class="font-mono font-bold text-ucb-cyan shrink-0 ml-2">Bs 240</span>
-              </div>
-              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
-                <div>
-                  <div class="font-semibold text-white">Despliegue de Plataforma Web AR + Script Google Calendar</div>
-                  <div class="text-xs text-slate-400">Desarrollado en la Hackathon TECH MECH 2026 (Código abierto para la UCB)</div>
-                </div>
-                <span class="font-mono font-bold text-emerald-400 shrink-0 ml-2">Bs 0</span>
-              </div>
-              <div class="flex items-center justify-between p-3 rounded-xl bg-ucb-blue/30 border border-ucb-blue">
-                <span class="font-bold text-white">TOTAL INVERSIÓN INICIAL</span>
-                <span class="font-mono font-bold text-lg text-ucb-gold">Bs 570 (Única vez)</span>
+              <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                <div class="text-[10px] text-slate-400 font-sans">Área y Perímetro Aprox.</div>
+                <div id="calibAreaText" class="text-ucb-cyan font-bold mt-0.5">~650 m² · 102 m</div>
               </div>
             </div>
           </div>
 
-          <!-- Google Calendar Automation Workflow Explanation -->
-          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-2">
-            <div class="font-bold text-ucb-gold flex items-center gap-1.5">
-              <i class="fa-solid fa-rotate"></i>
-              <span>¿Cómo se actualizan los eventos sin programar?</span>
+          <!-- Real-Time Point-in-Polygon Check Box -->
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-1.5">
+            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+              <span>Prueba de Precisión respecto a tu ubicación actual:</span>
+              <i class="fa-solid fa-satellite text-ucb-cyan"></i>
             </div>
-            <p class="text-slate-300 leading-relaxed">
-              1. <strong>Pastoral, sociedades científicas, MECACENTRO o Kardex</strong> crean el evento en su <strong>Google Calendar</strong> poniendo el bloque en el campo Ubicación (ej. <code>Bloque A - Coliseo</code> o <code>Paraninfo</code>).<br/>
-              2. Tu código de <strong>Google Apps Script</strong> (`exportarTodosLosEventosASheet`) extrae automáticamente <em>Nombre, Ubicación y Fecha</em> a una hoja de Google Sheets.<br/>
-              3. <strong>UCB Navigator AR</strong> lee esos datos y habilita el botón <strong>"Guiarme con Cámara AR"</strong> al instante.
+            <div id="calibProximityStatus" class="font-semibold text-emerald-400">
+              Calculando distancia al polígono...
+            </div>
+            <p class="text-[11px] text-slate-400">
+              Si caminas dentro de las 4 esquinas de un bloque, el sistema detecta automáticamente que estás en su interior (0 m al borde) y actualiza tu origen al instante.
             </p>
           </div>
         </div>
 
       </div>
+
+      <!-- Summary Table of All Campus Blocks & Their 4-Corner Calibration Status -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-display font-bold text-sm sm:text-base text-white flex items-center gap-2">
+            <i class="fa-solid fa-table-list text-ucb-cyan"></i>
+            <span>Resumen de Coordenadas y Esquinas de Todos los Bloques UCB</span>
+          </h3>
+          <span class="text-xs text-slate-400">Toca cualquier fila para editar sus 4 esquinas</span>
+        </div>
+
+        <div class="overflow-x-auto max-h-72">
+          <table class="w-full text-left text-xs">
+            <thead class="sticky top-0 bg-slate-950 text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-2 px-2.5">Bloque</th>
+                <th class="py-2 px-2.5">Centroide (Lat, Lng)</th>
+                <th class="py-2 px-2.5">Esquina 1 (NW)</th>
+                <th class="py-2 px-2.5">Esquina 2 (NE)</th>
+                <th class="py-2 px-2.5">Esquina 3 (SE)</th>
+                <th class="py-2 px-2.5">Esquina 4 (SW)</th>
+                <th class="py-2 px-2.5 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="calibBlocksTableBody" class="divide-y divide-slate-800/70 font-mono text-[11px]">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </section>
 
   </main>
@@ -1457,6 +1592,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       compassHeading: 35,    // Grados 0 - 359 (0 = Norte)
       usingDeviceCompass: false,
       showAllBlockLines: true, // Muestra líneas trazadoras hacia todos los bloques visibles o solo al destino
+      arPolygonTargetMode: 'centroid', // 'centroid' | 'nearest_corner'
       arAnimFrame: null,
 
       // GPS Real
@@ -1489,7 +1625,569 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     function getNodeById(id) {
       return UCB_NODES.find(n => n.id === id) || UCB_NODES[0];
     }
-// ... existing code ... -->
+
+    // =========================================================================
+    // 4.1 GEOMETRÍA DE 4 ESQUINAS POR BLOQUE (POLÍGONOS GPS, CENTROIDE Y RAY-CASTING)
+    // =========================================================================
+    const STORAGE_KEY_CORNERS = 'ucb_navigator_calibrated_corners_v1';
+
+    // Genera un rectángulo predeterminado de 4 esquinas (NW, NE, SE, SW) alrededor del centro de cada bloque (~14m de semilado)
+    function createDefaultCornersForCoord(lat, lng, deltaLat = 0.00012, deltaLng = 0.00014) {
+      return [
+        { lat: Number((lat + deltaLat).toFixed(6)), lng: Number((lng - deltaLng).toFixed(6)) }, // E1: Noroeste (NW)
+        { lat: Number((lat + deltaLat).toFixed(6)), lng: Number((lng + deltaLng).toFixed(6)) }, // E2: Noreste (NE)
+        { lat: Number((lat - deltaLat).toFixed(6)), lng: Number((lng + deltaLng).toFixed(6)) }, // E3: Sureste (SE)
+        { lat: Number((lat - deltaLat).toFixed(6)), lng: Number((lng - deltaLng).toFixed(6)) }  // E4: Suroeste (SW)
+      ];
+    }
+
+    // Calcula el centroide geométrico exacto a partir del arreglo de 4 esquinas
+    function computeCentroidFromCorners(corners) {
+      if (!corners || corners.length === 0) return { lat: -16.5230, lng: -68.1120 };
+      const sum = corners.reduce((acc, c) => ({ lat: acc.lat + Number(c.lat), lng: acc.lng + Number(c.lng) }), { lat: 0, lng: 0 });
+      return {
+        lat: Number((sum.lat / corners.length).toFixed(6)),
+        lng: Number((sum.lng / corners.length).toFixed(6))
+      };
+    }
+
+    // Inicializa las 4 esquinas en todos los bloques y carga calibraciones guardadas en localStorage
+    function initBlockCornersData() {
+      let savedMap = {};
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_CORNERS);
+        if (raw) savedMap = JSON.parse(raw);
+      } catch (e) {
+        savedMap = {};
+      }
+
+      UCB_NODES.forEach(node => {
+        if (!node.defaultLat) {
+          node.defaultLat = node.lat;
+          node.defaultLng = node.lng;
+        }
+        if (savedMap[node.id] && Array.isArray(savedMap[node.id]) && savedMap[node.id].length === 4) {
+          node.corners = savedMap[node.id];
+          node.isCustomCalibrated = true;
+          const c = computeCentroidFromCorners(node.corners);
+          node.lat = c.lat;
+          node.lng = c.lng;
+        } else {
+          node.corners = createDefaultCornersForCoord(node.defaultLat, node.defaultLng);
+          node.isCustomCalibrated = false;
+        }
+      });
+    }
+
+    // Algoritmo Ray-Casting para saber si una coordenada GPS (lat, lng) está DENTRO del polígono de 4 esquinas
+    function isPointInPolygon(lat, lng, corners) {
+      if (!corners || corners.length < 3) return false;
+      let inside = false;
+      for (let i = 0, j = corners.length - 1; i < corners.length; j = i++) {
+        const xi = corners[i].lat, yi = corners[i].lng;
+        const xj = corners[j].lat, yj = corners[j].lng;
+        const intersect = ((yi > lng) !== (yj > lng)) &&
+          (lat < (xj - xi) * (lng - yi) / ((yj - yi) || 1e-12) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    // Devuelve la esquina o punto del perímetro más cercano del bloque al usuario y su distancia en metros
+    function getNearestBoundaryPointOfNode(lat, lng, node) {
+      if (!node.corners || node.corners.length === 0) {
+        return {
+          lat: node.lat,
+          lng: node.lng,
+          distanceMeters: calculateHaversineMeters(lat, lng, node.lat, node.lng),
+          inside: false,
+          cornerIndex: -1
+        };
+      }
+
+      const inside = isPointInPolygon(lat, lng, node.corners);
+      let bestPoint = { lat: node.corners[0].lat, lng: node.corners[0].lng };
+      let minDist = Infinity;
+      let nearestCornerIdx = 0;
+
+      // Evaluar las 4 esquinas y puntos intermedios de los 4 muros del bloque
+      for (let i = 0; i < node.corners.length; i++) {
+        const c1 = node.corners[i];
+        const c2 = node.corners[(i + 1) % node.corners.length];
+
+        // Muestreo en el segmento entre la esquina i y la esquina i+1
+        for (let step = 0; step <= 4; step++) {
+          const t = step / 4;
+          const pLat = c1.lat + (c2.lat - c1.lat) * t;
+          const pLng = c1.lng + (c2.lng - c1.lng) * t;
+          const d = calculateHaversineMeters(lat, lng, pLat, pLng);
+          if (d < minDist) {
+            minDist = d;
+            bestPoint = { lat: pLat, lng: pLng };
+            if (step === 0) nearestCornerIdx = i;
+          }
+        }
+      }
+
+      return {
+        lat: bestPoint.lat,
+        lng: bestPoint.lng,
+        distanceMeters: inside ? 0 : minDist,
+        inside,
+        cornerIndex: nearestCornerIdx
+      };
+    }
+
+    // Calcula el área aproximada en m² y el perímetro en m del polígono de 4 esquinas
+    function computePolygonAreaAndPerimeter(corners) {
+      if (!corners || corners.length < 4) return { areaSqM: 0, perimeterM: 0, sideLengths: [0, 0, 0, 0] };
+      const sideLengths = [];
+      let perimeterM = 0;
+      for (let i = 0; i < 4; i++) {
+        const c1 = corners[i];
+        const c2 = corners[(i + 1) % 4];
+        const d = calculateHaversineMeters(c1.lat, c1.lng, c2.lat, c2.lng);
+        sideLengths.push(d);
+        perimeterM += d;
+      }
+
+      // Proyección plana local en metros usando como referencia la esquina 0
+      const refLat = corners[0].lat;
+      const refLng = corners[0].lng;
+      const metersPerDegLat = 111320;
+      const metersPerDegLng = 111320 * Math.cos((refLat * Math.PI) / 180);
+
+      const pts = corners.map(c => ({
+        x: (c.lng - refLng) * metersPerDegLng,
+        y: (c.lat - refLat) * metersPerDegLat
+      }));
+
+      // Fórmula de Shoelace (Gauss) para área de polígono
+      let area2 = 0;
+      for (let i = 0; i < pts.length; i++) {
+        const j = (i + 1) % pts.length;
+        area2 += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
+      }
+      const areaSqM = Math.round(Math.abs(area2) / 2);
+
+      return { areaSqM, perimeterM, sideLengths };
+    }
+
+    // =========================================================================
+    // 5. ALGORITMO DE DIJKSTRA PARA RUTA MÁS CORTA EN EL CAMPUS UCB
+    // =========================================================================
+    function computeShortestPathDijkstra(startId, endId, avoidStairs = false) {
+      const distances = {};
+      const previous = {};
+      const edgeUsed = {};
+      const unvisited = new Set();
+
+      UCB_NODES.forEach(node => {
+        distances[node.id] = Infinity;
+        previous[node.id] = null;
+        unvisited.add(node.id);
+      });
+      distances[startId] = 0;
+
+      while (unvisited.size > 0) {
+        let currentId = null;
+        let smallestDist = Infinity;
+        unvisited.forEach(id => {
+          if (distances[id] < smallestDist) {
+            smallestDist = distances[id];
+            currentId = id;
+          }
+        });
+
+        if (currentId === null || currentId === endId) break;
+        unvisited.delete(currentId);
+
+        UCB_EDGES.forEach(edge => {
+          let neighborId = null;
+          if (edge.from === currentId) neighborId = edge.to;
+          else if (edge.to === currentId) neighborId = edge.from;
+
+          if (neighborId && unvisited.has(neighborId)) {
+            const penalty = (avoidStairs && edge.hasStairs) ? 500 : 0;
+            const candidateDist = distances[currentId] + edge.dist + penalty;
+
+            if (candidateDist < distances[neighborId]) {
+              distances[neighborId] = candidateDist;
+              previous[neighborId] = currentId;
+              edgeUsed[neighborId] = edge;
+            }
+          }
+        });
+      }
+
+      const pathIds = [];
+      let curr = endId;
+      while (curr) {
+        pathIds.unshift(curr);
+        curr = previous[curr];
+      }
+
+      if (pathIds[0] !== startId) {
+        pathIds.unshift(startId);
+      }
+
+      let realTotalMeters = 0;
+      const steps = [];
+      for (let i = 0; i < pathIds.length - 1; i++) {
+        const fromNode = getNodeById(pathIds[i]);
+        const toNode = getNodeById(pathIds[i + 1]);
+        const edge = edgeUsed[toNode.id] || { dist: 45, hasStairs: false, note: `Camina hacia ${toNode.shortName}` };
+        realTotalMeters += edge.dist;
+
+        steps.push({
+          stepNumber: i + 1,
+          fromNode,
+          toNode,
+          distance: edge.dist,
+          hasStairs: edge.hasStairs,
+          instruction: edge.note
+        });
+      }
+
+      return {
+        pathIds,
+        pathNodes: pathIds.map(id => getNodeById(id)),
+        totalDistance: realTotalMeters,
+        estimatedSeconds: Math.max(15, Math.round(realTotalMeters / 1.25)),
+        steps
+      };
+    }
+
+    // =========================================================================
+    // 6. CÁLCULOS GEODÉSICOS (RUMBO / AZIMUT Y DISTANCIA GPS)
+    // =========================================================================
+    function calculateBearing(lat1, lng1, lat2, lng2) {
+      const toRad = deg => (deg * Math.PI) / 180;
+      const toDeg = rad => (rad * 180) / Math.PI;
+      const dLng = toRad(lng2 - lng1);
+      const y = Math.sin(dLng) * Math.cos(toRad(lat2));
+      const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+                Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
+      const brng = toDeg(Math.atan2(y, x));
+      return (brng + 360) % 360;
+    }
+
+    function calculateHaversineMeters(lat1, lng1, lat2, lng2) {
+      const R = 6371000;
+      const toRad = deg => (deg * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+      return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    }
+
+    function formatTimeFromSeconds(sec) {
+      if (sec < 60) return `${sec} seg`;
+      const mins = Math.floor(sec / 60);
+      const rem = sec % 60;
+      return rem > 0 ? `~${mins} min ${rem} s` : `~${mins} min`;
+    }
+
+    function getCardinalLabel(deg) {
+      const dirs = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
+      return dirs[Math.round(deg / 45) % 8];
+    }
+
+    // Devuelve la coordenada objetivo de un bloque según el modo seleccionado (Centroide vs Esquina más cercana)
+    function getTargetCoordForNode(node) {
+      if (state.arPolygonTargetMode === 'nearest_corner' && node.corners && node.corners.length === 4) {
+        const nearest = getNearestBoundaryPointOfNode(state.userLat, state.userLng, node);
+        return { lat: nearest.lat, lng: nearest.lng, distM: nearest.distanceMeters, inside: nearest.inside };
+      }
+      const boundary = getNearestBoundaryPointOfNode(state.userLat, state.userLng, node);
+      const distCenter = calculateHaversineMeters(state.userLat, state.userLng, node.lat, node.lng);
+      return {
+        lat: node.lat,
+        lng: node.lng,
+        distM: boundary.inside ? 0 : distCenter,
+        inside: boundary.inside
+      };
+    }
+
+    // =========================================================================
+    // 7. ACTUALIZACIÓN INTEGRAL DE LA RUTA Y VISTAS (AR + MAPA)
+    // =========================================================================
+    function recalculateAndRenderRoute() {
+      state.activeRoute = computeShortestPathDijkstra(
+        state.originId,
+        state.destinationId,
+        state.accessibleMode
+      );
+      state.currentStepIndex = 0;
+
+      const originNode = getNodeById(state.originId);
+      const destNode = getNodeById(state.destinationId);
+
+      if (!state.gpsActive) {
+        state.userLat = originNode.lat;
+        state.userLng = originNode.lng;
+      }
+
+      document.getElementById('selectOrigin').value = state.originId;
+      document.getElementById('selectDestination').value = state.destinationId;
+
+      document.getElementById('headerOriginLabel').textContent = originNode.shortName;
+      document.getElementById('headerDestLabel').textContent = destNode.shortName;
+      document.getElementById('headerDistBadge').textContent = `${state.activeRoute.totalDistance} m`;
+
+      const activeEvent = UCB_EVENTS.find(e => e.id === state.selectedEventId && e.nodeId === state.destinationId);
+      const eventBanner = document.getElementById('arEventBanner');
+      if (activeEvent) {
+        eventBanner.classList.remove('hidden');
+        document.getElementById('arEventTitle').textContent = `Evento: ${activeEvent.title}`;
+        document.getElementById('arFloorBadge').textContent = activeEvent.floor;
+        document.getElementById('destDetailFloor').textContent = `Ubicación del evento: ${activeEvent.floor}`;
+      } else {
+        eventBanner.classList.remove('hidden');
+        document.getElementById('arEventTitle').textContent = `Destino UCB: ${destNode.name}`;
+        document.getElementById('arFloorBadge').textContent = destNode.code;
+        document.getElementById('destDetailFloor').textContent = destNode.floorInfo;
+      }
+
+      document.getElementById('destDetailName').textContent = destNode.name;
+      document.getElementById('destDetailDeps').textContent = destNode.dependencies.join(' · ');
+
+      updateARStepHUD();
+      renderStepListsUI();
+      renderCampusMapSVG();
+      updateInspectorCard(state.destinationId);
+      if (document.getElementById('calibBlockSelect')) {
+        previewPolygonFromInputs();
+      }
+    }
+
+    function updateARStepHUD() {
+      const route = state.activeRoute;
+      if (!route) return;
+
+      const destNode = getNodeById(state.destinationId);
+      const steps = route.steps;
+
+      if (steps.length === 0 || state.originId === state.destinationId) {
+        document.getElementById('arStepCounter').textContent = "¡Llegaste!";
+        document.getElementById('arNextStepTitle').textContent = `Estás en ${destNode.shortName}`;
+        document.getElementById('arNextStepDesc').textContent = destNode.floorInfo;
+        document.getElementById('arRemainingDist').textContent = "0 m";
+        document.getElementById('arRemainingTime').textContent = "0 seg";
+        return;
+      }
+
+      const idx = Math.min(state.currentStepIndex, steps.length - 1);
+      const currentStep = steps[idx];
+
+      let remainingMeters = 0;
+      for (let i = idx; i < steps.length; i++) {
+        remainingMeters += steps[i].distance;
+      }
+      const remainingSec = Math.max(10, Math.round(remainingMeters / 1.25));
+
+      document.getElementById('arStepCounter').textContent = `Paso ${idx + 1} de ${steps.length}`;
+      document.getElementById('arNextStepTitle').textContent = `Hacia ${currentStep.toNode.shortName} (${currentStep.distance} m)`;
+      document.getElementById('arNextStepDesc').textContent = currentStep.instruction;
+      document.getElementById('arRemainingDist').textContent = `${remainingMeters} m`;
+      document.getElementById('arRemainingTime').textContent = formatTimeFromSeconds(remainingSec);
+
+      document.getElementById('mapTotalDist').textContent = `${route.totalDistance} m`;
+      document.getElementById('mapTotalTime').textContent = formatTimeFromSeconds(route.estimatedSeconds);
+      document.getElementById('mapTotalNodes').textContent = `${route.pathNodes.length} puntos`;
+    }
+
+    function advanceOneStepOnRoute() {
+      const route = state.activeRoute;
+      if (!route || route.steps.length === 0) return;
+
+      if (state.currentStepIndex < route.steps.length - 1) {
+        state.currentStepIndex++;
+        const newCurrentNode = route.steps[state.currentStepIndex].fromNode;
+        state.userLat = newCurrentNode.lat;
+        state.userLng = newCurrentNode.lng;
+        updateARStepHUD();
+        renderStepListsUI();
+        renderCampusMapSVG();
+        showToast(`Avanzaste a ${newCurrentNode.shortName}. Sigue la flecha AR.`);
+      } else {
+        state.originId = state.destinationId;
+        recalculateAndRenderRoute();
+        showToast(`🎉 ¡Has llegado a tu destino: ${getNodeById(state.destinationId).name}!`);
+      }
+    }
+
+    function renderStepListsUI() {
+      const arContainer = document.getElementById('arStepsList');
+      const mapContainer = document.getElementById('mapStepsList');
+      const steps = state.activeRoute ? state.activeRoute.steps : [];
+
+      if (steps.length === 0) {
+        const emptyHtml = `
+          <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-base"></i>
+            <span>Ya te encuentras dentro del perímetro del bloque destino seleccionado.</span>
+          </div>`;
+        arContainer.innerHTML = emptyHtml;
+        mapContainer.innerHTML = emptyHtml;
+        return;
+      }
+
+      const html = steps.map((st, idx) => {
+        const isCurrent = idx === state.currentStepIndex;
+        const isPassed = idx < state.currentStepIndex;
+        return `
+          <div class="p-2.5 rounded-xl border transition flex items-start justify-between gap-2 ${
+            isCurrent
+              ? 'bg-ucb-cyan/15 border-ucb-cyan text-white'
+              : isPassed
+              ? 'bg-slate-950/40 border-slate-800/60 text-slate-500 line-through'
+              : 'bg-slate-950/80 border-slate-800 text-slate-300'
+          }">
+            <div class="flex items-start gap-2.5">
+              <span class="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5 ${
+                isCurrent ? 'bg-ucb-cyan text-slate-950' : 'bg-slate-800 text-slate-300'
+              }">
+                ${st.stepNumber}
+              </span>
+              <div>
+                <div class="text-xs font-bold ${isCurrent ? 'text-ucb-cyan' : 'text-white'}">
+                  ${st.fromNode.shortName} <i class="fa-solid fa-arrow-right text-[10px] mx-1 text-slate-400"></i> ${st.toNode.shortName}
+                </div>
+                <div class="text-[11px] text-slate-400 mt-0.5">${st.instruction}</div>
+              </div>
+            </div>
+            <span class="font-mono text-xs font-semibold text-ucb-gold shrink-0">${st.distance} m</span>
+          </div>
+        `;
+      }).join('');
+
+      arContainer.innerHTML = html;
+      mapContainer.innerHTML = html;
+    }
+
+    // =========================================================================
+    // 8. MOTOR DE REALIDAD AUMENTADA (CÁMARA + FLECHA 3D EN CANVAS + RADAR)
+    // =========================================================================
+    async function toggleCameraFeed() {
+      const video = document.getElementById('arVideo');
+      const simScene = document.getElementById('arSimulatedScene');
+      const btnText = document.getElementById('btnCameraText');
+      const btn = document.getElementById('btnCameraToggle');
+
+      if (state.cameraActive) {
+        if (state.mediaStream) {
+          state.mediaStream.getTracks().forEach(t => t.stop());
+          state.mediaStream = null;
+        }
+        video.classList.add('hidden');
+        simScene.classList.remove('hidden');
+        state.cameraActive = false;
+        btnText.textContent = "Encender Cámara AR";
+        btn.className = "px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition bg-emerald-500 hover:bg-emerald-400 text-slate-950";
+        showToast("Cámara apagada. Mostrando entorno AR simulado del campus.");
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+          audio: false
+        });
+        state.mediaStream = stream;
+        video.srcObject = stream;
+        video.classList.remove('hidden');
+        simScene.classList.add('hidden');
+        state.cameraActive = true;
+        btnText.textContent = "Apagar Cámara AR";
+        btn.className = "px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-lg transition bg-rose-500 hover:bg-rose-400 text-white";
+        showToast("📷 Cámara trasera activa con superposición de ruta AR.");
+      } catch (err) {
+        state.cameraActive = false;
+        video.classList.add('hidden');
+        simScene.classList.remove('hidden');
+        showToast("Sin cámara física o permiso denegado: Modo Simulador AR 3D activo.");
+      }
+    }
+
+    async function requestDeviceOrientationPermission() {
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          const response = await DeviceOrientationEvent.requestPermission();
+          if (response === 'granted') {
+            window.addEventListener('deviceorientation', handleDeviceOrientationEvent, true);
+            state.usingDeviceCompass = true;
+            showToast("Brújula del dispositivo conectada.");
+          } else {
+            showToast("Permiso de giroscopio denegado. Usa el control deslizante inferior.");
+          }
+        } catch (e) {
+          showToast("Usa el control deslizante para rotar la vista AR.");
+        }
+      } else if ('ondeviceorientationabsolute' in window) {
+        window.addEventListener('deviceorientationabsolute', handleDeviceOrientationEvent, true);
+        state.usingDeviceCompass = true;
+        showToast("Sensor de orientación activo.");
+      } else if ('ondeviceorientation' in window) {
+        window.addEventListener('deviceorientation', handleDeviceOrientationEvent, true);
+        state.usingDeviceCompass = true;
+        showToast("Sensor de orientación activo.");
+      } else {
+        showToast("Dispositivo sin brújula física: gira con el control deslizante.");
+      }
+    }
+
+    function handleDeviceOrientationEvent(event) {
+      let heading = null;
+      if (typeof event.webkitCompassHeading === 'number') {
+        heading = event.webkitCompassHeading;
+      } else if (typeof event.alpha === 'number') {
+        heading = (360 - event.alpha) % 360;
+      }
+      if (heading !== null && !isNaN(heading)) {
+        state.compassHeading = Math.round(heading);
+        document.getElementById('compassSlider').value = state.compassHeading;
+      }
+    }
+
+    function handleManualCompassChange(val) {
+      state.compassHeading = Number(val);
+    }
+
+    function startARCanvasRenderLoop() {
+      const canvas = document.getElementById('arHudCanvas');
+      const ctx = canvas.getContext('2d');
+
+      function renderFrame(timestamp) {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        if (canvas.width !== rect.width || canvas.height !== rect.height) {
+          canvas.width = rect.width;
+          canvas.height = rect.height;
+        }
+
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const route = state.activeRoute;
+        const destNode = getNodeById(state.destinationId);
+        let targetNode = destNode;
+
+        if (route && route.steps.length > 0) {
+          const stepIdx = Math.min(state.currentStepIndex, route.steps.length - 1);
+          targetNode = route.steps[stepIdx].toNode;
+        }
+
+        // Coordenada precisa del bloque objetivo usando el polígono de 4 esquinas (Centroide o Esquina más cercana)
+        const targetAim = getTargetCoordForNode(targetNode);
+        const targetBearing = Math.round(
+          calculateBearing(state.userLat, state.userLng, targetAim.lat, targetAim.lng)
+        );
+
+        let relAngleDeg = ((targetBearing - state.compassHeading + 540) % 360) - 180;
+        const relAngleRad = (relAngleDeg * Math.PI) / 180;
+
         // Actualizar etiquetas de rumbo en el HUD
         document.getElementById('hudHeadingText').textContent =
           `${String(state.compassHeading).padStart(3, '0')}° ${getCardinalLabel(state.compassHeading)}`;
@@ -2108,7 +2806,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     }
 
     // =========================================================================
-    // 10. INTEGRACIÓN GPS REAL EN EL CAMPUS + DETECCIÓN DEL BLOQUE MÁS CERCANO
+    // 10. INTEGRACIÓN GPS REAL EN EL CAMPUS + DETECCIÓN POR 4 ESQUINAS (POLÍGONO)
     // =========================================================================
     function toggleRealGPS() {
       const gpsDot = document.getElementById('gpsDot');
@@ -2149,46 +2847,60 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           const accuracy = pos.coords.accuracy || 10;
 
           // Actualizar telemetría visual
-          document.getElementById('teleLat').textContent = state.userLat.toFixed(5);
-          document.getElementById('teleLng').textContent = state.userLng.toFixed(5);
+          document.getElementById('teleLat').textContent = state.userLat.toFixed(6);
+          document.getElementById('teleLng').textContent = state.userLng.toFixed(6);
           document.getElementById('teleAcc').textContent = `±${accuracy.toFixed(1)} m`;
 
-          // Encontrar el bloque o nodo UCB más cercano a las coordenadas GPS actuales
+          // 1. Primero verificamos si las coordenadas GPS caen DENTRO del polígono de 4 esquinas de algún bloque
+          let insideNode = null;
           let nearestNode = UCB_NODES[0];
-          let minMeters = Infinity;
+          let minBoundaryMeters = Infinity;
+
           UCB_NODES.forEach(node => {
-            const d = calculateHaversineMeters(state.userLat, state.userLng, node.lat, node.lng);
-            if (d < minMeters) {
-              minMeters = d;
+            const boundInfo = getNearestBoundaryPointOfNode(state.userLat, state.userLng, node);
+            if (boundInfo.inside) {
+              insideNode = node;
+              minBoundaryMeters = 0;
+              nearestNode = node;
+            } else if (!insideNode && boundInfo.distanceMeters < minBoundaryMeters) {
+              minBoundaryMeters = boundInfo.distanceMeters;
               nearestNode = node;
             }
           });
 
-          document.getElementById('teleNearest').textContent = nearestNode.shortName;
+          document.getElementById('teleNearest').textContent = insideNode
+            ? `✅ En ${insideNode.shortName}`
+            : `${nearestNode.shortName} (${minBoundaryMeters}m)`;
 
-          // Validar si está dentro del radio del campus de Obrajes (ej. < 400 metros del centro del campus)
           const campusCenterLat = -16.52330;
           const campusCenterLng = -68.11180;
           const distToCampus = calculateHaversineMeters(state.userLat, state.userLng, campusCenterLat, campusCenterLng);
 
-          if (distToCampus <= 450) {
+          if (insideNode) {
+            gpsDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping";
+            gpsText.textContent = `GPS: Dentro de ${insideNode.shortName}`;
+            badgeState.textContent = "Dentro de Bloque (4 Esq.)";
+            badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold";
+            teleStatus.textContent = `Estado: ✅ Ubicado exactamente dentro de las 4 esquinas de ${insideNode.name}.`;
+          } else if (distToCampus <= 450) {
             gpsDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
-            gpsText.textContent = `GPS: Conectado (${nearestNode.shortName})`;
+            gpsText.textContent = `GPS: ${nearestNode.shortName} (${minBoundaryMeters}m)`;
             badgeState.textContent = "GPS Campus OK";
             badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold";
-            teleStatus.textContent = `Estado: GPS Activo dentro del campus UCB (${Math.round(distToCampus)}m del centro). Sincronizado.`;
+            teleStatus.textContent = `Estado: GPS Activo. A ${minBoundaryMeters}m de la esquina más cercana de ${nearestNode.shortName}.`;
           } else {
             gpsDot.className = "w-2.5 h-2.5 rounded-full bg-orange-400 animate-pulse";
             gpsText.textContent = `GPS: Fuera de rango (${Math.round(distToCampus)}m)`;
             badgeState.textContent = "Fuera de Rango";
             badgeState.className = "text-[10px] px-2 py-0.5 rounded-md bg-orange-500/20 text-orange-300 border border-orange-500/30 font-semibold";
-            teleStatus.textContent = `Estado: Estás a ${Math.round(distToCampus)}m de la UCB Obrajes. Usando aproximación al nodo más cercano (${nearestNode.shortName}).`;
+            teleStatus.textContent = `Estado: Estás a ${Math.round(distToCampus)}m de la UCB Obrajes. Bloque más cercano: ${nearestNode.shortName}.`;
           }
 
-          // Actualizar automáticamente el origen si difiere
-          if (state.originId !== nearestNode.id && accuracy < 60) {
+          if (state.originId !== nearestNode.id && accuracy < 65) {
             state.originId = nearestNode.id;
             recalculateAndRenderRoute();
+          } else {
+            previewPolygonFromInputs();
           }
         },
         err => {
@@ -2200,8 +2912,347 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
           teleStatus.textContent = `Estado: Error GPS (${err.message}). Usando Modo Simulación.`;
           showToast("No se pudo obtener señal GPS. Usando ubicación simulada.");
         },
-        { enableHighAccuracy: true, maximumAge: 3000, timeout: 12000 }
+        { enableHighAccuracy: true, maximumAge: 2000, timeout: 12000 }
       );
+    }
+
+    // =========================================================================
+    // 10.1 FUNCIONES DE LA PESTAÑA 4: CALIBRADOR DE 4 ESQUINAS POR BLOQUE
+    // =========================================================================
+    function loadBlockCornersIntoForm(nodeId) {
+      const node = getNodeById(nodeId);
+      const sel = document.getElementById('calibBlockSelect');
+      if (sel && sel.value !== node.id) sel.value = node.id;
+
+      if (!node.corners || node.corners.length < 4) {
+        node.corners = createDefaultCornersForCoord(node.lat, node.lng);
+      }
+
+      for (let i = 0; i < 4; i++) {
+        document.getElementById(`cornerLat_${i}`).value = Number(node.corners[i].lat).toFixed(6);
+        document.getElementById(`cornerLng_${i}`).value = Number(node.corners[i].lng).toFixed(6);
+      }
+
+      const badge = document.getElementById('calibSavedBadge');
+      if (badge) {
+        if (node.isCustomCalibrated) {
+          badge.textContent = "✅ Calibrado Personalizado";
+          badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+        } else {
+          badge.textContent = "Valores Base (Por defecto)";
+          badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700";
+        }
+      }
+
+      previewPolygonFromInputs();
+    }
+
+    function getCornersFromCurrentInputs() {
+      const corners = [];
+      for (let i = 0; i < 4; i++) {
+        const lat = parseFloat(document.getElementById(`cornerLat_${i}`).value);
+        const lng = parseFloat(document.getElementById(`cornerLng_${i}`).value);
+        if (isNaN(lat) || isNaN(lng)) return null;
+        corners.push({ lat: Number(lat.toFixed(6)), lng: Number(lng.toFixed(6)) });
+      }
+      return corners;
+    }
+
+    // Dibuja en vivo el polígono de 4 esquinas en el SVG de previsualización junto con sus lados en metros y el centroide
+    function previewPolygonFromInputs() {
+      const svg = document.getElementById('calibPolygonSvg');
+      if (!svg) return;
+
+      const corners = getCornersFromCurrentInputs();
+      if (!corners) return;
+
+      const centroid = computeCentroidFromCorners(corners);
+      const metrics = computePolygonAreaAndPerimeter(corners);
+
+      document.getElementById('calibCentroidText').textContent = `${centroid.lat.toFixed(6)}, ${centroid.lng.toFixed(6)}`;
+      document.getElementById('calibAreaText').textContent = `~${metrics.areaSqM} m² · Perímetro ${metrics.perimeterM} m`;
+
+      // Estado de proximidad del usuario respecto a este polígono
+      const tempNode = { corners, lat: centroid.lat, lng: centroid.lng };
+      const prox = getNearestBoundaryPointOfNode(state.userLat, state.userLng, tempNode);
+      const proxEl = document.getElementById('calibProximityStatus');
+      if (prox.inside) {
+        proxEl.className = "font-bold text-emerald-400";
+        proxEl.textContent = "✅ Tu coordenada actual está DENTRO de las 4 esquinas de este bloque (0 m).";
+      } else {
+        const cornerLabels = ["E1 (NW)", "E2 (NE)", "E3 (SE)", "E4 (SW)"];
+        proxEl.className = "font-semibold text-ucb-cyan";
+        proxEl.textContent = `📏 Estás a ${prox.distanceMeters} m del borde más cercano (${cornerLabels[prox.cornerIndex] || 'Muro'}).`;
+      }
+
+      // Escalar las 4 coordenadas para encajarlas en el SVG (320 x 240)
+      const lats = corners.map(c => c.lat);
+      const lngs = corners.map(c => c.lng);
+      const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+      const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+
+      const spanLat = Math.max(maxLat - minLat, 0.00004);
+      const spanLng = Math.max(maxLng - minLng, 0.00004);
+      const padX = 48, padY = 36;
+      const drawW = 320 - padX * 2;
+      const drawH = 240 - padY * 2;
+
+      const toSvgPt = (lat, lng) => ({
+        x: padX + ((lng - minLng) / spanLng) * drawW,
+        y: padY + ((maxLat - lat) / spanLat) * drawH
+      });
+
+      const svgPts = corners.map(c => toSvgPt(c.lat, c.lng));
+      const cPt = toSvgPt(centroid.lat, centroid.lng);
+      const polyPointsAttr = svgPts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+      const cornerColors = ['#00E5FF', '#F2A900', '#10B981', '#C084FC'];
+      const cornerNames = ['E1 NW', 'E2 NE', 'E3 SE', 'E4 SW'];
+
+      // Etiquetas de longitud de cada pared en metros
+      const sideLabelsHtml = svgPts.map((p1, i) => {
+        const p2 = svgPts[(i + 1) % 4];
+        const mx = (p1.x + p2.x) / 2;
+        const my = (p1.y + p2.y) / 2;
+        return `
+          <rect x="${mx - 16}" y="${my - 8}" width="32" height="15" rx="4" fill="#071324" stroke="#334155" stroke-width="1" opacity="0.92" />
+          <text x="${mx}" y="${my + 3}" font-size="9.5" fill="#CBD5E1" text-anchor="middle" font-family="monospace">${metrics.sideLengths[i]}m</text>
+        `;
+      }).join('');
+
+      // Líneas desde las 4 esquinas al centroide
+      const raysToCentroidHtml = svgPts.map(p => `
+        <line x1="${p.x}" y1="${p.y}" x2="${cPt.x}" y2="${cPt.y}" stroke="rgba(242, 169, 0, 0.35)" stroke-width="1.2" stroke-dasharray="3,3" />
+      `).join('');
+
+      // Vértices E1, E2, E3, E4
+      const verticesHtml = svgPts.map((p, i) => `
+        <g>
+          <circle cx="${p.x}" cy="${p.y}" r="6.5" fill="${cornerColors[i]}" stroke="#071324" stroke-width="2" />
+          <text x="${p.x}" y="${p.y < 120 ? p.y - 11 : p.y + 18}" font-size="10" font-weight="bold" fill="${cornerColors[i]}" text-anchor="middle" font-family="monospace">
+            ${cornerNames[i]}
+          </text>
+        </g>
+      `).join('');
+
+      svg.innerHTML = `
+        <defs>
+          <pattern id="calibGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(148, 163, 184, 0.08)" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect width="320" height="240" fill="url(#calibGrid)" />
+        <polygon points="${polyPointsAttr}" fill="rgba(0, 229, 255, 0.16)" stroke="#00E5FF" stroke-width="2.5" stroke-linejoin="round" />
+        ${raysToCentroidHtml}
+        ${sideLabelsHtml}
+        ${verticesHtml}
+        <g>
+          <circle cx="${cPt.x}" cy="${cPt.y}" r="5.5" fill="#F2A900" stroke="#FFFFFF" stroke-width="2" />
+          <text x="${cPt.x}" y="${cPt.y - 10}" font-size="9.5" font-weight="bold" fill="#F2A900" text-anchor="middle">CENTROIDE</text>
+        </g>
+      `;
+    }
+
+    // Captura la coordenada GPS actual del teléfono directamente en la esquina seleccionada (0=E1, 1=E2, 2=E3, 3=E4)
+    function captureGPSToCornerInput(cornerIdx) {
+      const cornerLabels = ["Esquina 1 (NW)", "Esquina 2 (NE)", "Esquina 3 (SE)", "Esquina 4 (SW)"];
+      if ('geolocation' in navigator) {
+        showToast(`📡 Capturando señal GPS para ${cornerLabels[cornerIdx]}...`);
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            document.getElementById(`cornerLat_${cornerIdx}`).value = lat.toFixed(6);
+            document.getElementById(`cornerLng_${cornerIdx}`).value = lng.toFixed(6);
+            state.userLat = lat;
+            state.userLng = lng;
+            previewPolygonFromInputs();
+            showToast(`✅ ${cornerLabels[cornerIdx]} capturada con GPS (±${Math.round(pos.coords.accuracy)}m)`);
+          },
+          () => {
+            // Si el navegador bloquea el GPS (ej. vista previa sin HTTPS), usa la coordenada activa en state
+            document.getElementById(`cornerLat_${cornerIdx}`).value = state.userLat.toFixed(6);
+            document.getElementById(`cornerLng_${cornerIdx}`).value = state.userLng.toFixed(6);
+            previewPolygonFromInputs();
+            showToast(`📍 Coordenada actual asignada a ${cornerLabels[cornerIdx]}.`);
+          },
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        );
+      } else {
+        document.getElementById(`cornerLat_${cornerIdx}`).value = state.userLat.toFixed(6);
+        document.getElementById(`cornerLng_${cornerIdx}`).value = state.userLng.toFixed(6);
+        previewPolygonFromInputs();
+        showToast(`📍 Coordenada actual asignada a ${cornerLabels[cornerIdx]}.`);
+      }
+    }
+
+    // Autogenera un rectángulo de 4 esquinas alrededor del centro actual del bloque
+    function generateBoxAroundBlockCenter() {
+      const nodeId = document.getElementById('calibBlockSelect').value;
+      const node = getNodeById(nodeId);
+      const box = createDefaultCornersForCoord(node.lat, node.lng, 0.00013, 0.00015);
+      for (let i = 0; i < 4; i++) {
+        document.getElementById(`cornerLat_${i}`).value = box[i].lat.toFixed(6);
+        document.getElementById(`cornerLng_${i}`).value = box[i].lng.toFixed(6);
+      }
+      previewPolygonFromInputs();
+      showToast(`Rectángulo base generado para ${node.shortName}. Pulsa Guardar para aplicar.`);
+    }
+
+    // Guarda las 4 esquinas del bloque actual, recalcula su centroide, guarda en localStorage y actualiza toda la app
+    function saveCurrentBlockCorners() {
+      const nodeId = document.getElementById('calibBlockSelect').value;
+      const node = getNodeById(nodeId);
+      const corners = getCornersFromCurrentInputs();
+
+      if (!corners) {
+        showToast("⚠️ Por favor ingresa números válidos en las 4 esquinas.");
+        return;
+      }
+
+      node.corners = corners;
+      node.isCustomCalibrated = true;
+      const newCentroid = computeCentroidFromCorners(corners);
+      node.lat = newCentroid.lat;
+      node.lng = newCentroid.lng;
+
+      persistAllCalibratedCorners();
+      loadBlockCornersIntoForm(node.id);
+      renderCalibrationSummaryTable();
+      recalculateAndRenderRoute();
+      showToast(`✅ 4 Esquinas de ${node.shortName} guardadas. Nuevo centroide: ${node.lat}, ${node.lng}`);
+    }
+
+    function persistAllCalibratedCorners() {
+      const mapToSave = {};
+      UCB_NODES.forEach(n => {
+        if (n.corners && n.corners.length === 4) {
+          mapToSave[n.id] = n.corners;
+        }
+      });
+      try {
+        localStorage.setItem(STORAGE_KEY_CORNERS, JSON.stringify(mapToSave));
+      } catch (e) {}
+    }
+
+    function changeARPolygonTargetMode(mode) {
+      state.arPolygonTargetMode = mode;
+      showToast(
+        mode === 'nearest_corner'
+          ? "📐 Las líneas AR ahora apuntan a la esquina/muro más cercano del bloque."
+          : "🎯 Las líneas AR ahora apuntan al centroide de las 4 esquinas del bloque."
+      );
+    }
+
+    function renderCalibrationSummaryTable() {
+      const tbody = document.getElementById('calibBlocksTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = UCB_NODES.map(n => {
+        const c = n.corners || createDefaultCornersForCoord(n.lat, n.lng);
+        return `
+          <tr onclick="loadBlockCornersIntoForm('${n.id}')" class="hover:bg-slate-800/70 cursor-pointer transition">
+            <td class="py-2 px-2.5 font-sans font-semibold text-white whitespace-nowrap">
+              <span class="inline-block w-2 h-2 rounded-full mr-1.5 ${n.isCustomCalibrated ? 'bg-emerald-400' : 'bg-slate-500'}"></span>
+              ${n.shortName}
+            </td>
+            <td class="py-2 px-2.5 text-ucb-gold whitespace-nowrap">${n.lat.toFixed(5)}, ${n.lng.toFixed(5)}</td>
+            <td class="py-2 px-2.5 text-slate-300 whitespace-nowrap">${c[0].lat.toFixed(5)}, ${c[0].lng.toFixed(5)}</td>
+            <td class="py-2 px-2.5 text-slate-300 whitespace-nowrap">${c[1].lat.toFixed(5)}, ${c[1].lng.toFixed(5)}</td>
+            <td class="py-2 px-2.5 text-slate-300 whitespace-nowrap">${c[2].lat.toFixed(5)}, ${c[2].lng.toFixed(5)}</td>
+            <td class="py-2 px-2.5 text-slate-300 whitespace-nowrap">${c[3].lat.toFixed(5)}, ${c[3].lng.toFixed(5)}</td>
+            <td class="py-2 px-2.5 text-right">
+              <button type="button" class="px-2 py-0.5 rounded bg-ucb-cyan/15 text-ucb-cyan font-sans font-semibold text-[10px]">
+                Editar 4 Esq.
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportCalibratedCornersJSON() {
+      const exportObj = {};
+      UCB_NODES.forEach(n => {
+        exportObj[n.id] = {
+          name: n.shortName,
+          centroid: { lat: n.lat, lng: n.lng },
+          corners: n.corners
+        };
+      });
+      const jsonStr = JSON.stringify(exportObj, null, 2);
+      const details = document.getElementById('jsonExportDetails');
+      const textarea = document.getElementById('calibJsonTextarea');
+      if (details) details.open = true;
+      if (textarea) {
+        textarea.value = jsonStr;
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          showToast("📋 JSON de las 4 esquinas generado y copiado al portapapeles.");
+        } catch (e) {
+          showToast("JSON generado en el cuadro inferior.");
+        }
+      }
+    }
+
+    function copyCalibJSONToClipboard() {
+      const textarea = document.getElementById('calibJsonTextarea');
+      if (!textarea.value) exportCalibratedCornersJSON();
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast("📋 JSON copiado al portapapeles.");
+      } catch (e) {
+        showToast("Selecciona el texto y cópialo manualmente.");
+      }
+    }
+
+    function importCalibratedCornersJSON() {
+      const raw = document.getElementById('calibJsonTextarea').value.trim();
+      if (!raw) {
+        showToast("Pega primero el JSON en el cuadro de texto.");
+        return;
+      }
+      try {
+        const parsed = JSON.parse(raw);
+        let count = 0;
+        UCB_NODES.forEach(node => {
+          const item = parsed[node.id];
+          const cornersArr = item?.corners || (Array.isArray(item) ? item : null);
+          if (cornersArr && cornersArr.length === 4) {
+            node.corners = cornersArr.map(c => ({ lat: Number(c.lat), lng: Number(c.lng) }));
+            const c = computeCentroidFromCorners(node.corners);
+            node.lat = c.lat;
+            node.lng = c.lng;
+            node.isCustomCalibrated = true;
+            count++;
+          }
+        });
+        persistAllCalibratedCorners();
+        loadBlockCornersIntoForm(document.getElementById('calibBlockSelect').value);
+        renderCalibrationSummaryTable();
+        recalculateAndRenderRoute();
+        showToast(`✅ Se importaron las 4 esquinas de ${count} bloques.`);
+      } catch (e) {
+        showToast("⚠️ Formato JSON inválido. Verifica el texto pegado.");
+      }
+    }
+
+    function resetAllCornersToDefault() {
+      try {
+        localStorage.removeItem(STORAGE_KEY_CORNERS);
+      } catch (e) {}
+      UCB_NODES.forEach(node => {
+        node.lat = node.defaultLat || node.lat;
+        node.lng = node.defaultLng || node.lng;
+        node.corners = createDefaultCornersForCoord(node.lat, node.lng);
+        node.isCustomCalibrated = false;
+      });
+      loadBlockCornersIntoForm(document.getElementById('calibBlockSelect').value);
+      renderCalibrationSummaryTable();
+      recalculateAndRenderRoute();
+      showToast("🔄 Se restauraron las coordenadas por defecto de todos los bloques.");
     }
 
     // =========================================================================
@@ -2385,15 +3436,18 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
       const newEvNodeSel = document.getElementById('newEvNodeId');
       const qrBlockSel = document.getElementById('qrBlockSelect');
       const quickEvSel = document.getElementById('selectQuickEvent');
+      const calibBlockSel = document.getElementById('calibBlockSelect');
 
       const optionsHtml = UCB_NODES.map(n => `<option value="${n.id}">${n.name}</option>`).join('');
       originSel.innerHTML = optionsHtml;
       destSel.innerHTML = optionsHtml;
       newEvNodeSel.innerHTML = optionsHtml;
       qrBlockSel.innerHTML = optionsHtml;
+      if (calibBlockSel) calibBlockSel.innerHTML = optionsHtml;
 
       originSel.value = state.originId;
       destSel.value = state.destinationId;
+      if (calibBlockSel) calibBlockSel.value = state.destinationId;
 
       quickEvSel.innerHTML =
         `<option value="">-- Seleccionar evento UCB --</option>` +
@@ -2459,7 +3513,7 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
 
     function switchTab(tabId) {
       state.activeTab = tabId;
-      ['ar', 'map', 'events', 'proposal'].forEach(id => {
+      ['ar', 'map', 'events', 'calibration'].forEach(id => {
         const section = document.getElementById(`view-${id}`);
         const btn = document.getElementById(`tabBtn-${id}`);
         if (id === tabId) {
@@ -2557,7 +3611,10 @@ Feria Cultural de Idiomas | Bloque N - Idiomas | 2026-11-14 15:00</textarea>
     // 13. INICIALIZACIÓN AL CARGAR LA PÁGINA
     // =========================================================================
     window.onload = function () {
+      initBlockCornersData();
       populateDropdownSelectors();
+      loadBlockCornersIntoForm(state.destinationId);
+      renderCalibrationSummaryTable();
       recalculateAndRenderRoute();
       renderEventsGrid();
       startARCanvasRenderLoop();
